@@ -6,6 +6,24 @@ const caseList = document.getElementById('case-list');
 const dashboardTitle = document.getElementById('dashboard-title');
 const dynamicSidebar = document.getElementById('dynamic-sidebar');
 const leaderboardBody = document.getElementById('leaderboard-body');
+const viewProfile = document.getElementById('view-profile');
+
+// Profile DOM Elements
+const profileNickname = document.getElementById('profile-nickname');
+const profileEmail = document.getElementById('profile-email');
+const profilePoints = document.getElementById('profile-points');
+const profileCasesCount = document.getElementById('profile-cases-count');
+const profileRank = document.getElementById('profile-rank');
+const profileAvatarDisplay = document.getElementById('profile-avatar-display');
+const avatarOptions = document.querySelectorAll('.avatar-option');
+const btnLogoutProfile = document.getElementById('btn-logout-profile');
+const btnResetAccount = document.getElementById('btn-reset-account');
+const btnReportError = document.getElementById('btn-report-error');
+
+// Clinical UI Elements
+const btnShowVitals = document.getElementById('btn-show-vitals');
+const btnShowHistory = document.getElementById('btn-show-history');
+const revealedClinicalData = document.getElementById('revealed-clinical-data');
 
 // Sidebar Elements
 const navAll = document.getElementById('nav-all');
@@ -148,6 +166,18 @@ function buildSidebar() {
     hideFAB();
     showLeaderboard();
   });
+
+  // Profile Listener
+  const sidebarProfile = document.querySelector('.user-profile-sidebar');
+  if(sidebarProfile) {
+    sidebarProfile.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
+      navAll.classList.remove('active');
+      navLeaderboard.classList.remove('active');
+      hideFAB();
+      showProfile();
+    });
+  }
 }
 
 // FAB Logic
@@ -181,11 +211,21 @@ function hideFAB() {
 // Initialize Dashboard
 function renderDashboard() {
   if (!currentUser) return;
-
-  caseList.innerHTML = '';
   
-  // Show cases ONLY from currentUser's solvedCases
-  let filteredCases = currentUser.solvedCases;
+  viewSimulation.classList.add('hidden');
+  viewLeaderboard.classList.add('hidden');
+  viewProfile.classList.add('hidden');
+  viewDashboard.classList.remove('hidden');
+
+  const caseList = document.getElementById('case-list');
+  const btnHeaderGenerate = document.getElementById('btn-header-generate');
+  const fabArchive = document.getElementById('fab-archive');
+  const archiveCount = document.getElementById('archive-count');
+  
+  if(!caseList) return;
+  caseList.innerHTML = '';
+
+  let filteredCases = currentUser.solvedCases || [];
   
   if (currentFilterYear !== 'all') {
     filteredCases = filteredCases.filter(c => c.year === parseInt(currentFilterYear));
@@ -194,35 +234,79 @@ function renderDashboard() {
     filteredCases = filteredCases.filter(c => c.department === currentFilterDept);
   }
 
-  if (filteredCases.length === 0) {
-    const msg = document.createElement('p');
-    msg.style.cssText = "color: #94a3b8; font-style: italic; width: 100%;";
-    msg.innerText = "Bu seçim için henüz çözdüğünüz/ürettiğiniz vaka bulunmuyor. Sol alttaki 'Yeni Vaka Üret' butonuyla başlayabilirsiniz.";
-    caseList.appendChild(msg);
-    return;
+  // Dashboard Header Title
+  if (currentFilterDept === 'all') {
+    dashboardTitle.innerText = "Hastane Girişi (Tüm Departmanlar)";
+  } else {
+    dashboardTitle.innerText = `${currentFilterDept} (${currentFilterYear}. Sınıf)`;
   }
-  
-  const sortedCases = [...filteredCases].sort((a,b) => b.id - a.id);
 
-  sortedCases.forEach(c => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div>
-        <h3>${c.title}</h3>
-        <div class="patient-info-sm">
-          <span>${c.patient.name}</span>
-          <span>${c.patient.age} Yaş</span>
-          <span>${c.patient.gender}</span>
-        </div>
-        <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">${c.description}</p>
-      </div>
-      <div>
-        <span class="badge">${c.department} - ${c.year}. Sınıf</span>
-      </div>
-    `;
-    card.onclick = () => startCase(c.id);
-    caseList.appendChild(card);
+  // Header Generate Button Logic
+  if (currentFilterDept === 'all') {
+    btnHeaderGenerate.style.display = 'none'; // Don't show generate button on "All Cases"
+  } else {
+    btnHeaderGenerate.style.display = 'inline-block';
+    btnHeaderGenerate.innerText = `➕ Yeni ${currentFilterDept} Vakası Başlat`;
+    btnHeaderGenerate.onclick = () => {
+      if (typeof generateRandomCase === 'function') {
+        const newCase = generateRandomCase(currentFilterYear === 'all' ? null : parseInt(currentFilterYear), currentFilterDept);
+        recordSolvedCase(newCase);
+        startCase(newCase.id);
+      }
+    };
+  }
+
+  // Show FAB Archive and set count
+  if (fabArchive) {
+    fabArchive.style.display = 'block';
+    if (archiveCount) archiveCount.innerText = filteredCases.length;
+  }
+
+  // Populate Archive Panel (which is triggered by FAB)
+  const archiveGrid = document.getElementById('archive-grid');
+  if (archiveGrid) {
+    archiveGrid.innerHTML = '';
+    if (filteredCases.length === 0) {
+      archiveGrid.innerHTML = `<p style="text-align:center; color:#94a3b8; font-style:italic;">Bu bölüm için geçmiş vaka arşiviniz boş.</p>`;
+    } else {
+      const sortedCases = [...filteredCases].sort((a,b) => b.id - a.id);
+      sortedCases.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div>
+            <h3>${c.title}</h3>
+            <div class="patient-info-sm">
+              <span>${c.patient.name}</span>
+              <span>${c.patient.age} Yaş</span>
+            </div>
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 0.5rem;">${c.description}</p>
+          </div>
+          <div>
+            <span class="badge" style="margin-bottom: 0.5rem; display: inline-block;">${c.department} - ${c.year}. Sınıf</span>
+            <button class="btn-primary" style="width:100%; font-size:0.9rem;">Dosyayı İncele</button>
+          </div>
+        `;
+        card.querySelector('.btn-primary').onclick = () => {
+          document.getElementById('archive-panel').style.display = 'none';
+          startCase(c.id);
+        }
+        archiveGrid.appendChild(card);
+      });
+    }
+  }
+}
+
+// Global Event Listener for FAB Archive
+const globalFabArchive = document.getElementById('fab-archive');
+const globalArchivePanel = document.getElementById('archive-panel');
+if (globalFabArchive && globalArchivePanel) {
+  globalFabArchive.addEventListener('click', () => {
+    if (globalArchivePanel.style.display === 'none') {
+      globalArchivePanel.style.display = 'block';
+    } else {
+      globalArchivePanel.style.display = 'none';
+    }
   });
 }
 
@@ -250,6 +334,73 @@ function showLeaderboard() {
   });
 }
 
+function showProfile() {
+  if (!currentUser) return;
+  viewDashboard.classList.add('hidden');
+  viewSimulation.classList.add('hidden');
+  viewLeaderboard.classList.add('hidden');
+  viewProfile.classList.remove('hidden');
+
+  profileNickname.innerText = currentUser.nickname;
+  profileEmail.innerText = currentUser.email;
+  profilePoints.innerText = currentUser.points;
+  profileCasesCount.innerText = currentUser.solvedCases ? currentUser.solvedCases.length : 0;
+  
+  if (currentUser.avatar) {
+    profileAvatarDisplay.innerText = currentUser.avatar;
+  } else {
+    profileAvatarDisplay.innerText = "👨‍⚕️";
+  }
+
+  const leaders = getLeaderboard();
+  const rankIndex = leaders.findIndex(u => u.email === currentUser.email);
+  profileRank.innerText = rankIndex !== -1 ? `#${rankIndex + 1}` : '-';
+
+  // Highlight active avatar in grid
+  avatarOptions.forEach(opt => {
+    opt.classList.remove('active');
+    if (opt.getAttribute('data-avatar') === (currentUser.avatar || "👨‍⚕️")) {
+      opt.classList.add('active');
+    }
+  });
+}
+
+// Avatar Logic
+avatarOptions.forEach(opt => {
+  opt.addEventListener('click', () => {
+    if (!currentUser) return;
+    const selectedAvatar = opt.getAttribute('data-avatar');
+    currentUser.avatar = selectedAvatar;
+    saveUsers(); // Save to local storage
+    showProfile(); // Re-render
+    updateSidebarProfile(); // Update sidebar if you have an avatar there
+  });
+});
+
+// Profile Actions
+if (btnLogoutProfile) {
+  btnLogoutProfile.addEventListener('click', logout);
+}
+
+if (btnResetAccount) {
+  btnResetAccount.addEventListener('click', () => {
+    if (confirm("Tüm ilerlemeniz silinecektir. Devam etmek istiyor musunuz?")) {
+      currentUser.points = 0;
+      currentUser.solvedCases = [];
+      saveUsers();
+      alert("Hesabınız sıfırlandı!");
+      goBackToDashboard();
+    }
+  });
+}
+
+if (btnReportError) {
+  btnReportError.addEventListener('click', () => {
+    prompt("Lütfen vaka ile ilgili tespit ettiğiniz hatayı kısaca açıklayın (Bu rapor sisteme iletilecektir):");
+    alert("Teşekkürler, hata raporunuz incelenmek üzere tarafımıza iletildi.");
+  });
+}
+
 // Generate Case Logic
 btnGenerate.addEventListener('click', () => {
   if (typeof generateRandomCase === 'function') {
@@ -268,9 +419,55 @@ btnGenerate.addEventListener('click', () => {
 });
 
 
+// Clinical Sidebar Logic
+if(btnShowVitals) {
+  btnShowVitals.addEventListener('click', () => {
+    if (!currentCase || !currentCase.clinical) return;
+    
+    // Append to revealed data area
+    const box = document.createElement('div');
+    box.style.cssText = "background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; border-left: 4px solid #ef4444;";
+    box.innerHTML = `
+      <h4 style="margin-bottom: 0.75rem; color: #ef4444;">Vital Bulgular</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem;">
+        <div><span style="font-size:0.75rem; color:#64748b; display:block;">TANSİYON</span><span style="font-weight:bold; color:#0f172a;">${currentCase.clinical.vitals.bp}</span></div>
+        <div><span style="font-size:0.75rem; color:#64748b; display:block;">NABIZ</span><span style="font-weight:bold; color:#0f172a;">${currentCase.clinical.vitals.pulse}</span></div>
+        <div><span style="font-size:0.75rem; color:#64748b; display:block;">ATEŞ</span><span style="font-weight:bold; color:#0f172a;">${currentCase.clinical.vitals.temp}</span></div>
+        <div><span style="font-size:0.75rem; color:#64748b; display:block;">SOLUNUM</span><span style="font-weight:bold; color:#0f172a;">${currentCase.clinical.vitals.resp}</span></div>
+        <div><span style="font-size:0.75rem; color:#64748b; display:block;">SpO2</span><span style="font-weight:bold; color:#0ea5e9;">${currentCase.clinical.vitals.spo2}</span></div>
+      </div>
+    `;
+    revealedClinicalData.appendChild(box);
+    
+    // Disable button
+    btnShowVitals.disabled = true;
+    btnShowVitals.style.opacity = '0.5';
+    btnShowVitals.style.cursor = 'not-allowed';
+    btnShowVitals.innerText = "✓ Vital Bulgulara Bakıldı";
+  });
+}
+
+if(btnShowHistory) {
+  btnShowHistory.addEventListener('click', () => {
+    if (!currentCase || !currentCase.clinical) return;
+    
+    const box = document.createElement('div');
+    box.style.cssText = "background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; border-left: 4px solid var(--primary);";
+    box.innerHTML = `
+      <h4 style="margin-bottom: 0.5rem; color: var(--primary);">Tıbbi Özgeçmiş</h4>
+      <p style="color: #475569; margin:0; line-height: 1.5;">${currentCase.clinical.history}</p>
+    `;
+    revealedClinicalData.appendChild(box);
+
+    btnShowHistory.disabled = true;
+    btnShowHistory.style.opacity = '0.5';
+    btnShowHistory.style.cursor = 'not-allowed';
+    btnShowHistory.innerText = "✓ Özgeçmiş Sorgulandı";
+  });
+}
+
 // Start Case
 function startCase(caseId) {
-  // Find from user's solved cases (or medCases as fallback, but users only see what they generated/solved)
   currentCase = currentUser.solvedCases.find(c => c.id === caseId);
   if (!currentCase) return;
 
@@ -279,6 +476,7 @@ function startCase(caseId) {
   
   viewDashboard.classList.add('hidden');
   viewLeaderboard.classList.add('hidden');
+  viewProfile.classList.add('hidden');
   viewSimulation.classList.remove('hidden');
   
   simDepartment.innerText = `${currentCase.department} (${currentCase.year}. Sınıf)`;
@@ -286,7 +484,65 @@ function startCase(caseId) {
   patName.innerText = currentCase.patient.name;
   patAge.innerText = currentCase.patient.age;
   patGender.innerText = currentCase.patient.gender;
+
+  const patBlood = document.getElementById('pat-blood');
+  const patJob = document.getElementById('pat-job');
+  const patHeight = document.getElementById('pat-height');
+  const patWeight = document.getElementById('pat-weight');
+
+  if (patBlood) patBlood.innerText = currentCase.patient.bloodType || "-";
+  if (patJob) patJob.innerText = currentCase.patient.occupation || "-";
+  if (patHeight) patHeight.innerText = currentCase.patient.height || "-";
+  if (patWeight) patWeight.innerText = currentCase.patient.weight || "-";
+
+  // Reset revealed data and buttons
+  revealedClinicalData.innerHTML = '';
   
+  if(btnShowVitals) {
+    btnShowVitals.disabled = false;
+    btnShowVitals.style.opacity = '1';
+    btnShowVitals.style.cursor = 'pointer';
+    btnShowVitals.innerText = "🩺 Vital Bulgulara Bak";
+  }
+  if(btnShowHistory) {
+    btnShowHistory.disabled = false;
+    btnShowHistory.style.opacity = '1';
+    btnShowHistory.style.cursor = 'pointer';
+    btnShowHistory.innerText = "📋 Özgeçmiş Sorgula";
+  }
+  
+  // Dynamically add Lab Tests Button if exists
+  const actionButtonsContainer = document.querySelector('.action-buttons');
+  if (actionButtonsContainer) {
+    // Remove old dynamic lab button if exists
+    const oldLabBtn = document.getElementById('btn-show-labs');
+    if (oldLabBtn) oldLabBtn.remove();
+    
+    if (currentCase.clinical && currentCase.clinical.labTests) {
+      const labBtn = document.createElement('button');
+      labBtn.className = 'btn-action-side';
+      labBtn.id = 'btn-show-labs';
+      labBtn.innerText = currentCase.clinical.labTests.name;
+      
+      labBtn.onclick = () => {
+        const box = document.createElement('div');
+        box.style.cssText = "background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; border-left: 4px solid #10b981;";
+        box.innerHTML = `
+          <h4 style="margin-bottom: 0.5rem; color: #10b981;">Tahlil ve Görüntüleme Sonuçları</h4>
+          <p style="color: #475569; margin:0; line-height: 1.5;">${currentCase.clinical.labTests.result}</p>
+        `;
+        revealedClinicalData.appendChild(box);
+
+        labBtn.disabled = true;
+        labBtn.style.opacity = '0.5';
+        labBtn.style.cursor = 'not-allowed';
+        labBtn.innerText = `✓ Sonuçlar İncelendi`;
+      };
+      
+      actionButtonsContainer.appendChild(labBtn);
+    }
+  }
+
   renderStage();
 }
 
@@ -383,6 +639,7 @@ function hideFeedback() {
 function goBackToDashboard() {
   viewSimulation.classList.add('hidden');
   viewLeaderboard.classList.add('hidden');
+  viewProfile.classList.add('hidden');
   viewDashboard.classList.remove('hidden');
   currentCase = null;
   currentStage = null;
@@ -390,6 +647,7 @@ function goBackToDashboard() {
 }
 
 btnBack.onclick = goBackToDashboard;
+
 
 // Run Init
 buildSidebar();

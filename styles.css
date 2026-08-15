@@ -587,6 +587,12 @@ body {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   margin-bottom: 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.user-profile-sidebar:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .user-avatar {
@@ -676,4 +682,87 @@ body {
   border-radius: 50px;
   font-weight: 700;
   animation: slideUp 0.5s ease;
+}
+/* Clinical Tabs & Panels */
+.clin-tab {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.clin-tab:hover {
+  color: var(--primary);
+}
+
+.clin-tab.active {
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+
+.vital-box {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.vital-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.vital-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.btn-action-side {
+  background: white;
+  border: 1px solid #cbd5e1;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-action-side:hover {
+  background: #f1f5f9;
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateX(4px);
+}
+.avatar-option {
+  font-size: 2rem;
+  background: #f1f5f9;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: all 0.2s;
+}
+.avatar-option:hover {
+  background: #e2e8f0;
+}
+.avatar-option.active {
+  border-color: var(--primary);
+  background: #e0f2fe;
 }

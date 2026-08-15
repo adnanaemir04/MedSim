@@ -271,15 +271,115 @@ function generateRandomCase(targetYear = null, targetDept = null) {
   const title = deptSpecific.titles[Math.floor(Math.random() * deptSpecific.titles.length)];
   const path = deptSpecific.correctPaths[Math.floor(Math.random() * deptSpecific.correctPaths.length)];
   
-  // Create a unique ID based on timestamp
   const newId = Date.now() + Math.floor(Math.random() * 1000);
+
+  // --- PHASE 3: Generate Clinical Details ---
+  let isEmergency = (department === "Acil Tıp" || department === "Kardiyoloji" || department === "Genel Cerrahi");
+  
+  // Base Vitals
+  let sysBP = 110 + Math.floor(Math.random() * 30);
+  let diaBP = 70 + Math.floor(Math.random() * 20);
+  let pulse = 60 + Math.floor(Math.random() * 30);
+  let temp = 36.5 + (Math.random() * 0.8);
+  let resp = 14 + Math.floor(Math.random() * 6);
+  let spo2 = 96 + Math.floor(Math.random() * 4);
+
+  if (isEmergency) {
+    if (Math.random() > 0.5) {
+      // Hypertensive / Tachycardic crisis
+      sysBP += 40 + Math.floor(Math.random() * 40);
+      diaBP += 20 + Math.floor(Math.random() * 20);
+      pulse += 30 + Math.floor(Math.random() * 50);
+      resp += 8 + Math.floor(Math.random() * 10);
+    } else {
+      // Shock / Hypotension
+      sysBP -= 30 + Math.floor(Math.random() * 20);
+      diaBP -= 20 + Math.floor(Math.random() * 20);
+      pulse += 40 + Math.floor(Math.random() * 40);
+      spo2 -= 5 + Math.floor(Math.random() * 10);
+    }
+  }
+
+  // Generate Comorbidities
+  const comorbiditiesList = ["Hipertansiyon (HT)", "Tip 2 Diabetes Mellitus", "Koroner Arter Hastalığı (KAH)", "Astım", "Kronik Böbrek Yetmezliği (KBY)", "Bilinen hastalık yok", "Bilinen hastalık yok", "Bilinen hastalık yok"];
+  let numComorbids = Math.floor(Math.random() * 3); // 0 to 2 diseases
+  let history = [];
+  if (numComorbids === 0) history.push("Bilinen ek hastalık yok.");
+  else {
+    for(let i=0; i<numComorbids; i++) {
+      let r = comorbiditiesList[Math.floor(Math.random() * comorbiditiesList.length)];
+      if (!history.includes(r) && r !== "Bilinen hastalık yok") history.push(r);
+    }
+    if (history.length === 0) history.push("Bilinen ek hastalık yok.");
+  }
+  const historyText = history.join(", ");
+
+  // Generate Extra Profile Data
+  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  const occupations = ["Öğretmen", "Mühendis", "İşçi", "Memur", "Serbest Meslek", "Emekli", "Ev Hanımı", "Öğrenci", "Şoför", "Esnaf"];
+  const bloodType = bloodTypes[Math.floor(Math.random() * bloodTypes.length)];
+  const occupation = age > 60 ? "Emekli" : (age < 22 ? "Öğrenci" : occupations[Math.floor(Math.random() * occupations.length)]);
+  const height = 150 + Math.floor(Math.random() * 40); // 150-190 cm
+  const weight = 50 + Math.floor(Math.random() * 50); // 50-100 kg
+
+  // Generate Department Specific Lab Tests
+  let labName = "🔬 Tahlil & Görüntüleme İste";
+  let labResult = "";
+  switch(department) {
+    case "Kardiyoloji":
+      labResult = `<strong>EKG:</strong> ${Math.random() > 0.5 ? 'Sinüs Taşikardisi, ST değişiklikleri' : 'Normal Sinüs Ritmi'}<br><strong>EKO:</strong> EF %${40 + Math.floor(Math.random()*25)}<br><strong>Kardiyak Enzimler:</strong> Troponin ${Math.random() > 0.5 ? 'Yüksek' : 'Normal'}`;
+      break;
+    case "Dahiliye":
+      labResult = `<strong>Tam Kan Sayımı:</strong> WBC ${4000 + Math.floor(Math.random()*12000)}, Hgb ${9 + Math.floor(Math.random()*6)}<br><strong>Biyokimya:</strong> Glukoz ${80 + Math.floor(Math.random()*200)} mg/dL, Kreatinin ${0.8 + (Math.random()*1.5).toFixed(1)}`;
+      break;
+    case "Göğüs Hastalıkları":
+      labResult = `<strong>Akciğer Grafisi:</strong> ${Math.random() > 0.5 ? 'Bilateral infiltrasyon' : 'Doğal'}<br><strong>SFT:</strong> FEV1/FVC %${60 + Math.floor(Math.random()*30)}`;
+      break;
+    case "Pediatri":
+      labResult = `<strong>Persentil:</strong> Boy %${10 + Math.floor(Math.random()*80)}, Kilo %${10 + Math.floor(Math.random()*80)}<br><strong>CRP:</strong> ${Math.random() > 0.5 ? 'Yüksek' : 'Negatif'}`;
+      break;
+    case "Genel Cerrahi":
+    case "Acil Tıp":
+      labResult = `<strong>USG/Tomografi:</strong> ${Math.random() > 0.5 ? 'Serbest sıvı / inflamasyon izlendi' : 'Akut patoloji saptanmadı'}<br><strong>Hemogram:</strong> Lökositoz (+)`;
+      break;
+    case "Kadın Hastalıkları ve Doğum":
+      labResult = `<strong>Pelvik USG:</strong> ${Math.random() > 0.5 ? 'Endometrial kalınlaşma' : 'Doğal görünümlü overler'}<br><strong>Beta-hCG:</strong> ${Math.random() > 0.5 ? '>1000' : '<5'}`;
+      break;
+    case "Nöroloji":
+      labResult = `<strong>Kraniyal MR:</strong> ${Math.random() > 0.5 ? 'Akut iskemik enfarkt ile uyumlu alan' : 'İntrakraniyal kanama saptanmadı'}<br><strong>EEG:</strong> ${Math.random() > 0.5 ? 'Epileptiform aktivite' : 'Normal zemin aktivitesi'}`;
+      break;
+    default:
+      labResult = `<strong>Rutin Biyokimya:</strong> Özellik saptanmadı.<br><strong>Radyoloji:</strong> Doğal görünüm.`;
+  }
 
   return {
     id: newId,
     title: title, 
     department: department,
     year: year,
-    patient: { name: `${name} ${lastName}`, age: age, gender: isMale ? "Erkek" : "Kadın" },
+    patient: { 
+      name: `${name} ${lastName}`, 
+      age: age, 
+      gender: isMale ? "Erkek" : "Kadın",
+      bloodType: bloodType,
+      occupation: occupation,
+      height: `${height} cm`,
+      weight: `${weight} kg`
+    },
+    clinical: {
+      vitals: {
+        bp: `${sysBP}/${diaBP} mmHg`,
+        pulse: `${pulse} /dk`,
+        temp: `${temp.toFixed(1)} °C`,
+        resp: `${resp} /dk`,
+        spo2: `%${spo2}`
+      },
+      history: historyText,
+      labTests: {
+        name: labName,
+        result: labResult
+      }
+    },
     description: `Klinik Vaka: ${age} yaşında, ${department} departmanına başvurdu. Şikayetleri değerlendiriniz.`,
     stages: [
       {

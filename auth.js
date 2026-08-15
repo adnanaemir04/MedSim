@@ -138,7 +138,8 @@ function saveUsers() {
 
 function updateSidebarProfile() {
   if (!currentUser) return;
-  sidebarUsername.innerText = currentUser.nickname;
+  const avatarToUse = currentUser.avatar ? currentUser.avatar : "👨‍⚕️";
+  sidebarUsername.innerText = `${avatarToUse} ${currentUser.nickname}`;
   sidebarPoints.innerText = `${currentUser.points} Puan`;
 }
 
