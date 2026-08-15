@@ -74,7 +74,6 @@
       </div>
 
       <div class="sidebar-bottom-actions">
-        <button class="btn-generate" id="btn-generate">+ Yeni Vaka Üret</button>
         <button class="btn-logout" id="btn-logout">Çıkış Yap</button>
       </div>
     </aside>
@@ -93,17 +92,8 @@
           <!-- Content injected here (Empty states or other content) -->
         </div>
 
-        <!-- FAB for Archive -->
-        <button id="fab-archive" class="btn-primary" style="position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 50; display: none;">
-          📁 Geçmiş Vakalar (<span id="archive-count">0</span>)
-        </button>
-
-        <!-- Archive Panel (Slides up or opens) -->
-        <div id="archive-panel" class="hidden-acc" style="display: none; position: fixed; bottom: 5.5rem; right: 2rem; width: 400px; max-height: 60vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid #e2e8f0; z-index: 49; padding: 1rem;">
-          <h3 style="margin-bottom: 1rem; color: #334155;">Geçmiş Vaka Arşivi</h3>
-          <div id="archive-grid" style="display: flex; flex-direction: column; gap: 1rem;">
-            <!-- Archive cards injected here -->
-          </div>
+        <div id="case-list" class="case-grid" style="margin-top: 2rem;">
+          <!-- Content injected here (Empty states or other content) -->
         </div>
       </main>
 
@@ -112,82 +102,113 @@
         <h2>🏆 Liderlik Tablosu (En İyi Hekimler)</h2>
         <p style="margin-top: 0.5rem; color: #475569;">Vakaları doğru analiz edip çözerek puan toplayın ve sıralamada yükselin.</p>
         
-        <div class="leaderboard-container">
-          <table class="leaderboard-table">
-            <thead>
-              <tr>
-                <th>Sıra</th>
-                <th>Doktor / Öğrenci</th>
-                <th>Çözülen Vaka</th>
-                <th>Puan</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboard-body">
-              <!-- Injected by JS -->
-            </tbody>
-          </table>
+        <div class="leaderboard-container" style="margin-top: 2rem;">
+          <!-- Modern List Container -->
+          <div id="leaderboard-body" class="lb-list">
+            <!-- Injected by JS -->
+          </div>
         </div>
       </main>
 
       <!-- View: Profile -->
-      <main id="view-profile" class="glass-panel hidden">
-        <h2 style="margin-bottom: 1.5rem;">Kullanıcı Profili ve Ayarlar</h2>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-          <!-- Left Column: Profile Info & Avatar -->
-          <div>
-            <div class="profile-card" style="background: white; border-radius: 12px; padding: 2rem; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-              <div id="profile-avatar-display" style="font-size: 4rem; background: #f1f5f9; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer;" title="Avatarı değiştirmek için yandaki menüyü kullanın">👨‍⚕️</div>
+      <main id="view-profile" class="glass-panel hidden" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+          
+          <!-- Aesthetic Cover -->
+          <div style="height: 150px; border-radius: 16px 16px 0 0; background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);"></div>
+          
+          <div style="background: white; border-radius: 0 0 16px 16px; padding: 2rem; border: 1px solid #e2e8f0; border-top: none; position: relative; margin-bottom: 2rem;">
+            
+            <div id="profile-avatar-display" style="font-size: 4.5rem; background: #f8fafc; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: absolute; top: -60px; left: 2rem;">👨‍⚕️</div>
+            
+            <div style="margin-left: 140px; display: flex; justify-content: space-between; align-items: flex-start;">
               <div>
-                <h3 id="profile-nickname" style="font-size: 1.5rem; color: #0f172a; margin-bottom: 0.25rem;">Nickname</h3>
-                <p id="profile-email" style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">email@adres.com</p>
-                <div style="display: flex; gap: 1.5rem; justify-content: center;">
-                  <div>
-                    <span style="display: block; font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: bold;">Puan</span>
-                    <span id="profile-points" style="font-size: 1.25rem; font-weight: 800; color: #0ea5e9;">0</span>
-                  </div>
-                  <div>
-                    <span style="display: block; font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: bold;">Çözülen Vaka</span>
-                    <span id="profile-cases-count" style="font-size: 1.25rem; font-weight: 800; color: #10b981;">0</span>
-                  </div>
-                  <div>
-                    <span style="display: block; font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: bold;">Sıralama</span>
-                    <span id="profile-rank" style="font-size: 1.25rem; font-weight: 800; color: #f59e0b;">#0</span>
-                  </div>
+                <h2 id="profile-nickname" style="font-size: 1.8rem; color: #0f172a; margin-bottom: 0.25rem;">Nickname</h2>
+                <p id="profile-email" style="color: #64748b; font-size: 1rem;">email@adres.com</p>
+              </div>
+              <div style="display: flex; gap: 2rem; text-align: center;">
+                <div>
+                  <span style="display: block; font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Puan</span>
+                  <span id="profile-points" style="font-size: 1.5rem; font-weight: 800; color: #0ea5e9;">0</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Vaka</span>
+                  <span id="profile-cases-count" style="font-size: 1.5rem; font-weight: 800; color: #10b981;">0</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Sıra</span>
+                  <span id="profile-rank" style="font-size: 1.5rem; font-weight: 800; color: #f59e0b;">#0</span>
                 </div>
               </div>
             </div>
             
-            <div style="background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #e2e8f0; margin-top: 1rem;">
-              <h3 style="color: #334155; font-size: 1.1rem; margin-bottom: 0.5rem;">Hakkımda & Uzmanlık</h3>
-              <textarea id="profile-bio" rows="2" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.75rem; font-family: inherit; color: #475569;" placeholder="Kendinizden veya hedeflerinizden bahsedin..."></textarea>
-              <button id="btn-save-bio" class="btn-primary" style="margin-top: 0.5rem; padding: 0.5rem 1rem;">Kaydet</button>
+            <div style="margin-top: 2rem; margin-left: 140px;">
+              <h3 style="color: #334155; font-size: 1.1rem; margin-bottom: 0.5rem;">Hakkımda & Uzmanlık Hedefi</h3>
+              <textarea id="profile-bio" rows="2" style="width: 100%; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-family: inherit; color: #475569; background: #f8fafc;" placeholder="Kendinizden veya uzmanlık hedeflerinizden bahsedin..."></textarea>
+              <div>
+                <button id="btn-save-bio" class="btn-primary" style="margin-top: 0.5rem; padding: 0.5rem 1rem;">Kaydet</button>
+              </div>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            
+            <!-- Past Cases Archive -->
+            <div style="background: white; border-radius: 16px; padding: 2rem; border: 1px solid #e2e8f0;">
+              <h3 style="margin-bottom: 1.5rem; color: #334155; font-size: 1.25rem;">📁 Çözdüğüm Vakalar (Arşiv)</h3>
+              <div id="archive-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; max-height: 500px; overflow-y: auto; padding-right: 0.5rem;">
+                <!-- Archive cards injected here -->
+              </div>
             </div>
             
-            <button id="btn-logout-profile" class="btn-primary" style="background: #ef4444; width: 100%; margin-top: 1rem;">Güvenli Çıkış Yap</button>
-          </div>
+            <!-- Settings & Avatar -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+              
+              <div style="background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0;">
+                <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">Avatar Seçimi</h3>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                  <button class="avatar-option" data-avatar="👨‍⚕️">👨‍⚕️</button>
+                  <button class="avatar-option" data-avatar="👩‍⚕️">👩‍⚕️</button>
+                  <button class="avatar-option" data-avatar="🧠">🧠</button>
+                  <button class="avatar-option" data-avatar="🫀">🫀</button>
+                  <button class="avatar-option" data-avatar="💊">💊</button>
+                  <button class="avatar-option" data-avatar="🔬">🔬</button>
+                </div>
+              </div>
 
-              <button class="avatar-option" data-avatar="🧠">🧠</button>
-              <button class="avatar-option" data-avatar="🫀">🫀</button>
-              <button class="avatar-option" data-avatar="💊">💊</button>
-              <button class="avatar-option" data-avatar="🔬">🔬</button>
-            </div>
-
-            <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.2rem;">Hesap Ayarları</h3>
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" id="setting-dark-mode">
-                <span style="color: #475569;">Karanlık Mod (Yakında)</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" id="setting-sound" checked>
-                <span style="color: #475569;">Oyun İçi Ses Efektleri</span>
-              </label>
-              <button id="btn-reset-account" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 0.5rem; border-radius: 6px; cursor: pointer; margin-top: 1rem; transition: all 0.2s;">Hesabı Sıfırla (Tüm İlerlemeyi Sil)</button>
+              <div style="background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0;">
+                <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">Hesap Ayarları</h3>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                  
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #475569; font-weight: 500;">Karanlık Mod (Yakında)</span>
+                    <input type="checkbox" id="setting-dark-mode" style="transform: scale(1.2);">
+                  </div>
+                  
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #475569; font-weight: 500;">Oyun İçi Ses Efektleri</span>
+                    <input type="checkbox" id="setting-sound" checked style="transform: scale(1.2);">
+                  </div>
+                  
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #475569; font-weight: 500;">E-posta Bildirimleri</span>
+                    <input type="checkbox" id="setting-email" checked style="transform: scale(1.2);">
+                  </div>
+                  
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #475569; font-weight: 500;">Profilimi Gizle</span>
+                    <input type="checkbox" id="setting-privacy" style="transform: scale(1.2);">
+                  </div>
+                  
+                  <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0.5rem 0;">
+                  
+                  <button id="btn-reset-account" style="background: #fff1f2; border: 1px solid #fda4af; color: #e11d48; padding: 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">Hesabı Sıfırla (İlerlemeyi Sil)</button>
+                  <button id="btn-logout-profile" class="btn-primary" style="background: #ef4444; width: 100%;">Güvenli Çıkış Yap</button>
+                </div>
+              </div>
+              
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
       <!-- View: Case Simulation -->
       <main id="view-simulation" class="glass-panel hidden">
@@ -233,12 +254,19 @@
           
           <!-- LEFT: Main Story and Choices -->
           <div class="sim-main" style="flex: 2;">
-            <p id="sim-text" class="case-text">
-              <!-- Stage text goes here -->
-            </p>
+            <div style="background: white; border-radius: 12px; padding: 2rem; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+              <h3 style="margin-bottom: 1rem; color: #334155; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">Vaka Akışı</h3>
+              <div id="sim-timeline" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Stages will be appended here -->
+              </div>
+            </div>
 
-            <div id="sim-options" class="options-container">
-              <!-- Options injected here -->
+            <!-- Current Stage Options -->
+            <div id="sim-options-container" style="background: white; border-radius: 12px; padding: 2rem; border: 1px solid #e2e8f0;">
+              <h4 style="margin-bottom: 1rem; color: #334155;">Kararınız Nedir?</h4>
+              <div id="sim-options" class="sim-options">
+                <!-- Buttons injected by JS -->
+              </div>
             </div>
 
             <div id="sim-feedback" class="feedback-box">
@@ -246,7 +274,7 @@
               <p id="feedback-text">Açıklama metni...</p>
               <div class="feedback-actions">
                 <span id="feedback-points" class="points-badge hidden">+10 Puan!</span>
-                <button id="btn-next-stage" class="btn-next hidden">Devam Et</button>
+                <button id="btn-next-stage" class="btn-next hidden">Sonraki Aşamaya Geç</button>
                 <button id="btn-finish-case" class="btn-next hidden">Vakayı Bitir</button>
               </div>
             </div>

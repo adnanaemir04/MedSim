@@ -28,7 +28,6 @@ const revealedClinicalData = document.getElementById('revealed-clinical-data');
 // Sidebar Elements
 const navAll = document.getElementById('nav-all');
 const navLeaderboard = document.getElementById('nav-leaderboard');
-const btnGenerate = document.getElementById('btn-generate');
 
 // Simulation DOM Elements
 const simDepartment = document.getElementById('sim-department');
@@ -146,67 +145,44 @@ function buildSidebar() {
     });
   });
 
-  // All Cases Listener
+ // Navigation Event Listeners
+if (navAll) {
   navAll.addEventListener('click', () => {
     document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
-    navLeaderboard.classList.remove('active');
     navAll.classList.add('active');
+    navLeaderboard.classList.remove('active');
+    const navProfile = document.getElementById('nav-profile');
+    if (navProfile) navProfile.classList.remove('active');
+    
     currentFilterYear = 'all';
     currentFilterDept = 'all';
-    dashboardTitle.innerText = "Tüm Vakalarım";
-    hideFAB();
+    dashboardTitle.innerText = 'Tüm Vakalarım';
     goBackToDashboard();
   });
+}
 
-  // Leaderboard Listener
+if (navLeaderboard) {
   navLeaderboard.addEventListener('click', () => {
     document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
     navAll.classList.remove('active');
     navLeaderboard.classList.add('active');
-    hideFAB();
+    const navProfile = document.getElementById('nav-profile');
+    if (navProfile) navProfile.classList.remove('active');
+    
     showLeaderboard();
   });
-
-  // Profile Listener
-  const sidebarProfile = document.querySelector('.user-profile-sidebar');
-  if(sidebarProfile) {
-    sidebarProfile.addEventListener('click', () => {
-      document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
-      navAll.classList.remove('active');
-      navLeaderboard.classList.remove('active');
-      hideFAB();
-      showProfile();
-    });
-  }
 }
 
-// FAB Logic
-function showFAB(year) {
-  let fab = document.getElementById('fab-button');
-  if (!fab) {
-    fab = document.createElement('button');
-    fab.id = 'fab-button';
-    fab.className = 'fab-button';
-    document.body.appendChild(fab);
-  }
-  fab.innerHTML = `<span>📁</span> Tüm ${year}. Sınıf Vakaları`;
-  fab.onclick = () => {
+const userProfileSidebar = document.querySelector('.user-profile-sidebar');
+if (userProfileSidebar) {
+  userProfileSidebar.addEventListener('click', () => {
     document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
     navAll.classList.remove('active');
     navLeaderboard.classList.remove('active');
-    currentFilterYear = year;
-    currentFilterDept = 'all';
-    dashboardTitle.innerText = `${year}. Sınıf Vakaları`;
-    goBackToDashboard();
-  };
-  fab.style.display = 'flex';
+    showProfile();
+  });
 }
-
-function hideFAB() {
-  const fab = document.getElementById('fab-button');
-  if (fab) fab.style.display = 'none';
 }
-
 
 // Initialize Dashboard
 function renderDashboard() {
@@ -219,8 +195,6 @@ function renderDashboard() {
 
   const caseList = document.getElementById('case-list');
   const btnHeaderGenerate = document.getElementById('btn-header-generate');
-  const fabArchive = document.getElementById('fab-archive');
-  const archiveCount = document.getElementById('archive-count');
   
   if(!caseList) return;
   caseList.innerHTML = '';
@@ -243,7 +217,7 @@ function renderDashboard() {
 
   // Header Generate Button Logic
   if (currentFilterDept === 'all') {
-    btnHeaderGenerate.style.display = 'none'; // Don't show generate button on "All Cases"
+    btnHeaderGenerate.style.display = 'none';
   } else {
     btnHeaderGenerate.style.display = 'inline-block';
     btnHeaderGenerate.innerText = `➕ Yeni ${currentFilterDept} Vakası Başlat`;
@@ -255,82 +229,92 @@ function renderDashboard() {
       }
     };
   }
+  
+  // Dashboard Info Message instead of cards
+  const currentDeptText = currentFilterDept === 'all' ? (currentFilterYear === 'all' ? 'Tüm hastane bölümleri' : `${currentFilterYear}. Sınıf bölümleri`) : currentFilterDept;
+  caseList.innerHTML = `
+    <div style="background: white; border-radius: 12px; padding: 3rem; text-align: center; border: 1px dashed #cbd5e1; grid-column: 1 / -1;">
+      <h3 style="color: #334155; font-size: 1.25rem; margin-bottom: 0.5rem;">${dashboardTitle.innerText} Seçildi</h3>
+      <p style="color: #64748b; font-size: 1rem;">Bu sayfada ${currentDeptText} ile ilgili vaka bilgilerine ulaşabilirsiniz. Sağ üstteki butonu kullanarak yeni bir vakaya başlayabilirsiniz.</p>
+    </div>
+  `;
 
-  // Show FAB Archive and set count
-  if (fabArchive) {
-    fabArchive.style.display = 'block';
-    if (archiveCount) archiveCount.innerText = filteredCases.length;
-  }
 
-  // Populate Archive Panel (which is triggered by FAB)
+  // Build Profile Archive Grid
   const archiveGrid = document.getElementById('archive-grid');
   if (archiveGrid) {
     archiveGrid.innerHTML = '';
-    if (filteredCases.length === 0) {
-      archiveGrid.innerHTML = `<p style="text-align:center; color:#94a3b8; font-style:italic;">Bu bölüm için geçmiş vaka arşiviniz boş.</p>`;
+    const solvedCases = currentUser.solvedCases || [];
+    if (solvedCases.length === 0) {
+      archiveGrid.innerHTML = `<p style="color:#64748b; text-align:center; padding:2rem;">Henüz çözülmüş vakanız bulunmamaktadır.</p>`;
     } else {
-      const sortedCases = [...filteredCases].sort((a,b) => b.id - a.id);
-      sortedCases.forEach(c => {
+      solvedCases.forEach(c => {
         const card = document.createElement('div');
         card.className = 'card';
+        card.style.background = '#f8fafc';
+        card.style.border = '1px solid #e2e8f0';
         card.innerHTML = `
           <div>
-            <h3>${c.title}</h3>
-            <div class="patient-info-sm">
-              <span>${c.patient.name}</span>
-              <span>${c.patient.age} Yaş</span>
-            </div>
-            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 0.5rem;">${c.description}</p>
+            <h3 style="color:#0f172a; margin-bottom:0.25rem; font-size:1.1rem;">${c.title}</h3>
+            <p style="color:#64748b; font-size:0.8rem; margin-bottom:0.5rem;">
+              <span class="badge" style="background:#e0f2fe; color:#0284c7;">${c.department}</span> ${c.year}. Sınıf
+            </p>
           </div>
-          <div>
-            <span class="badge" style="margin-bottom: 0.5rem; display: inline-block;">${c.department} - ${c.year}. Sınıf</span>
-            <button class="btn-primary" style="width:100%; font-size:0.9rem;">Dosyayı İncele</button>
+          <div style="margin-top:auto; padding-top:1rem; border-top:1px solid #e2e8f0;">
+            <button class="btn-primary" style="width:100%; font-size:0.85rem; background:white; color:var(--primary); border:1px solid var(--primary);" onclick="startCase('${c.id}')">Dosyayı Tekrar İncele</button>
           </div>
         `;
-        card.querySelector('.btn-primary').onclick = () => {
-          document.getElementById('archive-panel').style.display = 'none';
-          startCase(c.id);
-        }
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.justifyContent = 'space-between';
         archiveGrid.appendChild(card);
       });
     }
   }
 }
 
-// Global Event Listener for FAB Archive
-const globalFabArchive = document.getElementById('fab-archive');
-const globalArchivePanel = document.getElementById('archive-panel');
-if (globalFabArchive && globalArchivePanel) {
-  globalFabArchive.addEventListener('click', () => {
-    if (globalArchivePanel.style.display === 'none') {
-      globalArchivePanel.style.display = 'block';
-    } else {
-      globalArchivePanel.style.display = 'none';
-    }
-  });
-}
-
 function showLeaderboard() {
   viewDashboard.classList.add('hidden');
   viewSimulation.classList.add('hidden');
+  viewProfile.classList.add('hidden');
   viewLeaderboard.classList.remove('hidden');
 
+  const leaderboardBody = document.getElementById('leaderboard-body');
+  if (!leaderboardBody) return;
   leaderboardBody.innerHTML = '';
+  
   const leaders = getLeaderboard();
   
   leaders.forEach((u, i) => {
-    const tr = document.createElement('tr');
+    const row = document.createElement('div');
+    row.className = 'lb-row';
     if (u.email === currentUser.email) {
-      tr.style.background = '#e0f2fe';
-      tr.style.fontWeight = 'bold';
+      row.classList.add('is-me');
     }
-    tr.innerHTML = `
-      <td>#${i + 1}</td>
-      <td>${u.nickname}</td>
-      <td>${u.solvedCases ? u.solvedCases.length : 0}</td>
-      <td style="color: #0ea5e9;">${u.points}</td>
+
+    let rankBadge = `#${i + 1}`;
+    let rankClass = 'lb-rank';
+    if (i === 0) { rankBadge = '🥇'; rankClass += ' gold'; }
+    else if (i === 1) { rankBadge = '🥈'; rankClass += ' silver'; }
+    else if (i === 2) { rankBadge = '🥉'; rankClass += ' bronze'; }
+
+    const solvedCount = u.solvedCases ? u.solvedCases.length : 0;
+    const avatar = u.avatar || '👨‍⚕️';
+    const isMeTag = (u.email === currentUser.email) ? `<span style="background:var(--primary); color:white; font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:50px; font-weight:normal;">Siz</span>` : '';
+
+    row.innerHTML = `
+      <div class="${rankClass}">${rankBadge}</div>
+      <div class="lb-user-info">
+        <div class="lb-avatar">${avatar}</div>
+        <div>
+          <div class="lb-name">${u.nickname} ${isMeTag}</div>
+          <div class="lb-cases">Çözülen Vaka: <strong>${solvedCount}</strong></div>
+        </div>
+      </div>
+      <div class="lb-score">${u.points} Puan</div>
     `;
-    leaderboardBody.appendChild(tr);
+    
+    leaderboardBody.appendChild(row);
   });
 }
 
@@ -401,25 +385,7 @@ if (btnReportError) {
   });
 }
 
-// Generate Case Logic
-btnGenerate.addEventListener('click', () => {
-  if (typeof generateRandomCase === 'function') {
-    let targetYear = currentFilterYear === 'all' ? (Math.floor(Math.random() * 6) + 1) : parseInt(currentFilterYear);
-    let possibleDepts = deptsByYear[targetYear];
-    let targetDept = currentFilterDept === 'all' ? possibleDepts[Math.floor(Math.random() * possibleDepts.length)] : currentFilterDept;
 
-    const newCase = generateRandomCase(targetYear, targetDept);
-    
-    // Auto-save to user's profile and run immediately
-    recordSolvedCase(newCase);
-    
-    // Jump straight into the new case
-    startCase(newCase.id);
-  }
-});
-
-
-// Clinical Sidebar Logic
 if(btnShowVitals) {
   btnShowVitals.addEventListener('click', () => {
     if (!currentCase || !currentCase.clinical) return;
@@ -466,6 +432,105 @@ if(btnShowHistory) {
   });
 }
 
+// Current Stage UI Elements
+const simTimeline = document.getElementById('sim-timeline');
+const simOptionsContainer = document.getElementById('sim-options-container');
+
+function renderStage() {
+  if (!currentStage) return;
+
+  simFeedback.classList.remove('success', 'error');
+  simFeedback.style.display = 'none';
+  btnNextStage.classList.add('hidden');
+  btnFinishCase.classList.add('hidden');
+  feedbackPoints.classList.add('hidden');
+  
+  // Show options container
+  if (simOptionsContainer) simOptionsContainer.style.display = 'block';
+
+  // Append new stage text to timeline
+  const stageBlock = document.createElement('div');
+  stageBlock.style.cssText = "padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #cbd5e1;";
+  
+  const stageNum = currentCase.stages.indexOf(currentStage) + 1;
+  stageBlock.innerHTML = `<h5 style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Aşama ${stageNum}</h5><p style="color: #334155; line-height: 1.6; margin: 0;">${currentStage.text}</p>`;
+  
+  if (simTimeline) {
+    simTimeline.appendChild(stageBlock);
+    // Scroll to bottom of timeline
+    setTimeout(() => {
+      stageBlock.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 100);
+  }
+
+  simOptions.innerHTML = '';
+
+  currentStage.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-option';
+    btn.innerText = opt.text;
+    btn.onclick = () => handleOptionClick(opt, btn);
+    simOptions.appendChild(btn);
+  });
+}
+
+function handleOptionClick(option, btnElement) {
+  // Disable all options
+  const buttons = simOptions.querySelectorAll('button');
+  buttons.forEach(b => {
+    b.disabled = true;
+    b.style.cursor = 'not-allowed';
+    b.style.opacity = '0.7';
+  });
+
+  simFeedback.style.display = 'block';
+  simFeedback.classList.remove('success', 'error');
+
+  if (option.isCorrect) {
+    btnElement.style.background = 'var(--success)';
+    btnElement.style.color = 'white';
+    btnElement.style.borderColor = 'var(--success)';
+    simFeedback.classList.add('success');
+    feedbackTitle.innerText = "Doğru Karar!";
+    feedbackText.innerText = option.feedback;
+    
+    // Animate points
+    feedbackPoints.innerText = "+10 Puan!";
+    feedbackPoints.classList.remove('hidden');
+    feedbackPoints.style.color = 'var(--success)';
+    pointsEarnedInCase += 10;
+    
+    // Check if next stage exists
+    const currentIndex = currentCase.stages.indexOf(currentStage);
+    if (currentIndex < currentCase.stages.length - 1) {
+      btnNextStage.classList.remove('hidden');
+      btnNextStage.onclick = () => {
+        currentStage = currentCase.stages[currentIndex + 1];
+        if (simOptionsContainer) simOptionsContainer.style.display = 'none'; // hide momentarily
+        renderStage();
+      };
+    } else {
+      btnFinishCase.classList.remove('hidden');
+    }
+    
+  } else {
+    btnElement.style.background = 'var(--danger)';
+    btnElement.style.color = 'white';
+    btnElement.style.borderColor = 'var(--danger)';
+    simFeedback.classList.add('error');
+    feedbackTitle.innerText = "Hatalı Yaklaşım";
+    feedbackText.innerText = option.feedback;
+    
+    feedbackPoints.innerText = "-5 Puan!";
+    feedbackPoints.classList.remove('hidden');
+    feedbackPoints.style.color = 'var(--danger)';
+    pointsEarnedInCase -= 5;
+
+    // Wrong answer terminates the case early
+    btnFinishCase.classList.remove('hidden');
+  }
+}
+
 // Start Case
 function startCase(caseId) {
   currentCase = currentUser.solvedCases.find(c => c.id === caseId);
@@ -497,6 +562,8 @@ function startCase(caseId) {
 
   // Reset revealed data and buttons
   revealedClinicalData.innerHTML = '';
+  if (simTimeline) simTimeline.innerHTML = '';
+  if (simOptionsContainer) simOptionsContainer.style.display = 'block';
   
   if(btnShowVitals) {
     btnShowVitals.disabled = false;
@@ -546,95 +613,7 @@ function startCase(caseId) {
   renderStage();
 }
 
-function renderStage() {
-  simText.innerText = currentStage.text;
-  simOptions.innerHTML = '';
-  hideFeedback();
-  
-  currentStage.options.forEach((opt) => {
-    const btn = document.createElement('button');
-    btn.className = 'btn-option';
-    btn.innerText = opt.text;
-    btn.onclick = () => handleOptionClick(opt, btn);
-    simOptions.appendChild(btn);
-  });
-}
 
-function handleOptionClick(option, buttonElement) {
-  const buttons = simOptions.querySelectorAll('button');
-  buttons.forEach(btn => {
-    btn.disabled = true;
-    btn.style.cursor = 'not-allowed';
-    btn.style.opacity = '0.7';
-  });
-
-  if (option.isCorrect) {
-    buttonElement.classList.add('correct');
-    pointsEarnedInCase += 10;
-    awardPoints(10); // Give 10 pts
-    showFeedback(true, option.feedback, option.nextStage, 10);
-  } else {
-    buttonElement.classList.add('incorrect');
-    awardPoints(-5); // Penalty
-    pointsEarnedInCase -= 5;
-    showFeedback(false, option.feedback, null, -5);
-    
-    setTimeout(() => {
-      buttons.forEach(btn => {
-        if (!btn.classList.contains('incorrect')) {
-          btn.disabled = false;
-          btn.style.cursor = 'pointer';
-          btn.style.opacity = '1';
-        }
-      });
-    }, 1500);
-  }
-}
-
-function showFeedback(isCorrect, feedbackStr, nextStageId, ptsChanged) {
-  simFeedback.className = 'feedback-box show';
-  
-  feedbackPoints.classList.remove('hidden');
-  if (ptsChanged > 0) {
-    feedbackPoints.innerText = `+${ptsChanged} Puan`;
-    feedbackPoints.style.color = '#15803d'; // Green text
-  } else {
-    feedbackPoints.innerText = `${ptsChanged} Puan`;
-    feedbackPoints.style.color = '#991b1b'; // Red text
-  }
-
-  if (isCorrect) {
-    simFeedback.classList.add('correct-feedback');
-    feedbackTitle.innerText = 'Doğru Seçim';
-    
-    if (nextStageId !== null) {
-      btnNextStage.classList.remove('hidden');
-      btnFinishCase.classList.add('hidden');
-      btnNextStage.onclick = () => {
-        currentStage = currentCase.stages.find(s => s.stageId === nextStageId);
-        renderStage();
-      };
-    } else {
-      btnNextStage.classList.add('hidden');
-      btnFinishCase.classList.remove('hidden');
-      btnFinishCase.onclick = () => goBackToDashboard();
-    }
-  } else {
-    simFeedback.classList.add('incorrect-feedback');
-    feedbackTitle.innerText = 'Yanlış Seçim';
-    btnNextStage.classList.add('hidden');
-    btnFinishCase.classList.add('hidden');
-  }
-  
-  feedbackText.innerText = feedbackStr;
-}
-
-function hideFeedback() {
-  simFeedback.className = 'feedback-box';
-  btnNextStage.classList.add('hidden');
-  btnFinishCase.classList.add('hidden');
-  feedbackPoints.classList.add('hidden');
-}
 
 function goBackToDashboard() {
   viewSimulation.classList.add('hidden');

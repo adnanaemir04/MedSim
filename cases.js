@@ -1,282 +1,269 @@
-// MEDSIM - CLINICAL CASE DATABASE & GENERATOR
-
-const firstNamesM = ["Ali", "Kemal", "Hasan", "Mert", "Burak", "Emre", "Berk", "Can", "Kaan", "Ozan", "Hüseyin", "Cem"];
-const firstNamesF = ["Ayşe", "Fatma", "Zeynep", "Elif", "Merve", "Aslı", "Selin", "Gizem", "Büşra", "Ece", "Derya", "Cansu"];
-const lastNames = ["Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Yıldız", "Öztürk", "Arslan", "Doğan", "Kılıç", "Özdemir", "Çetin"];
+// Kapsamlı Tıbbi Vaka Üretim Motoru (Çok Aşamalı - Multi Stage)
 
 const deptsByYear = {
-  1: ["Anatomi", "Tıbbi Biyoloji", "Biyokimya"],
-  2: ["Fizyoloji", "Mikrobiyoloji", "Histoloji"],
-  3: ["Patoloji", "Farmakoloji", "Klinik Beceriler"],
-  4: ["Dahiliye", "Genel Cerrahi", "Pediatri", "Kadın Doğum"],
-  5: ["Ortopedi", "Psikiyatri", "KBB", "Göz", "Nöroloji"],
-  6: ["Acil Tıp", "Aile Hekimliği", "Kardiyoloji"]
+  1: ["Anatomi", "Tıbbi Biyoloji", "Histoloji"],
+  2: ["Fizyoloji", "Mikrobiyoloji", "Biyokimya"],
+  3: ["Farmakoloji", "Patoloji"],
+  4: ["Dahiliye", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum", "Pediatri"],
+  5: ["Ortopedi", "Göz Hastalıkları", "KBB", "Psikiyatri", "Dermatoloji"],
+  6: ["Acil Tıp", "Aile Hekimliği", "Yoğun Bakım"]
 };
 
-// Massive Department Database
-const deptData = {
+const medCasesData = {
+  // --- DÖNEM 1 ---
   "Anatomi": {
-    titles: ["Eklem ve Kas Değerlendirmesi", "Sinir Sıkışması Sendromu", "Kemik Kırığı Trasesi"],
-    actions: ["Kadavra diseksiyonu yap", "Kemik yapı analizi yap", "Kranial sinir trasesini incele", "Fasya planlarını ayır"],
-    correctPaths: [
+    titles: ["Kadavra Diseksiyonu: Boyun Üçgenleri", "Eklemler ve Hareket Açıklığı", "Kafa Çiftleri Lezyonu"],
+    tests: "Kadavra İncelemesi: Faringeal pleksus varyasyonu gözlendi. Başka bir anormallik saptanmadı.",
+    stages: [
       {
-        stage: "Karpal tünel sendromunda hangi yapının sıkıştığını öğrenmek istiyorsunuz.",
-        correct: "Kadavra diseksiyonu yap",
-        wrong: "Kranial sinir trasesini incele",
-        feedbackCorrect: "Doğru. Karpal tünelde Nervus Medianus trasesi kolda diseksiyonla daha iyi kavranır.",
-        feedbackWrong: "Yanlış. Karpal tünel üst ekstremite ile ilgilidir, kranial sinirlerle değil."
+        text: "Kadavra diseksiyonunda boyun ön üçgeninde bir kitle/varyasyon saptadınız. İlk adımınız nedir?",
+        options: [
+          { text: "Karotis kılıfını açıp içeriği incelerim.", isCorrect: true, feedback: "Doğru yaklaşım. V. Jugularis interna, A. carotis communis ve N. vagus incelenmeli." },
+          { text: "Kitleyi doğrudan eksize ederim.", isCorrect: false, feedback: "Hata: Önemli damar/sinir yapılarına zarar verebilirsiniz." }
+        ]
       },
       {
-        stage: "Humerus cisim kırığı olan hastada radial sinir hasarını değerlendirmek için anatomik komşulukları inceleyeceksiniz.",
-        correct: "Kemik yapı analizi yap",
-        wrong: "Fasya planlarını ayır",
-        feedbackCorrect: "Doğru. Sulcus nervi radialis humerus üzerindedir, kemik komşuluğu kritiktir.",
-        feedbackWrong: "Yanlış. Sinir doğrudan kemik oluğunda seyreder."
+        text: "Kılıfı açtığınızda N. Vagus'un seyri etrafında bir lenf nodu büyümesi gördünüz. Hangi lenf nodu grubu olabilir?",
+        options: [
+          { text: "Derin servikal lenf nodları", isCorrect: true, feedback: "Tebrikler. Jugulodigastrik nodlar da buradadır." },
+          { text: "Submental lenf nodları", isCorrect: false, feedback: "Hata: Submental nodlar çene altındadır, karotis kılıfında değil." }
+        ]
       }
     ]
   },
   "Tıbbi Biyoloji": {
-    titles: ["Organel Disfonksiyonu", "Genetik Mutasyon Analizi"],
-    actions: ["Mitokondriyal DNA analizi yap", "Hücre kültürü başlat", "Kromozom analizi (Karyotip) iste"],
-    correctPaths: [
+    titles: ["Hücre Döngüsü İnhibisyonu", "DNA Replikasyon Hatası"],
+    tests: "Karyotip Analizi: 46, XX. Genetik Sekanslama: p53 geninde delesyon şüphesi.",
+    stages: [
       {
-        stage: "Hücrede aşırı yorgunluk ve laktik asit birikimi mevcut. Oksijenli solunum durmuş.",
-        correct: "Mitokondriyal DNA analizi yap",
-        wrong: "Hücre kültürü başlat",
-        feedbackCorrect: "Doğru. Enerji metabolizması defektleri mitokondri kaynaklıdır.",
-        feedbackWrong: "Yanlış. Sorun doğrudan enerji metabolizmasında, genel bir kültürden ziyade hedeflenmiş analiz gerekir."
-      }
-    ]
-  },
-  "Biyokimya": {
-    titles: ["Enzim Eksikliği", "Metabolik Asidoz Paneli"],
-    actions: ["Arter Kan Gazı (AKG) Analizi", "Kandaki Laktat Düzeyini Ölç", "Karaciğer Enzimlerini (AST/ALT) Değerlendir"],
-    correctPaths: [
-      {
-        stage: "Aşırı alkol alımı sonrası başvuran hastada glukoneogenez inhibisyonu şüphesi var.",
-        correct: "Kandaki Laktat Düzeyini Ölç",
-        wrong: "Arter Kan Gazı (AKG) Analizi",
-        feedbackCorrect: "Doğru. Alkol metabolizması NADH artışına ve pirüvatın laktata dönüşmesine sebep olur.",
-        feedbackWrong: "Kısmen yanlış. AKG asidozu gösterir ancak laktat ölçümü spesifiktir."
-      }
-    ]
-  },
-  "Fizyoloji": {
-    titles: ["Kardiyak Debi Hesaplaması", "Sinaps İletim Hızı"],
-    actions: ["Frank-Starling Yasasını Değerlendir", "Aksiyon Potansiyelini Ölç", "Membran Dinlenim Potansiyelini Hesapla"],
-    correctPaths: [
-      {
-        stage: "Kalbe venöz dönüşün (Preload) artmasının atım hacmine etkisini gözlemliyorsunuz.",
-        correct: "Frank-Starling Yasasını Değerlendir",
-        wrong: "Membran Dinlenim Potansiyelini Hesapla",
-        feedbackCorrect: "Doğru. Kalp kası lifleri ne kadar gerilirse kasılma o kadar güçlü olur (Frank-Starling).",
-        feedbackWrong: "Yanlış. Elektrofizyolojik ölçüm mekanik gerilimi doğrudan açıklamaz."
-      }
-    ]
-  },
-  "Mikrobiyoloji": {
-    titles: ["Gram Boyama Analizi", "Kültür Antibiogram", "Viral Yük Testi"],
-    actions: ["Gram Boyama Yap", "Kan Kültürü Al", "PCR (Polimeraz Zincir Reaksiyonu) İste"],
-    correctPaths: [
-      {
-        stage: "Hastada ense sertliği, ateş ve fotofobi var. BOS (Beyin Omurilik Sıvısı) örneği alındı.",
-        correct: "Gram Boyama Yap",
-        wrong: "Kan Kültürü Al",
-        feedbackCorrect: "Doğru. Akut bakteriyel menenjitte BOS'un hızlı Gram boyaması hayat kurtarıcıdır.",
-        feedbackWrong: "Yanlış. Kan kültürü de alınmalıdır ancak BOS doğrudan enfeksiyon alanıdır, hızlı sonuç için boyama önceliklidir."
+        text: "İncelenen hücre kültüründe mitozun durmadığı ve p53 proteininin fonksiyon göstermediği fark edildi. Ne yaparsınız?",
+        options: [
+          { text: "Hücreleri apopitoza zorlayacak kaspaz aktivatörü eklerim.", isCorrect: true, feedback: "Doğru. Kanser hücresi modelini durdurmak için apopitoz yolağı uyarılmalıdır." },
+          { text: "G1 evresini hızlandıran büyüme faktörleri eklerim.", isCorrect: false, feedback: "Hata: Zaten durmayan mitozu daha da hızlandırırsınız." }
+        ]
       }
     ]
   },
   "Histoloji": {
-    titles: ["Doku Mikroskobisi", "Epitel Hücre Analizi"],
-    actions: ["H&E (Hematoksilen & Eozin) Boyama Yap", "Işık Mikroskobu ile İncele", "Elektron Mikroskobu İste"],
-    correctPaths: [
+    titles: ["Kemik İliği İncelemesi", "Epitel Hücre Analizi"],
+    tests: "Işık Mikroskobu: Çok katlı yassı epitelde keratinizasyon artışı izlendi.",
+    stages: [
       {
-        stage: "Mide mukozasından alınan biyopside paryetal hücrelerin asit salgılayan yapılarını inceleyeceksiniz.",
-        correct: "H&E (Hematoksilen & Eozin) Boyama Yap",
-        wrong: "Elektron Mikroskobu İste",
-        feedbackCorrect: "Doğru. Rutin histolojik incelemelerde H&E boyama standarttır.",
-        feedbackWrong: "Yanlış. Elektron mikroskobu çok spesifik ultrastrüktürler için kullanılır, ilk tercih değildir."
+        text: "Preparatta stratifiye skuamöz epitel izliyorsunuz. Ancak normalde keratinleşmemesi gereken bir bölgede keratin var. Bu nedir?",
+        options: [
+          { text: "Skuamöz Metaplazi", isCorrect: true, feedback: "Doğru. Sigara veya kronik irritasyon sonucu epitel değişimi olabilir." },
+          { text: "Basit Atrofi", isCorrect: false, feedback: "Hata: Atrofide hücre küçülür, tip değiştirip keratin üretmez." }
+        ]
+      }
+    ]
+  },
+
+  // --- DÖNEM 2 ---
+  "Fizyoloji": {
+    titles: ["Efor Testi: Oksijen Borçlanması", "Nöromüsküler Kavşak Bloğu"],
+    tests: "EMG (Elektromiyografi): Uyarılmış potansiyellerde ilerleyici amplitüd düşüklüğü izlendi.",
+    stages: [
+      {
+        text: "Hasta efor sırasında aşırı yorgunluk ve kas güçsüzlüğü yaşıyor. Egzersiz sonrasında gücü geri geliyor. Nöromüsküler kavşak hastalığı şüphesi var. Hangi test istenmeli?",
+        options: [
+          { text: "Asetilkolin Reseptör Antikoru (AChR-Ab) testi", isCorrect: true, feedback: "Doğru. Myastenia Gravis şüphesinde ilk istenmesi gereken antikor testidir." },
+          { text: "Kas Biyopsisi", isCorrect: false, feedback: "Hata: İlk aşamada çok invaziv ve spesifik olmayan bir yöntem." }
+        ]
+      },
+      {
+        text: "Test sonucu AChR antikoru pozitif geldi. Hastanın kas kasılmasını iyileştirmek için ne verirsiniz?",
+        options: [
+          { text: "Asetilkolinesteraz İnhibitörü (Neostigmin)", isCorrect: true, feedback: "Tebrikler. Kavşakta asetilkolin miktarını artırarak kasılmayı düzeltirsiniz." },
+          { text: "Botulinum Toksini", isCorrect: false, feedback: "Hata: Kas felcine yol açarak hastanın ölümüne sebep olabilirsiniz." }
+        ]
+      }
+    ]
+  },
+  "Mikrobiyoloji": {
+    titles: ["Kültür: Gram Pozitif Kok", "Viral Viral Yük Analizi"],
+    tests: "Gram Boyama: Üzüm salkımı şeklinde Gram (+) koklar. Katalaz: Pozitif, Koagülaz: Pozitif.",
+    stages: [
+      {
+        text: "Hastanın kan kültüründe Stafilokokus Aureus üredi. Hastanın ateşi var. İlk antibiyotik tercihiniz nedir?",
+        options: [
+          { text: "Ampirik Vankomisin başlarım", isCorrect: true, feedback: "Doğru. MRSA (Metisiline Dirençli S. Aureus) ihtimaline karşı Vankomisin iyi bir başlangıçtır." },
+          { text: "Sadece Parasetamol verir izlerim", isCorrect: false, feedback: "Hata: Bakteriyemisi olan hasta sepsise gidebilir." }
+        ]
+      },
+      {
+        text: "Antibiyogram sonucu geldi. Bakteri metisiline duyarlı (MSSA) çıktı. Tedaviyi nasıl değiştirirsiniz?",
+        options: [
+          { text: "Sefazolin veya Nafsilin'e geçerim", isCorrect: true, feedback: "Mükemmel. MSSA enfeksiyonlarında Vankomisine göre çok daha etkilidir." },
+          { text: "Vankomisin'e aynen devam ederim", isCorrect: false, feedback: "Kısmi Hata: Gerekli değildir, nefrotoksisite riski artar." }
+        ]
+      }
+    ]
+  },
+
+  // --- DÖNEM 3 ---
+  "Farmakoloji": {
+    titles: ["İlaç Zehirlenmesi: Parasetamol", "Digoksin Toksisitesi"],
+    tests: "Kan Düzeyi: Parasetamol seviyesi hepatotoksik sınırın çok üstünde. ALT/AST yükselmeye başlamış.",
+    stages: [
+      {
+        text: "Özkıyım amaçlı yüksek doz parasetamol alan hasta acile geldi. Spesifik antidotu nedir?",
+        options: [
+          { text: "N-Asetilsistein (NAC) infüzyonu", isCorrect: true, feedback: "Doğru. Glutatyon depolarını yenileyerek karaciğeri korur." },
+          { text: "Flumazenil", isCorrect: false, feedback: "Hata: Flumazenil benzodiazepin antidotudur." }
+        ]
       }
     ]
   },
   "Patoloji": {
-    titles: ["Malignite Şüphesi (Biyopsi)", "Enflamatuar Yanıt Analizi"],
-    actions: ["İmmünohistokimya (IHK) İste", "Frozen Section (Hızlı Kesit) Çalış", "Makroskobik İnceleme Yap"],
-    correctPaths: [
+    titles: ["Meme Biyopsisi: Kitle", "Gastrik Ülser İncelemesi"],
+    tests: "Biyopsi Raporu: İnvaziv Duktal Karsinom. Desmoplastik stroma reaksiyonu (+).",
+    stages: [
       {
-        stage: "Ameliyat sırasında cerrah lenf nodunda tümör metastazı olup olmadığını acil olarak bilmek istiyor.",
-        correct: "Frozen Section (Hızlı Kesit) Çalış",
-        wrong: "İmmünohistokimya (IHK) İste",
-        feedbackCorrect: "Doğru. Operasyon esnasında dakikalar içinde sonuç veren yöntem 'frozen' kesittir.",
-        feedbackWrong: "Yanlış. İHK günlerce sürer, acil ameliyat sırasında kullanılamaz."
+        text: "Memedeki kitleden yapılan biyopside İnvaziv Duktal Karsinom (Meme Kanseri) saptandı. Tümörün reseptör durumunu bilmek neden önemlidir?",
+        options: [
+          { text: "Hedefe yönelik (Hormon/Akıllı ilaç) tedaviyi planlamak için.", isCorrect: true, feedback: "Doğru. ER, PR ve HER2 durumuna göre tedavi belirlenir." },
+          { text: "Sadece hastanın yaşını tahmin etmek için.", isCorrect: false, feedback: "Hata: Patolojide reseptörler tedaviyi belirler." }
+        ]
       }
     ]
   },
-  "Farmakoloji": {
-    titles: ["İlaç Etkileşimi", "Doz Optimizasyonu", "Toksisite Yönetimi"],
-    actions: ["Sitokrom P450 Enzim Profiline Bak", "Yarı Ömür (T1/2) Hesapla", "Antidot Uygula"],
-    correctPaths: [
-      {
-        stage: "Parasetamol zehirlenmesi ile gelen hastada karaciğer yetmezliği riski var.",
-        correct: "Antidot Uygula",
-        wrong: "Yarı Ömür (T1/2) Hesapla",
-        feedbackCorrect: "Doğru. N-Asetil Sistein (NAC) parasetamolün spesifik antidotudur.",
-        feedbackWrong: "Yanlış. Akut zehirlenmede farmakokinetik hesaplamalarla vakit kaybedilemez."
-      }
-    ]
-  },
+
+  // --- DÖNEM 4 ---
   "Dahiliye": {
-    titles: ["Halsizlik ve Kilo Kaybı", "Karın Ağrısı ve Sarılık", "Diyabetik Ketoasidoz"],
-    actions: ["Geniş Biyokimya ve Hemogram", "Tiroid Fonksiyon Testleri iste", "HbA1c ve Kan Şekeri Ölç", "Batın USG İste"],
-    correctPaths: [
+    titles: ["Diyabetik Ketoasidoz (DKA)", "Akut Böbrek Hasarı", "Hipertiroidi Krizi"],
+    tests: "Kan Gazı: pH 7.15, HCO3 10. Biyokimya: Kan şekeri 450 mg/dL. İdrar: Keton (+++).",
+    stages: [
       {
-        stage: "Hasta son 3 ayda 10 kilo kaybetmiş, çarpıntı ve sıcağa tahammülsüzlük şikayeti var.",
-        correct: "Tiroid Fonksiyon Testleri iste",
-        wrong: "Batın USG İste",
-        feedbackCorrect: "Doğru. Hipertiroidi şüphesi nedeniyle TSH, sT3, sT4 bakılmalıdır.",
-        feedbackWrong: "Yanlış. Karın içi patolojiden çok endokrinolojik bir sorun düşündürüyor."
+        text: "Hasta bilinç bulanıklığı ve Kussmaul (derin/hızlı) solunumu ile acile getirildi. Ağzında aseton kokusu var. İlk adımınız nedir?",
+        options: [
+          { text: "Hızlıca İV Serum Fizyolojik (Sıvı) başlarım.", isCorrect: true, feedback: "Çok doğru. DKA hastaları şiddetli dehidratedir, ilk iş sıvı vermektir." },
+          { text: "Anında yüksek doz İnsülin yaparım.", isCorrect: false, feedback: "Hata: Yeterli sıvı vermeden insülin yaparsanız hasta hipovolemik şoka girer." }
+        ]
       },
       {
-        stage: "Hasta derin soluk alıp veriyor (Kussmaul), nefesinde aseton kokusu var. Bilinci uykuya meyilli.",
-        correct: "HbA1c ve Kan Şekeri Ölç",
-        wrong: "Geniş Biyokimya ve Hemogram",
-        feedbackCorrect: "Doğru. Diyabetik Ketoasidoz (DKA) tanısı için hızlı kan şekeri ölçümü ve kan gazı şarttır.",
-        feedbackWrong: "Kısmen yanlış. Biyokimya istenir ancak öncelikli spesifik şüphe DKA'dır."
-      }
-    ]
-  },
-  "Genel Cerrahi": {
-    titles: ["Akut Karın (Apandisit)", "Kolesistit Şüphesi", "Gastrointestinal Kanama"],
-    actions: ["Fizik Muayene (Rebound/Defans)", "Batın USG İste", "Nazogastrik Sonda Tak", "Acil Laparotomi Kararı Al"],
-    correctPaths: [
-      {
-        stage: "Sağ üst kadranda ağrı, ateş ve bulantı. Murphy bulgusu pozitif.",
-        correct: "Batın USG İste",
-        wrong: "Acil Laparotomi Kararı Al",
-        feedbackCorrect: "Doğru. Akut kolesistit tanısında ilk görüntüleme USG'dir.",
-        feedbackWrong: "Yanlış. Tanı kesinleşmeden ve tıbbi tedavi denenmeden direkt açık cerrahi yapılmaz."
+        text: "Sıvı resüsitasyonu sonrası hastanın kan şekeri düşmeye başladı ancak Potasyum (K) değeri 3.2 mEq/L'ye geriledi. Ne yaparsınız?",
+        options: [
+          { text: "İnsüline devam ederken sıvıya Potasyum (KCL) eklerim.", isCorrect: true, feedback: "Harika yönetim! İnsülin potasyumu hücre içine sokar, düşüşü engellemelisiniz." },
+          { text: "İnsülini tamamen kapatırım.", isCorrect: false, feedback: "Hata: İnsülini kapatırsanız ketoasidoz tablosu tekrar derinleşir." }
+        ]
       }
     ]
   },
   "Pediatri": {
-    titles: ["Büyüme Gelişme Geriliği", "Döküntülü Hastalık", "Solunum Sıkıntısı (Bronşiolit)"],
-    actions: ["Persentil Eğrilerini Değerlendir", "Aşılama Öyküsünü Sorgula", "Nebülize Bronkodilatör Ver", "Kan Kültürü İste"],
-    correctPaths: [
+    titles: ["Akut Bronşiolit", "Rotavirüs İshali", "Febril Konvülziyon"],
+    tests: "Bulgular: Burun kanadı solunumu (+), dinlemekle yaygın wheezing (hışıltı). Ateş 38.5.",
+    stages: [
       {
-        stage: "6 aylık bebek hırıltılı solunum ve burun akıntısı ile getirildi. Dinlemekle yaygın ronküs mevcut.",
-        correct: "Nebülize Bronkodilatör Ver",
-        wrong: "Kan Kültürü İste",
-        feedbackCorrect: "Doğru. Akut bronşiolit / viral enfeksiyon tablosunda solunum desteği esastır.",
-        feedbackWrong: "Yanlış. Ateşsiz, tipik viral solunum yolu enfeksiyonunda rutin kan kültürü alınmaz."
+        text: "6 aylık bebek, öksürük ve hırıltılı solunum ile getirildi. Beslenmesi bozulmuş, SpO2 %89. Solunum sıkıntısı var. İlk müdahale?",
+        options: [
+          { text: "Nemlendirilmiş Oksijen desteği başlarım ve burun aspirasyonu yaparım.", isCorrect: true, feedback: "Doğru. Bronşiolitte en önemli tedavi oksijenizasyon ve hidrasyondur." },
+          { text: "Damardan geniş spektrumlu antibiyotik başlarım.", isCorrect: false, feedback: "Hata: Bronşiolit %90 viraldir (RSV), antibiyotik faydasızdır." }
+        ]
       }
     ]
   },
-  "Kadın Doğum": {
-    titles: ["Gebelik Takibi (NST)", "Postpartum Kanama", "Ektopik Gebelik"],
-    actions: ["Fetal Monitörizasyon (NST) bağla", "Beta-hCG Kantitatif İste", "Transvajinal USG (TVUSG) Yap", "Oksitosin İnfüzyonu Başla"],
-    correctPaths: [
-      {
-        stage: "6 haftalık gebe sağ kasıkta şiddetli ağrı ve lekelenme ile başvurdu. Tansiyonu 90/60.",
-        correct: "Transvajinal USG (TVUSG) Yap",
-        wrong: "Fetal Monitörizasyon (NST) bağla",
-        feedbackCorrect: "Doğru. Dış gebelik (Ektopik) rüptürünü dışlamak için acil TVUSG gerekir.",
-        feedbackWrong: "Yanlış. NST 3. trimesterde (28. hafta sonrası) uygulanır."
-      }
-    ]
-  },
+
+  // --- DÖNEM 5 ---
   "Ortopedi": {
-    titles: ["Açık Kırık Yönetimi", "Osteoartrit (Kireçlenme)"],
-    actions: ["Direkt Röntgen (X-Ray) Çek", "Tetanoz Aşısı ve Antibiyotik Yap", "Eklem İçi Enjeksiyon Uygula"],
-    correctPaths: [
+    titles: ["Femur Boyun Kırığı", "Aşil Tendon Rüptürü", "Açık Kırık Yönetimi"],
+    tests: "Röntgen (X-Ray): Femur boynunda deplase kırık hattı izlendi. Alt ekstremitede kısalık ve dışa rotasyon mevcut.",
+    stages: [
       {
-        stage: "Motosiklet kazası sonrası tibia kemiği ciltten dışarı çıkmış şekilde acile getirildi.",
-        correct: "Tetanoz Aşısı ve Antibiyotik Yap",
-        wrong: "Direkt Röntgen (X-Ray) Çek",
-        feedbackCorrect: "Doğru. Açık kırıklar yüksek enfeksiyon riski taşır, görüntülemeden bile önce profilaksi başlanmalıdır.",
-        feedbackWrong: "Yanlış. Röntgen istenir ancak açık kırıkta ilk ve en acil müdahale antibiyoterapi ve yara örtülmesidir."
+        text: "75 yaşındaki hasta düşme sonrası kalça ağrısıyla geldi. Röntgen femur boyun kırığını doğruladı. Ne önerirsiniz?",
+        options: [
+          { text: "Ameliyat planlarım (Hemiartroplasti veya Vida).", isCorrect: true, feedback: "Doğru. Yaşlı hastalarda deplase femur boyun kırığı cerrahi gerektirir." },
+          { text: "Ağrı kesici verip eve gönderir, alçı yaparım.", isCorrect: false, feedback: "Hata: Femur boynu alçıyla iyileşmez, hasta yatağa bağımlı kalıp emboliden ölür." }
+        ]
       }
     ]
   },
-  "Nöroloji": {
-    titles: ["İskemik İnme (Felç)", "Epilepsi Nöbeti", "Multipl Skleroz Atak"],
-    actions: ["Kontrastsız Beyin BT İste", "EEG (Elektroensefalografi) Çek", "Lomber Ponksiyon (BOS) Yap", "Trombolitik Tedavi (tPA) Ver"],
-    correctPaths: [
+  "Psikiyatri": {
+    titles: ["Majör Depresif Bozukluk", "Akut Psikoz Atağı", "Bipolar Mizaç Bozukluğu"],
+    tests: "Ruhsal Durum Muayenesi (MSE): Duygudurum çökkün, affekt kısıtlı. Psikotik bulgu (hezeyan) saptanmadı. Suisidal (intihar) düşünceler mevcut.",
+    stages: [
       {
-        stage: "Hasta sağ kolda güç kaybı ve konuşma bozukluğu ile acile geldi. Şikayetler 1 saat önce başlamış.",
-        correct: "Kontrastsız Beyin BT İste",
-        wrong: "Trombolitik Tedavi (tPA) Ver",
-        feedbackCorrect: "Doğru. Kanama (Hemorajik inme) dışlanmadan kan sulandırıcı (tPA) verilemez. İlk adım BT'dir.",
-        feedbackWrong: "Yanlış. Kanamayı ekarte etmeden pıhtı eritici vermek hastayı öldürebilir."
+        text: "Hasta son 1 aydır hayattan zevk alamadığını, uyuyamadığını ve ölmek istediğini söylüyor. İlk adımınız nedir?",
+        options: [
+          { text: "İntihar riskini detaylı sorgular ve hastaneye yatış/yakın gözetim kararı alırım.", isCorrect: true, feedback: "Kritik Karar! Suisidal düşüncesi olan hasta acil psikiyatrik müdahale gerektirir." },
+          { text: "Tatile çıkmasını tavsiye ederim.", isCorrect: false, feedback: "Hata: Depresyon tıbbi bir hastalıktır, tavsiye ile geçmez." }
+        ]
+      },
+      {
+        text: "Hasta güvende. İlaç tedavisi başlanacak. Hangi grup ilacı ilk seçenek olarak düşünürsünüz?",
+        options: [
+          { text: "SSRI (Seçici Serotonin Gerialım İnhibitörü)", isCorrect: true, feedback: "Doğru. Yan etki profili düşük ve etkilidir (Örn: Sertralin, Essitalopram)." },
+          { text: "Eski nesil yüksek doz Antipsikotikler", isCorrect: false, feedback: "Hata: Psikozu olmayan hastaya gereksiz yan etki yüklemiş olursunuz." }
+        ]
       }
     ]
   },
+  "Dermatoloji": {
+    titles: ["Malign Melanom Şüphesi", "Atopik Dermatit", "Psoriazis (Sedef)"],
+    tests: "Dermatoskopi: Asimetrik, sınırları düzensiz, birden fazla renk barındıran pigmentli lezyon (Çap: 8mm).",
+    stages: [
+      {
+        text: "Hastanın sırtında giderek büyüyen ve rengi koyulaşan asimetrik bir ben var. Dermatoskopi melanom şüphesi uyandırdı. Yaklaşımınız?",
+        options: [
+          { text: "Lezyonu tamamen çıkararak (Eksizyonel Biyopsi) patolojiye gönderirim.", isCorrect: true, feedback: "Doğru. Melanom şüphesinde lezyon bütünüyle çıkarılıp incelenmelidir." },
+          { text: "Krem verip 6 ay sonra kontrole çağırırım.", isCorrect: false, feedback: "Hata: Malign Melanom çok agresif bir kanserdir, hasta kaybedilebilir." }
+        ]
+      }
+    ]
+  },
+
+  // --- DÖNEM 6 ---
   "Acil Tıp": {
-    titles: ["Travma Resüsitasyonu", "Anafilaksi Şoku"],
-    actions: ["Birincil Bakı (ABC) Değerlendir", "Adrenalin IM (Kas İçi) Uygula", "Acil Entübasyon Yap"],
-    correctPaths: [
+    titles: ["Akut Myokard Enfarktüsü (Kalp Krizi)", "Gastrointestinal Kanama", "Anafilaksi Şoku"],
+    tests: "EKG: V1-V4 derivasyonlarında belirgin ST segment elevasyonu. Troponin: Yükseliyor.",
+    stages: [
       {
-        stage: "Arı sokması sonrası hastanın dudakları şişti, hırıltılı soluyor ve tansiyonu 70/40 mmHg.",
-        correct: "Adrenalin IM (Kas İçi) Uygula",
-        wrong: "Birincil Bakı (ABC) Değerlendir",
-        feedbackCorrect: "Doğru. Anafilaktik şokta hayat kurtaran tek ilaç Adrenalin'dir (Epinefrin).",
-        feedbackWrong: "Kısmen doğru ancak klinik anafilaksi çok bariz, vakit kaybetmeden adrenalin yapılmalıdır."
-      }
-    ]
-  },
-  "Kardiyoloji": {
-    titles: ["Akut Koroner Sendrom", "Kalp Yetmezliği Alevlenmesi"],
-    actions: ["12 Derivasyonlu EKG Çek", "Troponin I İste", "Ekokardiyografi Yap", "Diüretik (Furosemid) IV Yap"],
-    correctPaths: [
+        text: "60 yaşında göğsünde baskı hisseden hasta terleyerek acile girdi. EKG'de Anteriyor STEMI (Kalp Krizi) gördünüz. İlk yapılması gereken medikal müdahale?",
+        options: [
+          { text: "Aspirin çiğnetir, Nitrat ve oksijen (gerekirse) veririm.", isCorrect: true, feedback: "Çok doğru! MONA-B (Morfin, Oksijen, Nitrat, Aspirin) yaklaşımı." },
+          { text: "Sırtına masaj yaptırıp ağrı kesici (İbuprofen) veririm.", isCorrect: false, feedback: "Ölümcül Hata: NSAID'ler kriz anında kontrendikedir." }
+        ]
+      },
       {
-        stage: "Bacaklarda ciddi ödem ve sırt üstü yatınca nefes darlığı (ortopne) şikayetiyle gelen yaşlı hasta.",
-        correct: "Diüretik (Furosemid) IV Yap",
-        wrong: "12 Derivasyonlu EKG Çek",
-        feedbackCorrect: "Doğru. Akut kalp yetmezliği / akciğer ödemi tablosunda ilk tedavi sıvı yükünü azaltmaktır.",
-        feedbackWrong: "Yanlış. EKG çekilir ancak hastanın solunum sıkıntısı sıvı yüklenmesine bağlıdır, müdahale önceliklidir."
-      }
-    ]
-  },
-  "default": {
-    titles: ["Genel Poliklinik Muayenesi", "Rutin Sağlık Taraması"],
-    actions: ["Detaylı Anamnez (Öykü) Al", "Sistemik Fizik Muayene Yap", "Rutin Kan Tahlili İste", "Kontrole Çağır"],
-    correctPaths: [
-      {
-        stage: "Belirsiz eklem ağrıları ve halsizlikle gelen hastada ilk adımınız nedir?",
-        correct: "Detaylı Anamnez (Öykü) Al",
-        wrong: "Rutin Kan Tahlili İste",
-        feedbackCorrect: "Doğru. Hastalıkların teşhisinde en değerli araç iyi alınmış bir öyküdür.",
-        feedbackWrong: "Yanlış. Ne aradığınızı bilmeden test istemek maliyetli ve kafa karıştırıcıdır."
+        text: "Acil medikal tedaviyi başlattınız. Hastanın tıkanan kalp damarını açmak için kesin (definitive) tedavisi nedir?",
+        options: [
+          { text: "Acil Koroner Anjiyografi (Primer PCI) laboratuvarına almak.", isCorrect: true, feedback: "Harika! Altın standart tedavi, tıkalı damarı stent ile açmaktır." },
+          { text: "Yatış verip 1 ay sonrasına poliklinik randevusu vermek.", isCorrect: false, feedback: "Hata: Dakikalar içinde kalp kası ölür (Time is muscle)." }
+        ]
       }
     ]
   }
 };
 
-// Global Empty Cases Array (Auth.js will fill it if needed, but it's generated dynamically now)
-let medCases = [];
+function generateRandomCase(yearParam, deptParam) {
+  const departmentsByYear = deptsByYear;
 
-function generateRandomCase(targetYear = null, targetDept = null) {
-  const isMale = Math.random() > 0.5;
-  const name = isMale ? firstNamesM[Math.floor(Math.random() * firstNamesM.length)] : firstNamesF[Math.floor(Math.random() * firstNamesF.length)];
+  let year = yearParam;
+  if (!year) {
+    const years = Object.keys(departmentsByYear);
+    year = years[Math.floor(Math.random() * years.length)];
+  }
+
+  let department = deptParam;
+  if (!department) {
+    const depts = departmentsByYear[year];
+    department = depts[Math.floor(Math.random() * depts.length)];
+  }
+  
+  // Fallback to "Dahiliye" if data doesn't exist yet
+  const deptData = medCasesData[department] || medCasesData["Dahiliye"];
+
+  const names = ["Ahmet", "Ayşe", "Mehmet", "Fatma", "Ali", "Zeynep", "Hasan", "Elif"];
+  const lastNames = ["Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Öztürk", "Kılıç"];
+  const name = names[Math.floor(Math.random() * names.length)];
   const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-  const age = Math.floor(Math.random() * 70) + 10;
-  
-  const year = targetYear || (Math.floor(Math.random() * 6) + 1);
-  const possibleDepts = deptsByYear[year];
-  const department = targetDept || possibleDepts[Math.floor(Math.random() * possibleDepts.length)];
+  const isMale = ["Ahmet", "Mehmet", "Ali", "Hasan"].includes(name);
+  const age = 15 + Math.floor(Math.random() * 65);
 
-  // Get department specific data or fallback to default
-  const deptSpecific = deptData[department] || deptData["default"];
-  
-  const title = deptSpecific.titles[Math.floor(Math.random() * deptSpecific.titles.length)];
-  const path = deptSpecific.correctPaths[Math.floor(Math.random() * deptSpecific.correctPaths.length)];
-  
+  const title = deptData.titles[Math.floor(Math.random() * deptData.titles.length)];
   const newId = Date.now() + Math.floor(Math.random() * 1000);
 
-  // --- PHASE 3: Generate Clinical Details ---
+  // Generate Vitals
   let isEmergency = (department === "Acil Tıp" || department === "Kardiyoloji" || department === "Genel Cerrahi");
-  
-  // Base Vitals
   let sysBP = 110 + Math.floor(Math.random() * 30);
   let diaBP = 70 + Math.floor(Math.random() * 20);
   let pulse = 60 + Math.floor(Math.random() * 30);
@@ -284,87 +271,38 @@ function generateRandomCase(targetYear = null, targetDept = null) {
   let resp = 14 + Math.floor(Math.random() * 6);
   let spo2 = 96 + Math.floor(Math.random() * 4);
 
-  if (isEmergency) {
-    if (Math.random() > 0.5) {
-      // Hypertensive / Tachycardic crisis
-      sysBP += 40 + Math.floor(Math.random() * 40);
-      diaBP += 20 + Math.floor(Math.random() * 20);
-      pulse += 30 + Math.floor(Math.random() * 50);
-      resp += 8 + Math.floor(Math.random() * 10);
-    } else {
-      // Shock / Hypotension
-      sysBP -= 30 + Math.floor(Math.random() * 20);
-      diaBP -= 20 + Math.floor(Math.random() * 20);
-      pulse += 40 + Math.floor(Math.random() * 40);
-      spo2 -= 5 + Math.floor(Math.random() * 10);
-    }
+  if (isEmergency && Math.random() > 0.5) {
+    sysBP += 40; diaBP += 20; pulse += 40;
   }
 
   // Generate Comorbidities
-  const comorbiditiesList = ["Hipertansiyon (HT)", "Tip 2 Diabetes Mellitus", "Koroner Arter Hastalığı (KAH)", "Astım", "Kronik Böbrek Yetmezliği (KBY)", "Bilinen hastalık yok", "Bilinen hastalık yok", "Bilinen hastalık yok"];
-  let numComorbids = Math.floor(Math.random() * 3); // 0 to 2 diseases
-  let history = [];
-  if (numComorbids === 0) history.push("Bilinen ek hastalık yok.");
-  else {
-    for(let i=0; i<numComorbids; i++) {
-      let r = comorbiditiesList[Math.floor(Math.random() * comorbiditiesList.length)];
-      if (!history.includes(r) && r !== "Bilinen hastalık yok") history.push(r);
-    }
-    if (history.length === 0) history.push("Bilinen ek hastalık yok.");
-  }
-  const historyText = history.join(", ");
+  const comorbiditiesList = ["Hipertansiyon (HT)", "Tip 2 Diyabet", "Koroner Arter Hastalığı", "Astım", "Bilinen ek hastalık yok"];
+  let historyText = comorbiditiesList[Math.floor(Math.random() * comorbiditiesList.length)];
 
-  // Generate Extra Profile Data
+  // Patient Profile
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-  const occupations = ["Öğretmen", "Mühendis", "İşçi", "Memur", "Serbest Meslek", "Emekli", "Ev Hanımı", "Öğrenci", "Şoför", "Esnaf"];
-  const bloodType = bloodTypes[Math.floor(Math.random() * bloodTypes.length)];
-  const occupation = age > 60 ? "Emekli" : (age < 22 ? "Öğrenci" : occupations[Math.floor(Math.random() * occupations.length)]);
-  const height = 150 + Math.floor(Math.random() * 40); // 150-190 cm
-  const weight = 50 + Math.floor(Math.random() * 50); // 50-100 kg
+  const occupations = ["Öğretmen", "Mühendis", "İşçi", "Memur", "Serbest Meslek", "Emekli", "Öğrenci", "Esnaf"];
 
-  // Generate Department Specific Lab Tests
-  let labName = "🔬 Tahlil & Görüntüleme İste";
-  let labResult = "";
-  switch(department) {
-    case "Kardiyoloji":
-      labResult = `<strong>EKG:</strong> ${Math.random() > 0.5 ? 'Sinüs Taşikardisi, ST değişiklikleri' : 'Normal Sinüs Ritmi'}<br><strong>EKO:</strong> EF %${40 + Math.floor(Math.random()*25)}<br><strong>Kardiyak Enzimler:</strong> Troponin ${Math.random() > 0.5 ? 'Yüksek' : 'Normal'}`;
-      break;
-    case "Dahiliye":
-      labResult = `<strong>Tam Kan Sayımı:</strong> WBC ${4000 + Math.floor(Math.random()*12000)}, Hgb ${9 + Math.floor(Math.random()*6)}<br><strong>Biyokimya:</strong> Glukoz ${80 + Math.floor(Math.random()*200)} mg/dL, Kreatinin ${0.8 + (Math.random()*1.5).toFixed(1)}`;
-      break;
-    case "Göğüs Hastalıkları":
-      labResult = `<strong>Akciğer Grafisi:</strong> ${Math.random() > 0.5 ? 'Bilateral infiltrasyon' : 'Doğal'}<br><strong>SFT:</strong> FEV1/FVC %${60 + Math.floor(Math.random()*30)}`;
-      break;
-    case "Pediatri":
-      labResult = `<strong>Persentil:</strong> Boy %${10 + Math.floor(Math.random()*80)}, Kilo %${10 + Math.floor(Math.random()*80)}<br><strong>CRP:</strong> ${Math.random() > 0.5 ? 'Yüksek' : 'Negatif'}`;
-      break;
-    case "Genel Cerrahi":
-    case "Acil Tıp":
-      labResult = `<strong>USG/Tomografi:</strong> ${Math.random() > 0.5 ? 'Serbest sıvı / inflamasyon izlendi' : 'Akut patoloji saptanmadı'}<br><strong>Hemogram:</strong> Lökositoz (+)`;
-      break;
-    case "Kadın Hastalıkları ve Doğum":
-      labResult = `<strong>Pelvik USG:</strong> ${Math.random() > 0.5 ? 'Endometrial kalınlaşma' : 'Doğal görünümlü overler'}<br><strong>Beta-hCG:</strong> ${Math.random() > 0.5 ? '>1000' : '<5'}`;
-      break;
-    case "Nöroloji":
-      labResult = `<strong>Kraniyal MR:</strong> ${Math.random() > 0.5 ? 'Akut iskemik enfarkt ile uyumlu alan' : 'İntrakraniyal kanama saptanmadı'}<br><strong>EEG:</strong> ${Math.random() > 0.5 ? 'Epileptiform aktivite' : 'Normal zemin aktivitesi'}`;
-      break;
-    default:
-      labResult = `<strong>Rutin Biyokimya:</strong> Özellik saptanmadı.<br><strong>Radyoloji:</strong> Doğal görünüm.`;
-  }
+  // Lab Tests
+  let labName = `🔬 ${department} Tahlilleri`;
+  let labResult = deptData.tests || "Rutin laboratuvar testleri normal sınırlar içinde.";
+
+  // Dynamic Stages Deep Copy
+  const stagesCopy = JSON.parse(JSON.stringify(deptData.stages));
 
   return {
     id: newId,
     title: title, 
     department: department,
-    year: year,
+    year: parseInt(year),
     patient: { 
       name: `${name} ${lastName}`, 
       age: age, 
       gender: isMale ? "Erkek" : "Kadın",
-      bloodType: bloodType,
-      occupation: occupation,
-      height: `${height} cm`,
-      weight: `${weight} kg`
+      bloodType: bloodTypes[Math.floor(Math.random() * bloodTypes.length)],
+      occupation: age > 60 ? "Emekli" : (age < 22 ? "Öğrenci" : occupations[Math.floor(Math.random() * occupations.length)]),
+      height: `${150 + Math.floor(Math.random() * 40)} cm`,
+      weight: `${50 + Math.floor(Math.random() * 50)} kg`
     },
     clinical: {
       vitals: {
@@ -380,37 +318,7 @@ function generateRandomCase(targetYear = null, targetDept = null) {
         result: labResult
       }
     },
-    description: `Klinik Vaka: ${age} yaşında, ${department} departmanına başvurdu. Şikayetleri değerlendiriniz.`,
-    stages: [
-      {
-        stageId: 1,
-        text: path.stage,
-        options: [
-          {
-            text: path.correct,
-            isCorrect: true,
-            feedback: path.feedbackCorrect,
-            nextStage: 2
-          },
-          {
-            text: path.wrong,
-            isCorrect: false,
-            feedback: path.feedbackWrong
-          }
-        ]
-      },
-      {
-        stageId: 2,
-        text: "Müdahaleniz sonrasında hastanın durumu stabil ve tedavisi planlandı. Vaka tamamlandı.",
-        options: [
-          {
-            text: "Vakayı Bitir",
-            isCorrect: true,
-            feedback: "Başarılı klinik yönetim. Hastayı taburcu edebilirsiniz.",
-            nextStage: null
-          }
-        ]
-      }
-    ]
+    description: `Klinik Vaka: ${age} yaşında, ${department} departmanına başvurdu.`,
+    stages: stagesCopy
   };
 }
