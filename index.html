@@ -98,13 +98,17 @@
       </main>
 
       <!-- View: Leaderboard -->
-      <main id="view-leaderboard" class="glass-panel hidden">
-        <h2>🏆 Liderlik Tablosu (En İyi Hekimler)</h2>
-        <p style="margin-top: 0.5rem; color: #475569;">Vakaları doğru analiz edip çözerek puan toplayın ve sıralamada yükselin.</p>
+      <main id="view-leaderboard" class="glass-panel hidden" style="background: transparent; border: none; box-shadow: none; padding: 0;">
         
-        <div class="leaderboard-container" style="margin-top: 2rem;">
+        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 20px; padding: 3rem 2rem; position: relative; overflow: hidden; color: white; text-align: center; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+          <div style="position: absolute; top: -50px; right: -50px; font-size: 15rem; opacity: 0.05; transform: rotate(15deg);">🏆</div>
+          <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Şeref Kürsüsü</h2>
+          <p style="color: #94a3b8; font-size: 1.1rem;">En iyi teşhisleri koyan ve en çok hayat kurtaran hekimler.</p>
+        </div>
+        
+        <div class="leaderboard-container">
           <!-- Modern List Container -->
-          <div id="leaderboard-body" class="lb-list">
+          <div id="leaderboard-body" class="lb-list-creative">
             <!-- Injected by JS -->
           </div>
         </div>
@@ -175,34 +179,62 @@
                 </div>
               </div>
 
-              <div style="background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0;">
-                <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">Hesap Ayarları</h3>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); border-radius: 16px; padding: 2rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                  <span style="font-size: 1.5rem; background: #e0f2fe; color: #0284c7; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">⚙️</span>
+                  <h3 style="color: #1e293b; font-size: 1.25rem; font-weight: 700; margin: 0;">Sistem Ayarları</h3>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                   
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #475569; font-weight: 500;">Karanlık Mod (Yakında)</span>
-                    <input type="checkbox" id="setting-dark-mode" style="transform: scale(1.2);">
+                  <label class="setting-row">
+                    <div>
+                      <div class="setting-title">Gece Modu</div>
+                      <div class="setting-desc">Karanlık ortamlar için göz yormayan tema.</div>
+                    </div>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="setting-dark-mode">
+                      <span class="slider"></span>
+                    </div>
+                  </label>
+                  
+                  <label class="setting-row">
+                    <div>
+                      <div class="setting-title">Klinik Ses Efektleri</div>
+                      <div class="setting-desc">Monitör ve uyarı seslerini aktif eder.</div>
+                    </div>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="setting-sound" checked>
+                      <span class="slider"></span>
+                    </div>
+                  </label>
+                  
+                  <label class="setting-row">
+                    <div>
+                      <div class="setting-title">Haftalık Rapor Bildirimleri</div>
+                      <div class="setting-desc">Gelişiminizi e-posta ile alın.</div>
+                    </div>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="setting-email" checked>
+                      <span class="slider"></span>
+                    </div>
+                  </label>
+                  
+                  <label class="setting-row">
+                    <div>
+                      <div class="setting-title">Gizli Profil Modu</div>
+                      <div class="setting-desc">Liderlik tablosunda anonim olarak görünün.</div>
+                    </div>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="setting-privacy">
+                      <span class="slider"></span>
+                    </div>
+                  </label>
+                  
+                  <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <button id="btn-reset-account" class="btn-danger-outline">⚠️ İlerlemeyi Sıfırla</button>
+                    <button id="btn-logout-profile" class="btn-primary" style="background: #1e293b; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">🔒 Güvenli Çıkış</button>
                   </div>
-                  
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #475569; font-weight: 500;">Oyun İçi Ses Efektleri</span>
-                    <input type="checkbox" id="setting-sound" checked style="transform: scale(1.2);">
-                  </div>
-                  
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #475569; font-weight: 500;">E-posta Bildirimleri</span>
-                    <input type="checkbox" id="setting-email" checked style="transform: scale(1.2);">
-                  </div>
-                  
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #475569; font-weight: 500;">Profilimi Gizle</span>
-                    <input type="checkbox" id="setting-privacy" style="transform: scale(1.2);">
-                  </div>
-                  
-                  <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0.5rem 0;">
-                  
-                  <button id="btn-reset-account" style="background: #fff1f2; border: 1px solid #fda4af; color: #e11d48; padding: 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">Hesabı Sıfırla (İlerlemeyi Sil)</button>
-                  <button id="btn-logout-profile" class="btn-primary" style="background: #ef4444; width: 100%;">Güvenli Çıkış Yap</button>
                 </div>
               </div>
               
@@ -299,6 +331,12 @@
       </main>
 
     </div>
+
+    <!-- Archive FAB (Global) -->
+    <button id="fab-archive-btn" class="fab-archive-creative">
+      <div class="fab-icon">📁</div>
+      <div class="fab-text">Geçmiş Vakalar</div>
+    </button>
   </div>
 
   <script src="auth.js"></script>

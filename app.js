@@ -175,12 +175,19 @@ if (navLeaderboard) {
 
 const userProfileSidebar = document.querySelector('.user-profile-sidebar');
 if (userProfileSidebar) {
-  userProfileSidebar.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
-    navAll.classList.remove('active');
-    navLeaderboard.classList.remove('active');
-    showProfile();
-  });
+  userProfileSidebar.addEventListener('click', showProfileView);
+}
+
+const fabArchiveBtn = document.getElementById('fab-archive-btn');
+if (fabArchiveBtn) {
+  fabArchiveBtn.addEventListener('click', showProfileView);
+}
+
+function showProfileView() {
+  document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
+  navAll.classList.remove('active');
+  navLeaderboard.classList.remove('active');
+  showProfile();
 }
 }
 
@@ -216,10 +223,22 @@ function renderDashboard() {
   }
 
   // Header Generate Button Logic
+  btnHeaderGenerate.style.display = 'inline-block';
+  btnHeaderGenerate.style.width = 'auto';
+  
   if (currentFilterDept === 'all') {
-    btnHeaderGenerate.style.display = 'none';
+    btnHeaderGenerate.innerText = `➕ Yeni Rastgele Vaka Başlat`;
+    btnHeaderGenerate.onclick = () => {
+      if (typeof generateRandomCase === 'function') {
+        let targetYear = (Math.floor(Math.random() * 6) + 1);
+        let possibleDepts = deptsByYear[targetYear];
+        let targetDept = possibleDepts[Math.floor(Math.random() * possibleDepts.length)];
+        const newCase = generateRandomCase(targetYear, targetDept);
+        recordSolvedCase(newCase);
+        startCase(newCase.id);
+      }
+    };
   } else {
-    btnHeaderGenerate.style.display = 'inline-block';
     btnHeaderGenerate.innerText = `➕ Yeni ${currentFilterDept} Vakası Başlat`;
     btnHeaderGenerate.onclick = () => {
       if (typeof generateRandomCase === 'function') {
