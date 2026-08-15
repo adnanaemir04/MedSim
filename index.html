@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tıp Fakültesi Vaka Simülatörü</title>
+  <meta name="description" content="Tıp öğrencileri için interaktif klinik vaka simülasyon platformu.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  
+  <div class="app-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <h1>MedSim</h1>
+      <div class="nav-menu" id="nav-menu">
+        <div class="nav-item active" id="nav-all" data-year="all" data-dept="all">
+          <span class="icon">📁</span> Tüm Vakalar
+        </div>
+        
+        <div class="accordion-container" id="dynamic-sidebar">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+      <button class="btn-generate" id="btn-generate">+ Yeni Vaka Üret</button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      
+      <!-- View: Dashboard (Home) -->
+      <main id="view-dashboard" class="glass-panel">
+        <h2 id="dashboard-title">Tüm Vakalar</h2>
+        <p style="margin-top: 0.5rem; color: #475569;">Çözmek istediğiniz klinik vakayı seçin.</p>
+        
+        <div id="case-list" class="selection-grid">
+          <!-- Cases will be injected here by JS -->
+        </div>
+      </main>
+
+      <!-- View: Case Simulation -->
+      <main id="view-simulation" class="glass-panel hidden">
+        <div class="case-header">
+          <div>
+            <span id="sim-department" class="badge" style="margin-top: 0;">Departman</span>
+            <h2 id="sim-title" style="margin-top: 0.5rem;">Vaka Başlığı</h2>
+          </div>
+          <button id="btn-back" class="btn-option" style="padding: 0.5rem 1rem;">Geri Dön</button>
+        </div>
+
+        <!-- Patient Profile Box -->
+        <div class="patient-profile">
+          <div class="profile-item">
+            <span class="profile-label">Hasta Adı</span>
+            <span class="profile-value" id="pat-name">Ahmet Y.</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-label">Yaş</span>
+            <span class="profile-value" id="pat-age">65</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-label">Cinsiyet</span>
+            <span class="profile-value" id="pat-gender">Erkek</span>
+          </div>
+        </div>
+
+        <div id="sim-content">
+          <p id="sim-text" class="case-text">
+            <!-- Stage text goes here -->
+          </p>
+
+          <div id="sim-options" class="options-container">
+            <!-- Options injected here -->
+          </div>
+
+          <div id="sim-feedback" class="feedback-box">
+            <h4 id="feedback-title">Geri Bildirim</h4>
+            <p id="feedback-text">Açıklama metni...</p>
+            <button id="btn-next-stage" class="btn-next hidden">Devam Et</button>
+            <button id="btn-finish-case" class="btn-next hidden">Vakayı Bitir</button>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <script src="cases.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
