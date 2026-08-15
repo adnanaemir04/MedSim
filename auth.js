@@ -151,13 +151,38 @@ function awardPoints(points) {
   updateSidebarProfile();
 }
 
-function recordSolvedCase(caseObj) {
+function addNewCase(caseObj) {
   if (!currentUser) return;
-  // If not already in solved list, add it
-  const alreadySolved = currentUser.solvedCases.find(c => c.id === caseObj.id);
-  if (!alreadySolved) {
+  // If not already in list, add it
+  const alreadyExists = currentUser.solvedCases.find(c => c.id === caseObj.id);
+  if (!alreadyExists) {
+    caseObj.isSolved = false; // Mark it as unsolved initially
     currentUser.solvedCases.push(caseObj);
-    saveUsers();
+    
+    // Save to local storage
+    const users = JSON.parse(localStorage.getItem('medsim_users')) || [];
+    const idx = users.findIndex(u => u.username === currentUser.username);
+    if (idx !== -1) {
+      users[idx] = currentUser;
+      localStorage.setItem('medsim_users', JSON.stringify(users));
+    }
+  }
+}
+
+function finishAndScoreCase(caseId, earnedPoints) {
+  if (!currentUser) return;
+  const c = currentUser.solvedCases.find(c => c.id === caseId);
+  if (c) {
+    c.isSolved = true;
+    currentUser.points += earnedPoints;
+    
+    // Save to local storage
+    const users = JSON.parse(localStorage.getItem('medsim_users')) || [];
+    const idx = users.findIndex(u => u.username === currentUser.username);
+    if (idx !== -1) {
+      users[idx] = currentUser;
+      localStorage.setItem('medsim_users', JSON.stringify(users));
+    }
   }
 }
 

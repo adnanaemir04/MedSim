@@ -119,11 +119,9 @@ function buildSidebar() {
       if (!isOpening) {
         body.classList.remove('hidden-acc');
         header.classList.add('expanded');
-        showFAB(year);
       } else {
         body.classList.add('hidden-acc');
         header.classList.remove('expanded');
-        hideFAB();
       }
     });
   });
@@ -144,8 +142,9 @@ function buildSidebar() {
       goBackToDashboard();
     });
   });
+}
 
- // Navigation Event Listeners
+// Navigation Event Listeners
 if (navAll) {
   navAll.addEventListener('click', () => {
     document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
@@ -188,7 +187,6 @@ function showProfileView() {
   navAll.classList.remove('active');
   navLeaderboard.classList.remove('active');
   showProfile();
-}
 }
 
 // Initialize Dashboard
@@ -234,8 +232,8 @@ function renderDashboard() {
         let possibleDepts = deptsByYear[targetYear];
         let targetDept = possibleDepts[Math.floor(Math.random() * possibleDepts.length)];
         const newCase = generateRandomCase(targetYear, targetDept);
-        recordSolvedCase(newCase);
-        startCase(newCase.id);
+        addNewCase(newCase);
+        renderDashboard(); // Re-render to show new case
       }
     };
   } else {
@@ -243,20 +241,39 @@ function renderDashboard() {
     btnHeaderGenerate.onclick = () => {
       if (typeof generateRandomCase === 'function') {
         const newCase = generateRandomCase(currentFilterYear === 'all' ? null : parseInt(currentFilterYear), currentFilterDept);
-        recordSolvedCase(newCase);
-        startCase(newCase.id);
+        addNewCase(newCase);
+        renderDashboard(); // Re-render to show new case
       }
     };
   }
   
-  // Dashboard Info Message instead of cards
-  const currentDeptText = currentFilterDept === 'all' ? (currentFilterYear === 'all' ? 'Tüm hastane bölümleri' : `${currentFilterYear}. Sınıf bölümleri`) : currentFilterDept;
-  caseList.innerHTML = `
-    <div style="background: white; border-radius: 12px; padding: 3rem; text-align: center; border: 1px dashed #cbd5e1; grid-column: 1 / -1;">
-      <h3 style="color: #334155; font-size: 1.25rem; margin-bottom: 0.5rem;">${dashboardTitle.innerText} Seçildi</h3>
-      <p style="color: #64748b; font-size: 1rem;">Bu sayfada ${currentDeptText} ile ilgili vaka bilgilerine ulaşabilirsiniz. Sağ üstteki butonu kullanarak yeni bir vakaya başlayabilirsiniz.</p>
-    </div>
-  `;
+  // Render Dashboard Cases
+  if (filteredCases.length === 0) {
+    caseList.innerHTML = `
+      <div style="background: white; border-radius: 12px; padding: 3rem; text-align: center; border: 1px dashed #cbd5e1; grid-column: 1 / -1;">
+        <h3 style="color: #334155; font-size: 1.25rem; margin-bottom: 0.5rem;">${dashboardTitle.innerText} Seçildi</h3>
+        <p style="color: #64748b; font-size: 1rem;">Bu sayfada ${currentFilterDept === 'all' ? 'Tüm hastane bölümleri' : currentFilterDept} ile ilgili vaka bilgilerine ulaşabilirsiniz. Sağ üstteki butonu kullanarak yeni bir vakaya başlayabilirsiniz.</p>
+      </div>
+    `;
+  } else {
+    filteredCases.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const isSolved = c.isSolved;
+      
+      card.innerHTML = `
+        <div>
+          <h3>${c.title}</h3>
+          <p style="margin-bottom: 0.5rem; font-size: 0.85rem;"><span class="badge">${c.department}</span> ${c.year}. Sınıf</p>
+          ${isSolved ? '<p style="color: var(--success); font-weight: 600; font-size: 0.8rem;">✓ Çözüldü</p>' : '<p style="color: var(--primary); font-weight: 600; font-size: 0.8rem;">⌛ Devam Ediyor</p>'}
+        </div>
+        <div style="margin-top: 1rem;">
+          <button class="btn-primary" style="width: 100%;" onclick="startCase('${c.id}')">${isSolved ? 'Tekrar İncele' : 'Vakaya Başla'}</button>
+        </div>
+      `;
+      caseList.appendChild(card);
+    });
+  }
 
 
   // Build Profile Archive Grid
@@ -406,35 +423,55 @@ if (btnReportError) {
 
 
 if(btnShowVitals) {
-  btnShowVitals.addEventListener('click', () => {
-    if (!currentCase || !currentCase.clinical) return;
-    
-    // Append to revealed data area
-    const box = document.createElement('div');
-    box.style.cssText = "background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; border-left: 4px solid #ef4444;";
-    box.innerHTML = `
-      <h4 style="margin-bottom: 0.75rem; color: #ef4444;">Vital Bulgular</h4>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem;">
-        <div><span style="font-size:0.75rem; color:#64748b; display:block;">TANSİYON</span><span style="font-weight:bold; color:#0f172a;">${currentCase.clinical.vitals.bp}</span></div>
-        <div><span style="font-size:0.75rem; color:#64748b; display:block;">NABIZ</span><span style="font-weight:bold; color:#0f172a;">${currentCase.clinical.vitals.pulse}</span></div>
-        <div><span style="font-size:0.75rem; color:#64748b; display:block;">ATEŞ</span><span style="font-weight:bold; color:#0f172a;">${currentCase.clinical.vitals.temp}</span></div>
-        <div><span style="font-size:0.75rem; color:#64748b; display:block;">SOLUNUM</span><span style="font-weight:bold; color:#0f172a;">${currentCase.clinical.vitals.resp}</span></div>
-        <div><span style="font-size:0.75rem; color:#64748b; display:block;">SpO2</span><span style="font-weight:bold; color:#0ea5e9;">${currentCase.clinical.vitals.spo2}</span></div>
-      </div>
-    `;
-    revealedClinicalData.appendChild(box);
-    
-    // Disable button
-    btnShowVitals.disabled = true;
-    btnShowVitals.style.opacity = '0.5';
-    btnShowVitals.style.cursor = 'not-allowed';
-    btnShowVitals.innerText = "✓ Vital Bulgulara Bakıldı";
-  });
+  btnShowVitals.onclick = () => {
+    if (currentCase && currentCase.clinical && currentCase.clinical.vitals) {
+      if (typeof playAudio === 'function') playAudio('monitor');
+      
+      // DYNAMIC SCORING
+      if (typeof actionsTakenThisCase !== 'undefined') {
+        if (!actionsTakenThisCase.includes('vitals')) {
+          actionsTakenThisCase.push('vitals');
+          const p = (actionsTakenThisCase.length === 1) ? 10 : 5;
+          pointsEarnedInCase += p;
+          showToast(`+${p} Puan (Vital Bulgular)`);
+        }
+      }
+
+      const v = currentCase.clinical.vitals;
+      const box = document.createElement('div');
+      box.style.cssText = "background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; border-left: 4px solid #f59e0b;";
+      box.innerHTML = `
+        <h4 style="margin-bottom: 0.5rem; color: #f59e0b;">Vital Bulgular</h4>
+        <ul style="list-style: none; color: #475569; font-size: 0.95rem;">
+          <li>🩸 Tansiyon: ${v.bp}</li>
+          <li>💓 Nabız: ${v.hr} / dk</li>
+          <li>🌡️ Ateş: ${v.temp} °C</li>
+          <li>🫁 Solunum: ${v.rr} / dk</li>
+          <li>💨 SpO2: ${v.spo2}</li>
+        </ul>
+      `;
+      revealedClinicalData.appendChild(box);
+      btnShowVitals.disabled = true;
+      btnShowVitals.style.opacity = '0.5';
+      btnShowVitals.style.cursor = 'not-allowed';
+      btnShowVitals.innerText = `✓ Vital Bulgular İncelendi`;
+    }
+  };
 }
 
 if(btnShowHistory) {
   btnShowHistory.addEventListener('click', () => {
     if (!currentCase || !currentCase.clinical) return;
+    
+    // DYNAMIC SCORING
+    if (typeof actionsTakenThisCase !== 'undefined') {
+      if (!actionsTakenThisCase.includes('history')) {
+        actionsTakenThisCase.push('history');
+        const p = (actionsTakenThisCase.length === 1) ? 10 : 5;
+        pointsEarnedInCase += p;
+        showToast(`+${p} Puan (Özgeçmiş)`);
+      }
+    }
     
     const box = document.createElement('div');
     box.style.cssText = "background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; border-left: 4px solid var(--primary);";
@@ -443,7 +480,7 @@ if(btnShowHistory) {
       <p style="color: #475569; margin:0; line-height: 1.5;">${currentCase.clinical.history}</p>
     `;
     revealedClinicalData.appendChild(box);
-
+    
     btnShowHistory.disabled = true;
     btnShowHistory.style.opacity = '0.5';
     btnShowHistory.style.cursor = 'not-allowed';
@@ -488,74 +525,89 @@ function renderStage() {
     const btn = document.createElement('button');
     btn.className = 'btn-option';
     btn.innerText = opt.text;
-    btn.onclick = () => handleOptionClick(opt, btn);
+    const currentStageIndex = currentCase.stages.indexOf(currentStage);
+    btn.onclick = () => {
+            if (btn.disabled) return;
+            
+            if (opt.isCorrect) {
+              btn.classList.add('btn-correct');
+              btn.innerHTML += ' <span>✓</span>';
+              if(typeof playAudio === 'function') playAudio('success'); // Play success sound
+              pointsEarnedInCase += 15;
+              showToast('+15 Puan (Doğru Karar)');
+              
+              if (currentStageIndex === currentCase.stages.length - 1) {
+                // Finale
+                const msg = document.createElement('div');
+                msg.className = 'timeline-stage pulse-green';
+                msg.style.cssText = "background: #dcfce7; color: #166534; margin-top: 1.5rem;";
+                msg.innerHTML = `<h4>Tebrikler!</h4><p>Vakayı başarıyla tamamladınız ve hastayı iyileştirdiniz.</p>`;
+                simTimeline.appendChild(msg);
+                btnNextStage.classList.add('hidden');
+                
+                // Finish button
+                btnFinishCase.classList.remove('hidden');
+                btnFinishCase.onclick = () => {
+                  finishAndScoreCase(currentCase.id, pointsEarnedInCase);
+                  goBackToDashboard();
+                };
+              } else {
+                btnNextStage.classList.remove('hidden');
+              }
+              
+            } else {
+              btn.classList.add('btn-wrong');
+              btn.innerHTML += ' <span>✗</span>';
+              if(typeof playAudio === 'function') playAudio('error'); // Play error sound
+              pointsEarnedInCase -= 10;
+              showToast('-10 Puan (Hatalı Karar)');
+              
+              const msg = document.createElement('div');
+              msg.className = 'timeline-stage pulse-red';
+              msg.style.cssText = "background: #fef2f2; color: #991b1b; margin-top: 1.5rem;";
+              msg.innerHTML = `<h4>Hatalı Karar</h4><p>${opt.explanation || 'Bu seçenek hasta için uygun değildi.'}</p>`;
+              simTimeline.appendChild(msg);
+
+              // Early termination due to wrong answer
+              btnFinishCase.classList.remove('hidden');
+              btnFinishCase.onclick = () => {
+                  finishAndScoreCase(currentCase.id, pointsEarnedInCase);
+                  goBackToDashboard();
+              };
+            }
+            
+            // Disable other choices
+            Array.from(simOptions.children).forEach(b => { b.disabled = true; });
+          };
     simOptions.appendChild(btn);
   });
 }
 
-function handleOptionClick(option, btnElement) {
-  // Disable all options
-  const buttons = simOptions.querySelectorAll('button');
-  buttons.forEach(b => {
-    b.disabled = true;
-    b.style.cursor = 'not-allowed';
-    b.style.opacity = '0.7';
-  });
-
-  simFeedback.style.display = 'block';
-  simFeedback.classList.remove('success', 'error');
-
-  if (option.isCorrect) {
-    btnElement.style.background = 'var(--success)';
-    btnElement.style.color = 'white';
-    btnElement.style.borderColor = 'var(--success)';
-    simFeedback.classList.add('success');
-    feedbackTitle.innerText = "Doğru Karar!";
-    feedbackText.innerText = option.feedback;
-    
-    // Animate points
-    feedbackPoints.innerText = "+10 Puan!";
-    feedbackPoints.classList.remove('hidden');
-    feedbackPoints.style.color = 'var(--success)';
-    pointsEarnedInCase += 10;
-    
-    // Check if next stage exists
-    const currentIndex = currentCase.stages.indexOf(currentStage);
-    if (currentIndex < currentCase.stages.length - 1) {
-      btnNextStage.classList.remove('hidden');
-      btnNextStage.onclick = () => {
-        currentStage = currentCase.stages[currentIndex + 1];
-        if (simOptionsContainer) simOptionsContainer.style.display = 'none'; // hide momentarily
-        renderStage();
-      };
-    } else {
-      btnFinishCase.classList.remove('hidden');
-    }
-    
-  } else {
-    btnElement.style.background = 'var(--danger)';
-    btnElement.style.color = 'white';
-    btnElement.style.borderColor = 'var(--danger)';
-    simFeedback.classList.add('error');
-    feedbackTitle.innerText = "Hatalı Yaklaşım";
-    feedbackText.innerText = option.feedback;
-    
-    feedbackPoints.innerText = "-5 Puan!";
-    feedbackPoints.classList.remove('hidden');
-    feedbackPoints.style.color = 'var(--danger)';
-    pointsEarnedInCase -= 5;
-
-    // Wrong answer terminates the case early
-    btnFinishCase.classList.remove('hidden');
-  }
+// UI Toast helper for dynamic points
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = "position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: 12px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 9999; animation: fadeInSlideUp 0.3s ease forwards;";
+  if (msg.includes('-')) t.style.background = 'var(--danger)';
+  t.innerText = msg;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => t.remove(), 300);
+  }, 2000);
 }
+
+// Variables for Dynamic Scoring
+let actionsTakenThisCase = [];
 
 // Start Case
 function startCase(caseId) {
   currentCase = currentUser.solvedCases.find(c => c.id === caseId);
   if (!currentCase) return;
 
-  pointsEarnedInCase = 0; // reset
+  // Reset Scoring
+  pointsEarnedInCase = 0;
+  actionsTakenThisCase = [];
   currentStage = currentCase.stages[0];
   
   viewDashboard.classList.add('hidden');
@@ -649,3 +701,128 @@ btnBack.onclick = goBackToDashboard;
 
 // Run Init
 buildSidebar();
+renderDashboard();
+
+/* -------------------------------------------
+ * SETTINGS & DARK MODE LOGIC
+ * ------------------------------------------- */
+const settingDarkMode = document.getElementById('setting-dark-mode');
+const settingSound = document.getElementById('setting-sound');
+
+// Load settings from localStorage
+const isDarkMode = localStorage.getItem('medsim_darkmode') === 'true';
+let soundEnabled = localStorage.getItem('medsim_sound') !== 'false'; // default true
+
+if (isDarkMode) {
+  document.body.classList.add('dark-mode');
+  if (settingDarkMode) settingDarkMode.checked = true;
+}
+
+if (settingSound) {
+  settingSound.checked = soundEnabled;
+}
+
+if (settingDarkMode) {
+  settingDarkMode.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('medsim_darkmode', 'true');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('medsim_darkmode', 'false');
+    }
+  });
+}
+
+if (settingSound) {
+  settingSound.addEventListener('change', (e) => {
+    soundEnabled = e.target.checked;
+    localStorage.setItem('medsim_sound', soundEnabled);
+  });
+}
+
+
+/* -------------------------------------------
+ * WEB AUDIO API SYNTHESIZER
+ * ------------------------------------------- */
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playAudio(type) {
+  if (!soundEnabled) return;
+  initAudio();
+  
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  
+  const now = audioCtx.currentTime;
+  
+  switch(type) {
+    case 'click':
+      // Short, subtle click
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(600, now);
+      oscillator.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+      gainNode.gain.setValueAtTime(0.3, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+      oscillator.start(now);
+      oscillator.stop(now + 0.05);
+      break;
+      
+    case 'success':
+      // Cheerful chime
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(440, now); // A4
+      oscillator.frequency.setValueAtTime(554.37, now + 0.1); // C#5
+      oscillator.frequency.setValueAtTime(659.25, now + 0.2); // E5
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.2, now + 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      oscillator.start(now);
+      oscillator.stop(now + 0.5);
+      break;
+      
+    case 'error':
+      // Low buzz
+      oscillator.type = 'sawtooth';
+      oscillator.frequency.setValueAtTime(150, now);
+      oscillator.frequency.linearRampToValueAtTime(100, now + 0.2);
+      gainNode.gain.setValueAtTime(0.2, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      oscillator.start(now);
+      oscillator.stop(now + 0.2);
+      break;
+      
+    case 'monitor':
+      // Hospital EKG beep
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, now);
+      gainNode.gain.setValueAtTime(0.3, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      oscillator.start(now);
+      oscillator.stop(now + 0.15);
+      break;
+  }
+}
+
+// Bind click sounds globally
+document.addEventListener('click', (e) => {
+  // Only play click sound on interactive elements if they don't trigger specific sounds
+  if (e.target.tagName === 'BUTTON' || e.target.closest('.nav-item') || e.target.closest('.nav-item-sub')) {
+    if (!e.target.closest('#btn-show-vitals') && !e.target.closest('#btn-show-history')) {
+      playAudio('click');
+    }
+  }
+});
