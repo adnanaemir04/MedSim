@@ -12,21 +12,71 @@
 </head>
 <body>
   
-  <div class="app-layout">
+  <!-- View: Authentication (Login/Register) -->
+  <div id="view-auth" class="auth-container">
+    <div class="auth-box glass-panel">
+      <h1 class="auth-title">MedSim</h1>
+      <p class="auth-subtitle">Klinik Simülasyon Platformuna Hoş Geldiniz</p>
+      
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active">Giriş Yap</button>
+        <button id="tab-register" class="auth-tab">Kayıt Ol</button>
+      </div>
+      
+      <form id="auth-form" class="auth-form">
+        <div class="form-group">
+          <label for="auth-email">E-posta Adresi</label>
+          <input type="email" id="auth-email" required placeholder="ornek@ogrenci.edu.tr">
+        </div>
+        
+        <div class="form-group" id="group-nickname" style="display: none;">
+          <label for="auth-nickname">Kullanıcı Adı (Nickname)</label>
+          <input type="text" id="auth-nickname" placeholder="Liderlik tablosunda görünecek isim">
+        </div>
+
+        <div class="form-group">
+          <label for="auth-password">Şifre</label>
+          <input type="password" id="auth-password" required placeholder="Şifreniz">
+        </div>
+        <button type="submit" id="btn-auth-submit" class="btn-primary">Giriş Yap</button>
+        <p id="auth-error" class="auth-error hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="app-layout" class="app-layout hidden">
     
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <h1>MedSim</h1>
+
+      <div class="user-profile-sidebar">
+        <div class="user-avatar">👨‍⚕️</div>
+        <div class="user-info">
+          <span id="sidebar-username">Kullanıcı</span>
+          <span id="sidebar-points" class="user-points">0 Puan</span>
+        </div>
+      </div>
+
       <div class="nav-menu" id="nav-menu">
         <div class="nav-item active" id="nav-all" data-year="all" data-dept="all">
-          <span class="icon">📁</span> Tüm Vakalar
+          <span class="icon">📁</span> Tüm Vakalarım
+        </div>
+
+        <div class="nav-item" id="nav-leaderboard">
+          <span class="icon">🏆</span> Liderlik Tablosu
         </div>
         
         <div class="accordion-container" id="dynamic-sidebar">
           <!-- Injected by JS -->
         </div>
+
       </div>
-      <button class="btn-generate" id="btn-generate">+ Yeni Vaka Üret</button>
+
+      <div class="sidebar-bottom-actions">
+        <button class="btn-generate" id="btn-generate">+ Yeni Vaka Üret</button>
+        <button class="btn-logout" id="btn-logout">Çıkış Yap</button>
+      </div>
     </aside>
 
     <!-- Main Content Area -->
@@ -34,11 +84,35 @@
       
       <!-- View: Dashboard (Home) -->
       <main id="view-dashboard" class="glass-panel">
-        <h2 id="dashboard-title">Tüm Vakalar</h2>
-        <p style="margin-top: 0.5rem; color: #475569;">Çözmek istediğiniz klinik vakayı seçin.</p>
+        <div class="dashboard-header-top">
+          <h2 id="dashboard-title">Tüm Vakalarım</h2>
+        </div>
+        <p style="margin-top: 0.5rem; color: #475569;">Daha önce çözdüğünüz vakaları veya yeni ürettiğiniz vakaları buradan görebilirsiniz.</p>
         
         <div id="case-list" class="selection-grid">
           <!-- Cases will be injected here by JS -->
+        </div>
+      </main>
+
+      <!-- View: Leaderboard -->
+      <main id="view-leaderboard" class="glass-panel hidden">
+        <h2>🏆 Liderlik Tablosu (En İyi Hekimler)</h2>
+        <p style="margin-top: 0.5rem; color: #475569;">Vakaları doğru analiz edip çözerek puan toplayın ve sıralamada yükselin.</p>
+        
+        <div class="leaderboard-container">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Sıra</th>
+                <th>Doktor / Öğrenci</th>
+                <th>Çözülen Vaka</th>
+                <th>Puan</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
         </div>
       </main>
 
@@ -80,8 +154,11 @@
           <div id="sim-feedback" class="feedback-box">
             <h4 id="feedback-title">Geri Bildirim</h4>
             <p id="feedback-text">Açıklama metni...</p>
-            <button id="btn-next-stage" class="btn-next hidden">Devam Et</button>
-            <button id="btn-finish-case" class="btn-next hidden">Vakayı Bitir</button>
+            <div class="feedback-actions">
+              <span id="feedback-points" class="points-badge hidden">+10 Puan!</span>
+              <button id="btn-next-stage" class="btn-next hidden">Devam Et</button>
+              <button id="btn-finish-case" class="btn-next hidden">Vakayı Bitir</button>
+            </div>
           </div>
         </div>
       </main>
@@ -89,6 +166,7 @@
     </div>
   </div>
 
+  <script src="auth.js"></script>
   <script src="cases.js"></script>
   <script src="app.js"></script>
 </body>

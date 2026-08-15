@@ -1,12 +1,15 @@
 // DOM Elements
 const viewDashboard = document.getElementById('view-dashboard');
 const viewSimulation = document.getElementById('view-simulation');
+const viewLeaderboard = document.getElementById('view-leaderboard');
 const caseList = document.getElementById('case-list');
 const dashboardTitle = document.getElementById('dashboard-title');
 const dynamicSidebar = document.getElementById('dynamic-sidebar');
+const leaderboardBody = document.getElementById('leaderboard-body');
 
 // Sidebar Elements
 const navAll = document.getElementById('nav-all');
+const navLeaderboard = document.getElementById('nav-leaderboard');
 const btnGenerate = document.getElementById('btn-generate');
 
 // Simulation DOM Elements
@@ -23,12 +26,14 @@ const feedbackText = document.getElementById('feedback-text');
 const btnNextStage = document.getElementById('btn-next-stage');
 const btnFinishCase = document.getElementById('btn-finish-case');
 const btnBack = document.getElementById('btn-back');
+const feedbackPoints = document.getElementById('feedback-points');
 
 // State
 let currentCase = null;
 let currentStage = null;
 let currentFilterYear = 'all';
 let currentFilterDept = 'all';
+let pointsEarnedInCase = 0; // track points in current case
 
 // Build Dynamic Sidebar
 function buildSidebar() {
@@ -56,10 +61,6 @@ function buildSidebar() {
         <div class="nested-body hidden-acc" id="nested-body-${year}">
     `;
     
-    // "Tüm Dersler" for this year
-    html += `<div class="nav-item-sub" data-year="${year}" data-dept="all">Tüm ${year}. Sınıf Vakaları</div>`;
-
-    // Departments for this year
     if (deptsByYear[year]) {
       deptsByYear[year].forEach(dept => {
         html += `<div class="nav-item-sub" data-year="${year}" data-dept="${dept}">${dept}</div>`;
@@ -72,7 +73,7 @@ function buildSidebar() {
     `;
   }
 
-  html += `</div>`; // end accordion-body
+  html += `</div>`;
   dynamicSidebar.innerHTML = html;
 
   // Add Listeners
@@ -87,11 +88,9 @@ function buildSidebar() {
   const nestedHeaders = document.querySelectorAll('.nested-header');
   nestedHeaders.forEach(header => {
     header.addEventListener('click', (e) => {
-      // Toggle this body
       const year = header.getAttribute('data-year');
       const body = document.getElementById(`nested-body-${year}`);
       
-      // Close others (optional, for accordion feel)
       document.querySelectorAll('.nested-body').forEach(b => {
         if(b !== body) b.classList.add('hidden-acc');
       });
@@ -99,51 +98,95 @@ function buildSidebar() {
         if(h !== header) h.classList.remove('expanded');
       });
 
-      body.classList.toggle('hidden-acc');
-      header.classList.toggle('expanded');
+      const isOpening = !body.classList.contains('hidden-acc');
+      if (!isOpening) {
+        body.classList.remove('hidden-acc');
+        header.classList.add('expanded');
+        showFAB(year);
+      } else {
+        body.classList.add('hidden-acc');
+        header.classList.remove('expanded');
+        hideFAB();
+      }
     });
   });
 
   const subItems = document.querySelectorAll('.nav-item-sub');
   subItems.forEach(item => {
     item.addEventListener('click', () => {
-      // Clear active from all
       document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
       navAll.classList.remove('active');
+      navLeaderboard.classList.remove('active');
       
-      // Set active
       item.classList.add('active');
       
       currentFilterYear = item.getAttribute('data-year');
       currentFilterDept = item.getAttribute('data-dept');
-      
-      if (currentFilterDept === 'all') {
-        dashboardTitle.innerText = `${currentFilterYear}. Sınıf Vakaları`;
-      } else {
-        dashboardTitle.innerText = `${currentFilterDept} (${currentFilterYear}. Sınıf)`;
-      }
+      dashboardTitle.innerText = `${currentFilterDept} (${currentFilterYear}. Sınıf)`;
 
-      goBackToDashboard(); // goes to dashboard and renders
+      goBackToDashboard();
     });
   });
 
   // All Cases Listener
   navAll.addEventListener('click', () => {
     document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
+    navLeaderboard.classList.remove('active');
     navAll.classList.add('active');
     currentFilterYear = 'all';
     currentFilterDept = 'all';
-    dashboardTitle.innerText = "Tüm Vakalar";
+    dashboardTitle.innerText = "Tüm Vakalarım";
+    hideFAB();
     goBackToDashboard();
   });
+
+  // Leaderboard Listener
+  navLeaderboard.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
+    navAll.classList.remove('active');
+    navLeaderboard.classList.add('active');
+    hideFAB();
+    showLeaderboard();
+  });
+}
+
+// FAB Logic
+function showFAB(year) {
+  let fab = document.getElementById('fab-button');
+  if (!fab) {
+    fab = document.createElement('button');
+    fab.id = 'fab-button';
+    fab.className = 'fab-button';
+    document.body.appendChild(fab);
+  }
+  fab.innerHTML = `<span>📁</span> Tüm ${year}. Sınıf Vakaları`;
+  fab.onclick = () => {
+    document.querySelectorAll('.nav-item-sub').forEach(i => i.classList.remove('active'));
+    navAll.classList.remove('active');
+    navLeaderboard.classList.remove('active');
+    currentFilterYear = year;
+    currentFilterDept = 'all';
+    dashboardTitle.innerText = `${year}. Sınıf Vakaları`;
+    goBackToDashboard();
+  };
+  fab.style.display = 'flex';
+}
+
+function hideFAB() {
+  const fab = document.getElementById('fab-button');
+  if (fab) fab.style.display = 'none';
 }
 
 
 // Initialize Dashboard
 function renderDashboard() {
+  if (!currentUser) return;
+
   caseList.innerHTML = '';
   
-  let filteredCases = medCases;
+  // Show cases ONLY from currentUser's solvedCases
+  let filteredCases = currentUser.solvedCases;
+  
   if (currentFilterYear !== 'all') {
     filteredCases = filteredCases.filter(c => c.year === parseInt(currentFilterYear));
   }
@@ -152,11 +195,13 @@ function renderDashboard() {
   }
 
   if (filteredCases.length === 0) {
-    caseList.innerHTML = '<p style="color: #94a3b8; font-style: italic;">Bu seçim için henüz vaka bulunmuyor.</p>';
+    const msg = document.createElement('p');
+    msg.style.cssText = "color: #94a3b8; font-style: italic; width: 100%;";
+    msg.innerText = "Bu seçim için henüz çözdüğünüz/ürettiğiniz vaka bulunmuyor. Sol alttaki 'Yeni Vaka Üret' butonuyla başlayabilirsiniz.";
+    caseList.appendChild(msg);
     return;
   }
   
-  // Sort descending by ID so newest is first
   const sortedCases = [...filteredCases].sort((a,b) => b.id - a.id);
 
   sortedCases.forEach(c => {
@@ -181,35 +226,61 @@ function renderDashboard() {
   });
 }
 
+function showLeaderboard() {
+  viewDashboard.classList.add('hidden');
+  viewSimulation.classList.add('hidden');
+  viewLeaderboard.classList.remove('hidden');
+
+  leaderboardBody.innerHTML = '';
+  const leaders = getLeaderboard();
+  
+  leaders.forEach((u, i) => {
+    const tr = document.createElement('tr');
+    if (u.email === currentUser.email) {
+      tr.style.background = '#e0f2fe';
+      tr.style.fontWeight = 'bold';
+    }
+    tr.innerHTML = `
+      <td>#${i + 1}</td>
+      <td>${u.nickname}</td>
+      <td>${u.solvedCases ? u.solvedCases.length : 0}</td>
+      <td style="color: #0ea5e9;">${u.points}</td>
+    `;
+    leaderboardBody.appendChild(tr);
+  });
+}
+
 // Generate Case Logic
 btnGenerate.addEventListener('click', () => {
   if (typeof generateRandomCase === 'function') {
-    // Pass current filters so we generate a relevant case if we are browsing a specific category
     let targetYear = currentFilterYear === 'all' ? (Math.floor(Math.random() * 6) + 1) : parseInt(currentFilterYear);
-    
     let possibleDepts = deptsByYear[targetYear];
     let targetDept = currentFilterDept === 'all' ? possibleDepts[Math.floor(Math.random() * possibleDepts.length)] : currentFilterDept;
 
     const newCase = generateRandomCase(targetYear, targetDept);
-    medCases.push(newCase);
     
-    renderDashboard();
+    // Auto-save to user's profile and run immediately
+    recordSolvedCase(newCase);
+    
+    // Jump straight into the new case
+    startCase(newCase.id);
   }
 });
 
 
 // Start Case
 function startCase(caseId) {
-  currentCase = medCases.find(c => c.id === caseId);
+  // Find from user's solved cases (or medCases as fallback, but users only see what they generated/solved)
+  currentCase = currentUser.solvedCases.find(c => c.id === caseId);
   if (!currentCase) return;
 
-  currentStage = currentCase.stages[0]; // Start with first stage
+  pointsEarnedInCase = 0; // reset
+  currentStage = currentCase.stages[0];
   
-  // Switch Views
   viewDashboard.classList.add('hidden');
+  viewLeaderboard.classList.add('hidden');
   viewSimulation.classList.remove('hidden');
   
-  // Render Case Header & Profile
   simDepartment.innerText = `${currentCase.department} (${currentCase.year}. Sınıf)`;
   simTitle.innerText = currentCase.title;
   patName.innerText = currentCase.patient.name;
@@ -219,13 +290,12 @@ function startCase(caseId) {
   renderStage();
 }
 
-// Render Current Stage
 function renderStage() {
   simText.innerText = currentStage.text;
   simOptions.innerHTML = '';
   hideFeedback();
   
-  currentStage.options.forEach((opt, index) => {
+  currentStage.options.forEach((opt) => {
     const btn = document.createElement('button');
     btn.className = 'btn-option';
     btn.innerText = opt.text;
@@ -234,7 +304,6 @@ function renderStage() {
   });
 }
 
-// Handle Option Click
 function handleOptionClick(option, buttonElement) {
   const buttons = simOptions.querySelectorAll('button');
   buttons.forEach(btn => {
@@ -245,10 +314,14 @@ function handleOptionClick(option, buttonElement) {
 
   if (option.isCorrect) {
     buttonElement.classList.add('correct');
-    showFeedback(true, option.feedback, option.nextStage);
+    pointsEarnedInCase += 10;
+    awardPoints(10); // Give 10 pts
+    showFeedback(true, option.feedback, option.nextStage, 10);
   } else {
     buttonElement.classList.add('incorrect');
-    showFeedback(false, option.feedback, null);
+    awardPoints(-5); // Penalty
+    pointsEarnedInCase -= 5;
+    showFeedback(false, option.feedback, null, -5);
     
     setTimeout(() => {
       buttons.forEach(btn => {
@@ -262,10 +335,18 @@ function handleOptionClick(option, buttonElement) {
   }
 }
 
-// Show Feedback
-function showFeedback(isCorrect, feedbackStr, nextStageId) {
+function showFeedback(isCorrect, feedbackStr, nextStageId, ptsChanged) {
   simFeedback.className = 'feedback-box show';
   
+  feedbackPoints.classList.remove('hidden');
+  if (ptsChanged > 0) {
+    feedbackPoints.innerText = `+${ptsChanged} Puan`;
+    feedbackPoints.style.color = '#15803d'; // Green text
+  } else {
+    feedbackPoints.innerText = `${ptsChanged} Puan`;
+    feedbackPoints.style.color = '#991b1b'; // Red text
+  }
+
   if (isCorrect) {
     simFeedback.classList.add('correct-feedback');
     feedbackTitle.innerText = 'Doğru Seçim';
@@ -282,7 +363,6 @@ function showFeedback(isCorrect, feedbackStr, nextStageId) {
       btnFinishCase.classList.remove('hidden');
       btnFinishCase.onclick = () => goBackToDashboard();
     }
-
   } else {
     simFeedback.classList.add('incorrect-feedback');
     feedbackTitle.innerText = 'Yanlış Seçim';
@@ -293,25 +373,23 @@ function showFeedback(isCorrect, feedbackStr, nextStageId) {
   feedbackText.innerText = feedbackStr;
 }
 
-// Hide Feedback
 function hideFeedback() {
   simFeedback.className = 'feedback-box';
   btnNextStage.classList.add('hidden');
   btnFinishCase.classList.add('hidden');
+  feedbackPoints.classList.add('hidden');
 }
 
-// Go Back to Dashboard
 function goBackToDashboard() {
   viewSimulation.classList.add('hidden');
+  viewLeaderboard.classList.add('hidden');
   viewDashboard.classList.remove('hidden');
   currentCase = null;
   currentStage = null;
   renderDashboard();
 }
 
-// Event Listeners
 btnBack.onclick = goBackToDashboard;
 
 // Run Init
 buildSidebar();
-renderDashboard();
