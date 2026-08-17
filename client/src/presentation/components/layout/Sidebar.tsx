@@ -27,6 +27,15 @@ const iconMap: Record<string, React.ReactNode> = {
   'Yoğun Bakım': <Brain size={14} />
 };
 
+const yearIconMap: Record<number, React.ReactNode> = {
+  1: <Dna size={16} />,
+  2: <Microscope size={16} />,
+  3: <Stethoscope size={16} />,
+  4: <Activity size={16} />,
+  5: <BrainCircuit size={16} />,
+  6: <GraduationCap size={16} />
+};
+
 interface SidebarProps {
   user: User | null;
   onLogout: () => void;
@@ -90,32 +99,35 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
                     style={{ 
                       width: '100%', 
                       display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'space-between', 
+                      flexDirection: 'column',
                       padding: '0.8rem 1.2rem',
-                      background: selectedClass === num ? 'linear-gradient(90deg, rgba(79, 70, 229, 0.2), rgba(6, 182, 212, 0.1))' : 'rgba(255, 255, 255, 0.03)',
-                      border: selectedClass === num ? '1px solid rgba(6, 182, 212, 0.4)' : '1px solid rgba(255, 255, 255, 0.05)',
+                      background: selectedClass === num ? 'linear-gradient(90deg, rgba(79, 70, 229, 0.25), rgba(6, 182, 212, 0.15))' : 'rgba(79, 70, 229, 0.05)',
+                      border: selectedClass === num ? '1px solid rgba(6, 182, 212, 0.3)' : '1px solid rgba(255, 255, 255, 0.05)',
+                      borderLeft: selectedClass === num ? '4px solid var(--secondary)' : '4px solid rgba(79, 70, 229, 0.4)',
                       borderRadius: '12px',
                       color: selectedClass === num ? 'var(--primary)' : 'var(--text-main)',
-                      fontWeight: selectedClass === num ? 800 : 500,
-                      boxShadow: selectedClass === num ? '0 0 20px rgba(6, 182, 212, 0.2)' : 'none',
+                      fontWeight: selectedClass === num ? 800 : 600,
+                      boxShadow: selectedClass === num ? '0 0 20px rgba(6, 182, 212, 0.2)' : '0 2px 5px rgba(0,0,0,0.05)',
                       transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                       cursor: 'pointer',
                       zIndex: 2,
                       position: 'relative'
                     }}
                   >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', letterSpacing: '1px' }}>
-                      <Activity size={16} style={{ color: selectedClass === num ? 'var(--secondary)' : 'var(--text-muted)' }} />
-                      DÖNEM {num}
-                    </span>
-                    <div style={{ 
-                      width: '12px', height: '12px', borderRadius: '50%', 
-                      background: selectedClass === num ? 'var(--secondary)' : 'transparent', 
-                      border: `2px solid ${selectedClass === num ? 'var(--secondary)' : 'var(--text-muted)'}`,
-                      boxShadow: selectedClass === num ? '0 0 10px var(--secondary)' : 'none',
-                      transition: 'all 0.3s' 
-                    }} />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', letterSpacing: '1px' }}>
+                        <div style={{ color: selectedClass === num ? 'var(--secondary)' : 'var(--text-muted)' }}>
+                          {yearIconMap[num]}
+                        </div>
+                        <span style={{ textShadow: selectedClass === num ? '0 0 10px rgba(6, 182, 212, 0.5)' : 'none' }}>DÖNEM {num}</span>
+                      </span>
+                      <div style={{ 
+                        width: '8px', height: '8px', borderRadius: '50%', 
+                        background: selectedClass === num ? 'var(--secondary)' : 'transparent', 
+                        boxShadow: selectedClass === num ? '0 0 10px var(--secondary)' : 'none',
+                        transition: 'all 0.3s' 
+                      }} />
+                    </div>
                   </button>
 
                   {/* Floating Medical Nodes Grid */}
