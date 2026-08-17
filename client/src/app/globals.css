@@ -146,6 +146,8 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
 /* FLOATING TOPBAR */
@@ -165,7 +167,7 @@ body {
 }
 
 .flying-orb {
-  position: fixed;
+  position: absolute;
   border-radius: 50%;
   pointer-events: none;
   z-index: -1;
@@ -174,7 +176,12 @@ body {
 .moon-orb-container {
   width: 600px;
   height: 600px;
+  top: -50px;
+  right: -220px;
+  transform: scale(0.85);
+  opacity: 0.6;
   animation: moonFlyToButton 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  will-change: transform, top, right;
 }
 
 .sun-orb {

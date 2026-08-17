@@ -23,13 +23,61 @@ export default function Dashboard({ filterSubject, onStartCase }: DashboardProps
     setShowGenerateModal(false);
   };
 
+  const getYearForSubject = (subject: string) => {
+    for (const [year, subjects] of Object.entries(deptsByYear)) {
+      if ((subjects as string[]).includes(subject)) {
+        return `Dönem ${year}`;
+      }
+    }
+    return 'Uzmanlık';
+  };
+
+  const yearBadgeStyle = {
+    padding: '0.35rem 0.85rem', 
+    background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05))', 
+    border: '1px solid rgba(14, 165, 233, 0.25)', 
+    color: '#0ea5e9', 
+    borderRadius: '20px', 
+    fontSize: '0.75rem', 
+    fontWeight: 800,
+    letterSpacing: '0.5px',
+    display: 'flex',
+    alignItems: 'center',
+    boxShadow: '0 2px 10px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255,255,255,0.1)'
+  };
+
+  const subjectBadgeStyle = {
+    padding: '0.35rem 0.85rem', 
+    background: 'linear-gradient(135deg, var(--primary), var(--secondary))', 
+    color: 'white', 
+    borderRadius: '20px', 
+    fontSize: '0.75rem', 
+    fontWeight: 700,
+    boxShadow: '0 4px 15px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.2)'
+  };
+
   return (
     <main className="glass-panel" style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0 }}>
           {filterSubject ? `${filterSubject} Vakaları` : 'Tüm Vakalarım'}
         </h2>
-        <button className="btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem' }} onClick={() => setShowGenerateModal(true)}>
+        <button 
+          className="btn-primary" 
+          style={{ 
+            padding: '1rem 2rem', 
+            fontSize: '1.2rem', 
+            fontWeight: 800, 
+            borderRadius: '30px', 
+            boxShadow: '0 10px 25px rgba(79, 70, 229, 0.4)',
+            letterSpacing: '0.5px',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            cursor: 'pointer'
+          }} 
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 15px 30px rgba(79, 70, 229, 0.6)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(79, 70, 229, 0.4)'; }}
+          onClick={() => setShowGenerateModal(true)}
+        >
           + Yeni Vaka Üret
         </button>
       </div>
@@ -52,8 +100,13 @@ export default function Dashboard({ filterSubject, onStartCase }: DashboardProps
             }}
             onClick={() => onStartCase(c.subject, -1, c.data)}
           >
-            <div style={{ display: 'inline-block', padding: '0.4rem 0.8rem', background: 'var(--primary)', color: 'white', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, width: 'fit-content' }}>
-              {c.subject} (Yapay Zeka)
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <div style={yearBadgeStyle}>
+                {getYearForSubject(c.subject)}
+              </div>
+              <div style={subjectBadgeStyle}>
+                {c.subject}
+              </div>
             </div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{c.data.text.split('.')[0]}...</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', flex: 1 }}>
@@ -89,8 +142,13 @@ export default function Dashboard({ filterSubject, onStartCase }: DashboardProps
               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
               onClick={() => onStartCase(subject, index)}
             >
-              <div style={{ display: 'inline-block', padding: '0.4rem 0.8rem', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--primary)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, width: 'fit-content' }}>
-                {subject}
+              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <div style={yearBadgeStyle}>
+                  {getYearForSubject(subject)}
+                </div>
+                <div style={subjectBadgeStyle}>
+                  {subject}
+                </div>
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{title}</h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', flex: 1 }}>
