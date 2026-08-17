@@ -59,11 +59,17 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
 
   return (
     <aside className="sidebar">
-      {/* MedSim Logo */}
-      <div className="topbar-logo" style={{ padding: '0 0.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: '2.4rem', fontWeight: 900, background: 'linear-gradient(90deg, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-1px' }}>
-          MedSim
-        </span>
+      <div className="topbar-logo" style={{ padding: '0 0.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div 
+          onClick={() => onNavigate('dashboard')}
+          style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          className="logo-wrapper"
+        >
+          <h1 className="medsim-logo-premium" style={{ margin: 0 }}>
+            <span style={{ fontWeight: 900 }}>Med</span>
+            <span style={{ fontWeight: 200, fontStyle: 'italic', marginLeft: '2px' }}>Sim</span>
+          </h1>
+        </div>
       </div>
 
       <div className="user-profile-sidebar" onClick={() => onNavigate('profile')}>
