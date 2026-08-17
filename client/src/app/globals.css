@@ -67,7 +67,7 @@ body {
   font-family: inherit;
   min-height: 100vh;
   overflow: hidden; /* Prevent scrolling on body, handled by wrapper */
-  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1), color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1), color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* =========================================
@@ -79,7 +79,7 @@ body {
   z-index: -1;
   overflow: hidden;
   background: var(--bg-color);
-  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .mesh-blob {
   position: absolute;
@@ -134,7 +134,7 @@ body {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-float), var(--shadow-inner);
   z-index: 100;
-  transition: var(--transition);
+  transition: background 0.8s, border-color 0.8s, box-shadow 0.8s;
 }
 
 .topbar-logo {
@@ -184,7 +184,7 @@ body {
   flex-direction: column;
   gap: 1.5rem;
   box-shadow: var(--shadow-float), var(--shadow-inner);
-  transition: var(--transition);
+  transition: background 0.8s, border-color 0.8s, box-shadow 0.8s;
   overflow-y: auto;
 }
 
@@ -341,6 +341,7 @@ body {
   padding: 3rem;
   overflow-y: auto;
   position: relative;
+  transition: background 0.8s, border-color 0.8s, box-shadow 0.8s;
 }
 .glass-panel {
   /* Internal components don't need double glass, just use clear styling */

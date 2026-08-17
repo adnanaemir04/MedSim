@@ -7,7 +7,7 @@ import { ChevronDown, ChevronRight, Folder, Trophy, LogOut, GraduationCap } from
 interface SidebarProps {
   user: User | null;
   onLogout: () => void;
-  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile') => void;
+  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile', subjectFilter?: string) => void;
 }
 
 export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
@@ -59,20 +59,60 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
           {isClassExpanded && (
             <div className="accordion-content">
               {[1, 2, 3, 4, 5, 6].map(num => (
-                <div key={num} style={{ marginBottom: '0.5rem' }}>
+                <div key={num} style={{ marginBottom: '0.75rem', background: selectedClass === num ? 'rgba(255, 255, 255, 0.05)' : 'transparent', borderRadius: 'var(--radius-lg)', padding: '0.5rem', transition: 'var(--transition)' }}>
                   <button 
                     className={`nav-sub-item ${selectedClass === num ? 'active' : ''}`}
                     onClick={() => setSelectedClass(selectedClass === num ? null : num)}
-                    style={{ width: '100%', fontWeight: selectedClass === num ? 800 : 500, color: selectedClass === num ? 'var(--text-main)' : 'var(--text-muted)' }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: selectedClass === num ? 800 : 600, color: selectedClass === num ? 'var(--primary)' : 'var(--text-muted)' }}
                   >
-                    Tıp {num}
+                    <span>Tıp {num}</span>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: selectedClass === num ? 'var(--primary)' : 'transparent', transition: 'var(--transition)' }} />
                   </button>
                   {selectedClass === num && (
-                    <div style={{ paddingLeft: '1rem', marginTop: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div style={{ 
+                      marginTop: '0.8rem', 
+                      display: 'flex', 
+                      flexWrap: 'wrap', 
+                      gap: '0.5rem',
+                      padding: '0.5rem',
+                      background: 'rgba(0,0,0,0.02)',
+                      borderRadius: 'var(--radius-md)',
+                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+                    }}>
                       {deptsByYear[num].map(dept => (
-                        <span key={dept} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} onClick={() => onNavigate('dashboard')}>
-                          • {dept}
-                        </span>
+                        <button 
+                          key={dept} 
+                          style={{ 
+                            fontSize: '0.8rem', 
+                            fontWeight: 600, 
+                            color: 'var(--primary)', 
+                            cursor: 'pointer', 
+                            padding: '0.4rem 0.8rem', 
+                            borderRadius: '20px', 
+                            background: 'rgba(79, 70, 229, 0.1)',
+                            border: '1px solid rgba(79, 70, 229, 0.2)',
+                            transition: 'var(--transition)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flex: '1 1 auto'
+                          }} 
+                          onClick={(e) => { e.stopPropagation(); onNavigate('dashboard', dept); }} 
+                          onMouseEnter={e => {
+                            e.currentTarget.style.background = 'var(--primary)';
+                            e.currentTarget.style.color = 'white';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 4px 10px var(--primary-glow)';
+                          }} 
+                          onMouseLeave={e => {
+                            e.currentTarget.style.background = 'rgba(79, 70, 229, 0.1)';
+                            e.currentTarget.style.color = 'var(--primary)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                        >
+                          {dept}
+                        </button>
                       ))}
                     </div>
                   )}

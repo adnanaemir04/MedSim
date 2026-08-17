@@ -7,13 +7,14 @@ import { CheckCircle, XCircle, ArrowRight, HeartPulse } from 'lucide-react';
 interface SimulationViewProps {
   subject: string;
   caseIndex: number;
+  generatedData?: any;
   onBack: () => void;
   onCaseComplete: (pointsEarned: number) => void;
 }
 
-export default function SimulationView({ subject, caseIndex, onBack, onCaseComplete }: SimulationViewProps) {
-  const caseData = medCasesData[subject];
-  const caseTitle = caseData.titles[caseIndex] || caseData.titles[0];
+export default function SimulationView({ subject, caseIndex, generatedData, onBack, onCaseComplete }: SimulationViewProps) {
+  const caseData = generatedData || medCasesData[subject];
+  const caseTitle = generatedData ? "Otomatik Üretilmiş Vaka" : (caseData.titles[caseIndex] || caseData.titles[0]);
   const stages = caseData.stages;
 
   const [currentStage, setCurrentStage] = useState(0);
@@ -21,6 +22,10 @@ export default function SimulationView({ subject, caseIndex, onBack, onCaseCompl
   const [hasAnswered, setHasAnswered] = useState(false);
   const [earnedPoints, setEarnedPoints] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+
+  // New Clinical Phases mapping based on stage index
+  const clinicalPhases = ["Anamnez", "Fizik Muayene", "Tetkik", "Tanı", "Tedavi", "İzlem"];
+  const currentPhaseName = clinicalPhases[Math.min(currentStage, clinicalPhases.length - 1)];
 
   const stage = stages[currentStage];
 
@@ -86,7 +91,10 @@ export default function SimulationView({ subject, caseIndex, onBack, onCaseCompl
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', color: 'var(--text-muted)' }}>
-          <span style={{ fontWeight: 600 }}>Aşama {currentStage + 1} / {stages.length}</span>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <span style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1.2rem' }}>{currentPhaseName}</span>
+            <span style={{ fontSize: '0.9rem' }}>(Aşama {currentStage + 1} / {stages.length})</span>
+          </div>
           <span style={{ fontWeight: 600, color: 'var(--primary)' }}>Skor: {earnedPoints}</span>
         </div>
 
@@ -98,15 +106,15 @@ export default function SimulationView({ subject, caseIndex, onBack, onCaseCompl
           {stage.options.map((opt: any, index: number) => {
             const isSelected = selectedOption === index;
             const isCorrect = opt.isCorrect;
-            let bgColor = 'rgba(255, 255, 255, 0.05)';
-            let borderColor = 'var(--glass-border)';
+            let bgColor = 'rgba(255, 255, 255, 0.1)';
+            let borderColor = 'rgba(255, 255, 255, 0.2)';
             
             if (hasAnswered) {
               if (isCorrect) {
-                bgColor = 'rgba(16, 185, 129, 0.1)';
+                bgColor = 'rgba(16, 185, 129, 0.2)';
                 borderColor = 'var(--success)';
               } else if (isSelected && !isCorrect) {
-                bgColor = 'rgba(244, 63, 94, 0.1)';
+                bgColor = 'rgba(244, 63, 94, 0.2)';
                 borderColor = 'var(--danger)';
               }
             } else if (isSelected) {
@@ -122,9 +130,11 @@ export default function SimulationView({ subject, caseIndex, onBack, onCaseCompl
                   width: '100%', padding: '1.25rem', textAlign: 'left',
                   background: bgColor, border: `2px solid ${borderColor}`,
                   borderRadius: 'var(--radius-lg)', color: 'var(--text-main)',
+                  backdropFilter: 'blur(10px)',
                   cursor: hasAnswered ? 'default' : 'pointer',
                   transition: 'var(--transition)',
-                  fontSize: '1.05rem', fontWeight: 500
+                  fontSize: '1.05rem', fontWeight: 600,
+                  boxShadow: 'var(--shadow-sm)'
                 }}
               >
                 <span>{opt.text}</span>

@@ -86,6 +86,10 @@ public class AuthController : ControllerBase
         {
             user.Avatar = dto.Avatar;
         }
+        if (dto.Points.HasValue)
+        {
+            user.Points = dto.Points.Value;
+        }
 
         await _userRepository.UpdateAsync(user);
         await _userRepository.SaveChangesAsync();
