@@ -55,6 +55,7 @@ export interface SolvedCaseDto {
     departmentYear: number;
     isSolved: boolean;
     earnedPoints: number;
+    givenAnswers: number[];
     solvedAt: string;
 }
 

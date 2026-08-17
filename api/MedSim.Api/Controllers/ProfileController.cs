@@ -49,22 +49,36 @@ public class ProfileController : ControllerBase
 
         var totalCount = await query.CountAsync();
 
-        var items = await query
+        var rawItems = await query
             .OrderByDescending(sc => sc.SolvedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(sc => new SolvedCaseDto
+            .Select(sc => new
             {
-                Id = sc.Id,
-                MedicalCaseId = sc.MedicalCaseId,
+                sc.Id,
+                sc.MedicalCaseId,
                 CaseTitle = sc.MedicalCase.Title,
                 DepartmentName = sc.MedicalCase.Department.Name,
                 DepartmentYear = sc.MedicalCase.Department.Year,
-                IsSolved = sc.IsSolved,
-                EarnedPoints = sc.EarnedPoints,
-                SolvedAt = sc.SolvedAt
+                sc.IsSolved,
+                sc.EarnedPoints,
+                sc.GivenAnswers,
+                sc.SolvedAt
             })
             .ToListAsync();
+
+        var items = rawItems.Select(sc => new SolvedCaseDto
+        {
+            Id = sc.Id,
+            MedicalCaseId = sc.MedicalCaseId,
+            CaseTitle = sc.CaseTitle,
+            DepartmentName = sc.DepartmentName,
+            DepartmentYear = sc.DepartmentYear,
+            IsSolved = sc.IsSolved,
+            EarnedPoints = sc.EarnedPoints,
+            GivenAnswers = string.IsNullOrEmpty(sc.GivenAnswers) ? new List<int>() : sc.GivenAnswers.Split(',').Select(int.Parse).ToList(),
+            SolvedAt = sc.SolvedAt
+        }).ToList();
 
         var result = new PagedResult<SolvedCaseDto>
         {
@@ -92,8 +106,12 @@ public class ProfileController : ControllerBase
 
         if (existingSolve != null)
         {
-            // Just update points if we want, or do nothing. We'll do nothing.
-            return Ok(new { message = "Bu vaka zaten çözülmüş." });
+            existingSolve.EarnedPoints = request.Points;
+            existingSolve.GivenAnswers = string.Join(",", request.GivenAnswers);
+            existingSolve.SolvedAt = DateTime.UtcNow;
+            _context.SolvedCases.Update(existingSolve);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Vaka başarıyla güncellendi." });
         }
 
         var solvedCase = new MedSim.Domain.Entities.SolvedCase
@@ -103,6 +121,7 @@ public class ProfileController : ControllerBase
             MedicalCaseId = request.MedicalCaseId,
             EarnedPoints = request.Points,
             IsSolved = true,
+            GivenAnswers = string.Join(",", request.GivenAnswers),
             SolvedAt = DateTime.UtcNow
         };
 
@@ -184,6 +203,7 @@ public class SolveCaseRequest
     public string Email { get; set; } = string.Empty;
     public Guid MedicalCaseId { get; set; }
     public int Points { get; set; }
+    public List<int> GivenAnswers { get; set; } = new();
 }
 
 public class FriendRequest

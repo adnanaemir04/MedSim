@@ -8,20 +8,24 @@ interface SimulationViewProps {
   subject: string;
   caseIndex: number;
   generatedData?: any;
+  initialAnswers?: number[];
   onBack: () => void;
-  onCaseComplete: (pointsEarned: number) => void;
+  onCaseComplete: (pointsEarned: number, givenAnswers: number[]) => void;
 }
 
-export default function SimulationView({ subject, caseIndex, generatedData, onBack, onCaseComplete }: SimulationViewProps) {
+export default function SimulationView({ subject, caseIndex, generatedData, initialAnswers, onBack, onCaseComplete }: SimulationViewProps) {
   const caseData = generatedData || medCasesData[subject];
   const caseTitle = generatedData?.title || (caseData.titles?.[caseIndex] || caseData.titles?.[0] || 'Klinik Vaka');
   const stages = caseData.stages;
   const patientInfo = caseData.patientInfo;
+  
+  const isReviewMode = initialAnswers !== undefined && initialAnswers.length > 0;
 
   const [currentStage, setCurrentStage] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [hasAnswered, setHasAnswered] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<number | null>(isReviewMode ? initialAnswers[0] : null);
+  const [hasAnswered, setHasAnswered] = useState(isReviewMode);
   const [earnedPoints, setEarnedPoints] = useState(0);
+  const [givenAnswers, setGivenAnswers] = useState<number[]>([]);
   const [isFinished, setIsFinished] = useState(false);
 
   const clinicalPhases = ["Anamnez", "Fizik Muayene", "Tetkik", "Tanı", "Tedavi", "İzlem"];
@@ -29,24 +33,32 @@ export default function SimulationView({ subject, caseIndex, generatedData, onBa
   const stage = stages[currentStage];
 
   const handleOptionSelect = (optIndex: number) => {
-    if (hasAnswered) return;
+    if (hasAnswered || isReviewMode) return;
     setSelectedOption(optIndex);
     setHasAnswered(true);
+    setGivenAnswers(prev => [...prev, optIndex]);
     if (stage.options[optIndex].isCorrect) setEarnedPoints(prev => prev + 10);
   };
 
   const handleNextStage = () => {
     if (currentStage < stages.length - 1) {
       setCurrentStage(prev => prev + 1);
-      setSelectedOption(null);
-      setHasAnswered(false);
+      if (isReviewMode) {
+        setSelectedOption(initialAnswers[currentStage + 1]);
+        setHasAnswered(true);
+      } else {
+        setSelectedOption(null);
+        setHasAnswered(false);
+      }
     } else {
       setIsFinished(true);
     }
   };
 
   const handleFinish = () => {
-    onCaseComplete(earnedPoints);
+    if (!isReviewMode) {
+      onCaseComplete(earnedPoints, givenAnswers);
+    }
     onBack();
   };
 
@@ -83,9 +95,6 @@ export default function SimulationView({ subject, caseIndex, generatedData, onBa
           </span>
           <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>{caseTitle}</h2>
         </div>
-        <button onClick={onBack} style={{ background: 'transparent', border: '1px solid var(--glass-border)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-          Vakadan Çık
-        </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: patientInfo ? '460px 1fr' : '1fr', gap: '1.5rem', alignItems: 'start' }}>
@@ -94,21 +103,31 @@ export default function SimulationView({ subject, caseIndex, generatedData, onBa
         {patientInfo && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             
-            <div style={{ display: 'grid', gridTemplateColumns: vitalItems.length > 0 ? '1fr 1fr' : '1fr', gap: '1rem' }}>
-              {/* Demographics */}
+            <div style={{ display: 'grid', gridTemplateColumns: vitalItems.length > 0 ? '1.2fr 0.8fr' : '1fr', gap: '1rem' }}>
+              {/* Anamnez ve Hasta Bilgileri */}
               <div className="glass-panel" style={{ padding: '1.2rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: 'var(--primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  <User size={14} /> Hasta Bilgileri
+                  <User size={14} /> Hasta Bilgileri & Anamnez
                 </div>
                 <p style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.2rem' }}>{patientInfo.name}</p>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
                   {patientInfo.age} yaş · {patientInfo.gender}
                 </p>
+                
                 {patientInfo.chiefComplaint && (
-                  <div style={{ background: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.2)', borderRadius: 'var(--radius-sm)', padding: '0.5rem 0.75rem' }}>
+                  <div style={{ background: 'rgba(244, 63, 94, 0.05)', border: '1px solid rgba(244, 63, 94, 0.15)', borderRadius: '12px', padding: '0.5rem 0.75rem', marginBottom: '0.75rem' }}>
                     <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#f43f5e', textTransform: 'uppercase' }}>Şikayet</span>
                     <p style={{ marginTop: '0.2rem', fontSize: '0.8rem', lineHeight: 1.4, fontStyle: 'italic', color: 'var(--text-main)' }}>
                       "{patientInfo.chiefComplaint}"
+                    </p>
+                  </div>
+                )}
+
+                {patientInfo.medicalHistory && (
+                  <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '12px', padding: '0.5rem 0.75rem' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', textTransform: 'uppercase' }}>Özgeçmiş / Öykü</span>
+                    <p style={{ marginTop: '0.2rem', fontSize: '0.8rem', lineHeight: 1.4, color: 'var(--text-main)' }}>
+                      {patientInfo.medicalHistory}
                     </p>
                   </div>
                 )}
@@ -132,27 +151,48 @@ export default function SimulationView({ subject, caseIndex, generatedData, onBa
               )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: (patientInfo.physicalExam && patientInfo.medicalHistory) ? '1fr 1fr' : '1fr', gap: '1rem' }}>
-              {/* Physical Exam */}
-              {patientInfo.physicalExam && (
-                <div className="glass-panel" style={{ padding: '1.2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#8b5cf6', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    <Stethoscope size={14} /> Fizik Muayene
-                  </div>
-                  <p style={{ fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--text-muted)' }}>{patientInfo.physicalExam}</p>
+            {/* Physical Exam (Moved to take full width of bottom row since History is pulled up) */}
+            {patientInfo.physicalExam && (
+              <div className="glass-panel" style={{ padding: '1.2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#8b5cf6', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <Stethoscope size={14} /> Fizik Muayene
                 </div>
-              )}
+                <p style={{ fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--text-muted)' }}>{patientInfo.physicalExam}</p>
+              </div>
+            )}
 
-              {/* Medical History */}
-              {patientInfo.medicalHistory && (
-                <div className="glass-panel" style={{ padding: '1.2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#10b981', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    <FileText size={14} /> Özgeçmiş
-                  </div>
-                  <p style={{ fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--text-muted)' }}>{patientInfo.medicalHistory}</p>
-                </div>
-              )}
-            </div>
+            {/* Vakadan Çık Button */}
+            <button 
+              onClick={onBack} 
+              style={{ 
+                alignSelf: 'flex-start',
+                background: 'transparent', 
+                border: '1.5px solid var(--glass-border)', 
+                padding: '0.6rem 1.2rem', 
+                borderRadius: '12px', 
+                color: 'var(--text-muted)', 
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginTop: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'rgba(244, 63, 94, 0.4)';
+                e.currentTarget.style.color = '#f43f5e';
+                e.currentTarget.style.background = 'rgba(244, 63, 94, 0.05)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--glass-border)';
+                e.currentTarget.style.color = 'var(--text-muted)';
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              ← Vakadan Çık
+            </button>
           </div>
         )}
 
@@ -221,14 +261,28 @@ export default function SimulationView({ subject, caseIndex, generatedData, onBa
               <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, fontSize: '0.92rem' }}>
                 {stage.options[selectedOption!].feedback}
               </p>
-              <button
-                className="btn-primary"
-                style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                onClick={handleNextStage}
-              >
-                {currentStage < stages.length - 1 ? 'Sonraki Aşama' : 'Vakayı Bitir'}
-                <ArrowRight size={18} />
-              </button>
+              <div style={{ marginTop: '1.25rem', display: 'flex', gap: '1rem' }}>
+                {isReviewMode && currentStage > 0 && (
+                  <button
+                    className="btn-secondary"
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--glass-bg)', color: 'var(--text-main)', border: '1px solid var(--glass-border)' }}
+                    onClick={() => {
+                      setCurrentStage(prev => prev - 1);
+                      setSelectedOption(initialAnswers![currentStage - 1]);
+                    }}
+                  >
+                    ← Önceki Aşama
+                  </button>
+                )}
+                <button
+                  className="btn-primary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                  onClick={handleNextStage}
+                >
+                  {currentStage < stages.length - 1 ? 'Sonraki Aşama' : (isReviewMode ? 'İncelemeyi Bitir' : 'Vakayı Bitir')}
+                  <ArrowRight size={18} />
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -26,5 +26,6 @@ public class SolvedCase
     
     public bool IsSolved { get; set; }
     public int EarnedPoints { get; set; }
+    public string GivenAnswers { get; set; } = ""; // JSON or comma-separated list of selected option indexes
     public DateTime SolvedAt { get; set; } = DateTime.UtcNow;
 }

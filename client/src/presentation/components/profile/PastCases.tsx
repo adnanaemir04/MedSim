@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { getSolvedCases, getDepartments, SolvedCaseDto, DepartmentDto } from '../../../infrastructure/api/simulationApi';
-import { ChevronLeft, ChevronRight, Filter, Activity, Trophy, Clock, CheckCircle2 } from 'lucide-react';
+import { getSolvedCases, getDepartments, getCases, SolvedCaseDto, DepartmentDto, MedicalCaseDto } from '../../../infrastructure/api/simulationApi';
+import { ChevronLeft, ChevronRight, Filter, Activity, Trophy, Clock, CheckCircle2, HeartPulse, Stethoscope, User, ArrowLeft, Brain } from 'lucide-react';
 
 interface PastCasesProps {
   userEmail: string;
+  onStartCase: (subject: string, caseIndex: number, data?: any, initialAnswers?: number[]) => void;
 }
 
-export default function PastCases({ userEmail }: PastCasesProps) {
+export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
   const [cases, setCases] = useState<SolvedCaseDto[]>([]);
   const [departments, setDepartments] = useState<DepartmentDto[]>([]);
+  const [allCases, setAllCases] = useState<MedicalCaseDto[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -22,9 +24,13 @@ export default function PastCases({ userEmail }: PastCasesProps) {
   const [filterYear, setFilterYear] = useState<number | ''>('');
   const [filterSubject, setFilterSubject] = useState<string>('');
 
+  const [selectedReviewCase, setSelectedReviewCase] = useState<MedicalCaseDto | null>(null);
+
   useEffect(() => {
     // Fetch departments for the filter dropdown
     getDepartments().then(data => setDepartments(data)).catch(console.error);
+    // Fetch all cases to match stages & details
+    getCases().then(data => setAllCases(data)).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -56,8 +62,235 @@ export default function PastCases({ userEmail }: PastCasesProps) {
     setPage(1);
   };
 
+  const handleReviewCase = (medicalCaseId: string, subject: string, givenAnswers: number[]) => {
+    const matched = allCases.find(c => c.id === medicalCaseId);
+    if (matched) {
+      const mockData = {
+        id: matched.id,
+        title: matched.title,
+        text: matched.initialText,
+        stages: matched.stages,
+        patientInfo: matched.patientInfo
+      };
+      onStartCase(subject, -1, mockData, givenAnswers);
+    } else {
+      alert("Vaka detayları yüklenemedi. Lütfen daha sonra tekrar deneyin.");
+    }
+  };
+
+  const handleResumeCase = (medicalCaseId: string, subject: string) => {
+    const matched = allCases.find(c => c.id === medicalCaseId);
+    if (matched) {
+      const mockData = {
+        id: matched.id,
+        title: matched.title,
+        text: matched.initialText,
+        stages: matched.stages,
+        patientInfo: matched.patientInfo
+      };
+      onStartCase(subject, -1, mockData);
+    } else {
+      alert("Vaka başlatılamadı.");
+    }
+  };
+
   const uniqueYears = Array.from(new Set(departments.map(d => d.year))).sort();
   const filteredSubjects = filterYear !== '' ? departments.filter(d => d.year === filterYear) : departments;
+
+  // Render Case Review View
+  if (selectedReviewCase) {
+    const patientInfo = selectedReviewCase.patientInfo;
+    const stages = selectedReviewCase.stages;
+    const isCompleted = cases.find(c => c.medicalCaseId === selectedReviewCase.id)?.isSolved ?? false;
+    const subjectName = departments.find(d => d.id === selectedReviewCase.departmentId)?.name || 'Genel Tıp';
+
+    const vitalItems = [
+      { label: 'Tansiyon', value: patientInfo?.bloodPressure },
+      { label: 'Nabız', value: patientInfo?.heartRate },
+      { label: 'Ateş', value: patientInfo?.temperature },
+      { label: 'SpO₂', value: patientInfo?.oxygenSaturation },
+      { label: 'Solunum', value: patientInfo?.respiratoryRate },
+    ].filter(v => v.value);
+
+    return (
+      <div style={{ padding: '1rem 0', animation: 'fadeIn 0.5s ease-out' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <button 
+            onClick={() => setSelectedReviewCase(null)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--glass-bg)',
+              border: '1px solid var(--glass-border)', padding: '0.6rem 1.2rem', borderRadius: '12px',
+              color: 'var(--text-main)', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateX(-3px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
+          >
+            <ArrowLeft size={16} /> Geçmiş Vakalara Dön
+          </button>
+
+          <div style={{ textAlign: 'right' }}>
+            <span style={{
+              padding: '0.3rem 0.8rem', background: isCompleted ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+              color: isCompleted ? 'var(--success, #10b981)' : 'var(--warning, #f59e0b)', borderRadius: '20px',
+              fontSize: '0.8rem', fontWeight: 800
+            }}>
+              {isCompleted ? 'Vaka Çözüldü' : 'Yarıda Bırakıldı'}
+            </span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {subjectName}
+          </span>
+          <h2 style={{ fontSize: '2.2rem', fontWeight: 900, margin: '0.3rem 0 0 0', color: 'var(--text-main)' }}>
+            {selectedReviewCase.title}
+          </h2>
+        </div>
+
+        {/* Layout Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: patientInfo ? '420px 1fr' : '1fr', gap: '2rem', alignItems: 'start' }}>
+          
+          {/* Patient Info Card (Left) */}
+          {patientInfo && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <User size={16} /> Hasta Bilgileri & Anamnez
+                </div>
+                <p style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '0.2rem', color: 'var(--text-main)' }}>{patientInfo.name}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                  {patientInfo.age} yaş · {patientInfo.gender}
+                </p>
+
+                {patientInfo.chiefComplaint && (
+                  <div style={{ background: 'rgba(244, 63, 94, 0.05)', border: '1px solid rgba(244, 63, 94, 0.12)', borderRadius: '16px', padding: '0.75rem 1rem', marginBottom: '1rem' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#f43f5e', textTransform: 'uppercase' }}>Şikayet</span>
+                    <p style={{ marginTop: '0.3rem', fontSize: '0.85rem', lineHeight: 1.5, fontStyle: 'italic', color: 'var(--text-main)' }}>
+                      "{patientInfo.chiefComplaint}"
+                    </p>
+                  </div>
+                )}
+
+                {patientInfo.medicalHistory && (
+                  <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.12)', borderRadius: '16px', padding: '0.75rem 1rem' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>Özgeçmiş / Öykü</span>
+                    <p style={{ marginTop: '0.3rem', fontSize: '0.85rem', lineHeight: 1.5, color: 'var(--text-main)' }}>
+                      {patientInfo.medicalHistory}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Vitals */}
+              {vitalItems.length > 0 && (
+                <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#f43f5e', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Activity size={16} /> Yaşamsal Bulgular (Vitals)
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.6rem' }}>
+                    {vitalItems.map((v, i) => (
+                      <div key={i} style={{ display: 'flex', flexDirection: 'column', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', borderRadius: '12px' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{v.label}</span>
+                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-main)', marginTop: '0.2rem' }}>{v.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Physical Exam */}
+              {patientInfo.physicalExam && (
+                <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem', color: '#8b5cf6', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Stethoscope size={16} /> Fizik Muayene Bulguları
+                  </div>
+                  <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-muted)' }}>{patientInfo.physicalExam}</p>
+                </div>
+              )}
+
+              {/* Resume Button if left midway */}
+              {!isCompleted && (
+                <button
+                  onClick={() => handleResumeCase(selectedReviewCase.id, subjectName)}
+                  style={{
+                    width: '100%', padding: '1rem', borderRadius: '16px',
+                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                    color: 'white', border: 'none', fontWeight: 800, fontSize: '1rem',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                    boxShadow: '0 8px 20px var(--primary-glow)', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <Brain size={18} /> Vakaya Devam Et (Simülasyonu Sürdür)
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Stages Timeline (Right) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+              Klinik Aşamalar & Doğru Tıbbi Yaklaşımlar
+            </h3>
+
+            {stages.map((stg, sIndex) => (
+              <div key={stg.id} className="glass-panel" style={{ padding: '1.75rem', borderRadius: '24px', position: 'relative', borderLeft: '4px solid var(--primary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Aşama {sIndex + 1}
+                  </span>
+                </div>
+
+                <p style={{ fontSize: '1.05rem', lineHeight: 1.7, fontWeight: 700, color: 'var(--text-main)', marginBottom: '1.5rem' }}>
+                  {stg.text}
+                </p>
+
+                {/* Options List */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {stg.options.map((opt) => {
+                    const isCorrect = opt.isCorrect;
+                    return (
+                      <div 
+                        key={opt.id}
+                        style={{
+                          padding: '1rem 1.25rem', borderRadius: '16px',
+                          background: isCorrect ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                          border: isCorrect ? '1.5px solid var(--success)' : '1px solid var(--glass-border)',
+                          color: isCorrect ? 'var(--text-main)' : 'var(--text-muted)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                          <span style={{ fontWeight: isCorrect ? 800 : 500, fontSize: '0.9rem' }}>{opt.text}</span>
+                          {isCorrect && (
+                            <span style={{
+                              padding: '0.2rem 0.6rem', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)',
+                              borderRadius: '8px', fontSize: '0.7rem', fontWeight: 800, whiteSpace: 'nowrap'
+                            }}>
+                              Doğru Hamle
+                            </span>
+                          )}
+                        </div>
+                        {isCorrect && opt.feedback && (
+                          <div style={{ marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px dashed rgba(16, 185, 129, 0.2)', fontSize: '0.8rem', color: 'var(--success)', lineHeight: 1.5 }}>
+                            <strong>Gerekçe:</strong> {opt.feedback}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '2rem 0', animation: 'fadeIn 0.5s ease-out' }}>
@@ -182,6 +415,44 @@ export default function PastCases({ userEmail }: PastCasesProps) {
                       <Trophy size={14} color="var(--primary)" />
                       Kazanılan: <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>+{c.earnedPoints} Puan</span>
                     </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => handleReviewCase(c.medicalCaseId, c.departmentName, c.givenAnswers)}
+                      style={{
+                        padding: '0.6rem 1.2rem', borderRadius: '12px', border: '1px solid var(--glass-border)',
+                        background: 'var(--glass-bg)', color: 'var(--text-main)', fontSize: '0.85rem',
+                        fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.3rem'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'var(--primary)';
+                        e.currentTarget.style.color = 'white';
+                        e.currentTarget.style.borderColor = 'transparent';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'var(--glass-bg)';
+                        e.currentTarget.style.color = 'var(--text-main)';
+                        e.currentTarget.style.borderColor = 'var(--glass-border)';
+                      }}
+                    >
+                      Vakayı İncele
+                    </button>
+                    {!c.isSolved && (
+                      <button
+                        onClick={() => handleResumeCase(c.medicalCaseId, c.departmentName)}
+                        style={{
+                          padding: '0.6rem 1.2rem', borderRadius: '12px', border: 'none',
+                          background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white',
+                          fontSize: '0.85rem', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s',
+                          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        Vakaya Devam Et
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

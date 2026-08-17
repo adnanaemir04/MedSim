@@ -9,6 +9,7 @@ public class SolvedCaseDto
     public int DepartmentYear { get; set; }
     public bool IsSolved { get; set; }
     public int EarnedPoints { get; set; }
+    public List<int> GivenAnswers { get; set; } = new();
     public DateTime SolvedAt { get; set; }
 }
 
