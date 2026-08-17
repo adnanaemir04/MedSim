@@ -77,10 +77,11 @@ export default function TopBar() {
         </div>
       </header>
       
-      {/* The Animated Background Orb (Only for Light Mode) */}
-      {!isDarkMode && (
-        <div className="flying-orb sun-orb" />
-      )}
+      {/* The Animated Background Orb (Sun or Moon) */}
+      <div 
+        key={isDarkMode ? 'dark-orb' : 'light-orb'} 
+        className={`flying-orb ${isDarkMode ? 'moon-orb' : 'sun-orb'}`} 
+      />
     </>
   );
 }
