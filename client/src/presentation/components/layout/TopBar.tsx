@@ -2,7 +2,7 @@
 
 import { useTheme } from '../../context/ThemeContext';
 import { Moon, Sun, Home, CreditCard } from 'lucide-react';
-import { useState } from 'react';
+import CelestialOrb3D from './CelestialOrb3D';
 
 export default function TopBar() {
   const { theme, toggleTheme } = useTheme();
@@ -77,11 +77,14 @@ export default function TopBar() {
         </div>
       </header>
       
-      {/* The Animated Background Orb (Sun or Moon) */}
-      <div 
-        key={isDarkMode ? 'dark-orb' : 'light-orb'} 
-        className={`flying-orb ${isDarkMode ? 'moon-orb' : 'sun-orb'}`} 
-      />
+      {/* The Animated Background Orb (WebGL Moon for Dark Mode, CSS Sun for Light Mode) */}
+      {isDarkMode ? (
+        <div key="dark-orb" className="flying-orb moon-orb-container">
+          <CelestialOrb3D theme="dark" />
+        </div>
+      ) : (
+        <div key="light-orb" className="flying-orb sun-orb" />
+      )}
     </>
   );
 }

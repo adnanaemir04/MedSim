@@ -164,29 +164,29 @@ body {
   transition: background 0.8s, border-color 0.8s, box-shadow 0.8s;
 }
 
-/* =========================================
-   300% CREATIVE FLYING ORB (SUN)
-========================================= */
 .flying-orb {
   position: fixed;
-  top: 30px;
-  right: 50px;
-  width: 150px;
-  height: 150px;
   border-radius: 50%;
   pointer-events: none;
   z-index: -1;
 }
 
+.moon-orb-container {
+  width: 600px;
+  height: 600px;
+  animation: moonFlyToButton 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
 .sun-orb {
-  animation: flyToButton 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards, sunPulse 4s ease-in-out infinite alternate;
-  background: radial-gradient(circle at center, rgba(255,255,255,0.9) 0%, rgba(255,247,237,0.8) 15%, rgba(253,224,71,0.7) 30%, rgba(245,158,11,0.6) 60%, rgba(234,88,12,0.5) 100%);
+  width: 150px;
+  height: 150px;
+  animation: sunFlyToButton 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards, sunPulse 4s ease-in-out infinite alternate;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.7) 0%, rgba(253,224,71,0.6) 20%, rgba(245,158,11,0.4) 50%, rgba(234,88,12,0.3) 100%);
   box-shadow:
-    0 0 15px rgba(254, 240, 138, 0.6),
-    0 0 40px rgba(253, 224, 71, 0.6),
-    0 0 80px rgba(245, 158, 11, 0.5),
-    0 0 120px rgba(234, 88, 12, 0.4),
-    0 0 200px rgba(234, 88, 12, 0.3);
+    0 0 10px rgba(254, 240, 138, 0.4),
+    0 0 30px rgba(253, 224, 71, 0.4),
+    0 0 60px rgba(245, 158, 11, 0.3),
+    0 0 100px rgba(234, 88, 12, 0.2);
 }
 
 .sun-orb::after {
@@ -206,63 +206,12 @@ body {
 
 @keyframes sunPulse {
   0% {
-    filter: brightness(0.9) contrast(1);
-    box-shadow: 0 0 15px rgba(254, 240, 138, 0.6), 0 0 40px rgba(253, 224, 71, 0.6), 0 0 80px rgba(245, 158, 11, 0.5), 0 0 120px rgba(234, 88, 12, 0.4);
-  }
-
-  100% {
-    filter: brightness(1.05) contrast(1.05);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.7), 0 0 60px rgba(253, 224, 71, 0.7), 0 0 100px rgba(245, 158, 11, 0.6), 0 0 150px rgba(234, 88, 12, 0.5), 0 0 200px rgba(234, 88, 12, 0.4);
-  }
-}
-
-/* =========================================
-   CINEMATIC SUPERMOON ORB (DARK MODE)
-========================================= */
-.moon-orb {
-  animation: flyToButton 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards, moonPulse 6s ease-in-out infinite alternate;
-  background-color: #0f172a;
-  background-image: 
-    /* Lunar Maria (Dark Seas & Craters) - Layered on top */
-    radial-gradient(ellipse at 25% 45%, rgba(15, 23, 42, 0.8) 0%, rgba(51, 65, 85, 0.3) 15%, transparent 25%),
-    radial-gradient(ellipse at 50% 60%, rgba(15, 23, 42, 0.9) 0%, rgba(51, 65, 85, 0.4) 20%, transparent 30%),
-    radial-gradient(circle at 70% 30%, rgba(15, 23, 42, 0.7) 0%, rgba(51, 65, 85, 0.3) 12%, transparent 18%),
-    radial-gradient(circle at 80% 65%, rgba(15, 23, 42, 0.85) 0%, transparent 15%),
-    radial-gradient(ellipse at 85% 45%, rgba(15, 23, 42, 0.6) 0%, transparent 12%),
-    /* Core Spherical Lighting (Sunlight hitting from Top-Left, pure dark at Bottom-Right) */
-    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 1) 0%, rgba(203, 213, 225, 0.9) 35%, rgba(71, 85, 105, 0.95) 75%, rgba(2, 6, 23, 1) 100%);
-  box-shadow:
-    /* Deep crescent shadow for 3D volume, bright highlight for rim */
-    inset -25px -25px 45px rgba(0, 0, 0, 0.95),
-    inset 15px 15px 30px rgba(255, 255, 255, 0.95),
-    /* Soft ambient moonlight */
-    0 0 30px rgba(226, 232, 240, 0.4),
-    0 0 80px rgba(148, 163, 184, 0.2);
-}
-
-.moon-orb::after {
-  /* Vast, soft, realistic atmospheric moon glow */
-  content: '';
-  position: absolute;
-  top: -50%; left: -50%; right: -50%; bottom: -50%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, rgba(148,163,184,0.05) 40%, transparent 70%);
-  z-index: -1;
-  pointer-events: none;
-  animation: none;
-  mask-image: none;
-  -webkit-mask-image: none;
-  filter: none;
-}
-
-@keyframes moonPulse {
-  0% {
-    filter: brightness(0.95) contrast(1.1) grayscale(0.1);
-    box-shadow: inset -25px -25px 45px rgba(0,0,0,0.95), inset 15px 15px 30px rgba(255,255,255,0.8), 0 0 20px rgba(226, 232, 240, 0.3), 0 0 60px rgba(148, 163, 184, 0.15);
+    filter: brightness(0.8) contrast(1);
+    box-shadow: 0 0 10px rgba(254, 240, 138, 0.3), 0 0 30px rgba(253, 224, 71, 0.3), 0 0 60px rgba(245, 158, 11, 0.2), 0 0 100px rgba(234, 88, 12, 0.1);
   }
   100% {
-    filter: brightness(1.2) contrast(1.2) grayscale(0);
-    box-shadow: inset -25px -25px 45px rgba(0,0,0,0.95), inset 15px 15px 30px rgba(255,255,255,1), 0 0 40px rgba(226, 232, 240, 0.6), 0 0 120px rgba(148, 163, 184, 0.3), 0 0 200px rgba(100, 116, 139, 0.15);
+    filter: brightness(0.95) contrast(1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 40px rgba(253, 224, 71, 0.5), 0 0 80px rgba(245, 158, 11, 0.4), 0 0 120px rgba(234, 88, 12, 0.3), 0 0 150px rgba(234, 88, 12, 0.2);
   }
 }
 
@@ -272,19 +221,33 @@ body {
   }
 }
 
-@keyframes flyToButton {
+
+
+@keyframes moonFlyToButton {
+  0% {
+    top: 50px;
+    right: -400px;
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    top: -50px;
+    right: -220px;
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+}
+
+@keyframes sunFlyToButton {
   0% {
     top: -100px;
     right: -100px;
     transform: scale(0.1);
     opacity: 0;
   }
-
   100% {
     top: 10px;
-    /* Moved higher */
     right: 5px;
-    /* Moved further right */
     transform: scale(2);
     opacity: 0.5;
   }
