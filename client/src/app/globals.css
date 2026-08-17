@@ -225,7 +225,7 @@ body {
 
 @keyframes moonFlyToButton {
   0% {
-    top: 50px;
+    top: -600px;
     right: -400px;
     transform: scale(0.5);
     opacity: 0;
@@ -762,4 +762,9 @@ body.dark .auth-tabs {
   background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
   opacity: 0.2;
   z-index: -1;
+}
+.light-leaderboard-card:hover {
+  transform: translateY(-5px) scale(1.02) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+  z-index: 10;
 }
