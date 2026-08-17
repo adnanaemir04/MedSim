@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial, PerspectiveCamera, Torus, MeshDistortMaterial, Float } from '@react-three/drei';
-import * as random from 'maath/random/dist/maath-random.esm';
+import * as random from 'maath/random';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import { Sun, MoonIcon } from 'lucide-react';
@@ -13,7 +13,7 @@ import * as THREE from 'three';
 // --- DARK MODE: 3D Particle Background ---
 function ParticleBackground(props: any) {
   const ref = useRef<any>();
-  const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }));
+  const [sphere] = useState(() => random.inSphere(new Float32Array(5001), { radius: 1.5 }));
 
   useFrame((state, delta) => {
     if (ref.current) {
@@ -97,15 +97,19 @@ function BloodParticles() {
       particles.forEach((p, i) => {
         // Move backwards along the curve (t=1 is far, t=0 is near)
         p.offset -= p.speed * delta * 0.1;
-        if (p.offset < 0) {
+        
+        // Handle potential large delta or wrap around
+        while (p.offset < 0) {
           p.offset += 1;
           // Randomize spread when respawning for variety
           p.spreadX = (Math.random() - 0.5) * 6;
           p.spreadY = (Math.random() - 0.5) * 6;
         }
+        while (p.offset > 1) p.offset -= 1;
 
-        // Get position on the curve
-        const pos = veinCurve.getPointAt(p.offset);
+        // Ensure offset is strictly valid before getPointAt
+        const safeOffset = Math.max(0, Math.min(1, p.offset || 0));
+        const pos = veinCurve.getPointAt(safeOffset);
         
         // Add organic wobble and spread
         const wobbleX = Math.sin(time * p.wobbleSpeed + i) * 0.5;
@@ -299,16 +303,16 @@ export default function LandingPage({ onNavigateToAuth }: LandingPageProps) {
 }
 
 const quotes = [
-  "Bilgi, evrendeki yıldızlar ve damardaki hücreler gibi sonsuzdur.",
-  "Knowledge is as infinite as the stars in the universe and the cells in a vein.",
-  "El conocimiento es tan infinito como las estrellas en el universo y las células en una vena.",
-  "La connaissance est aussi infinie que les étoiles dans l'univers et les cellules dans une veine.",
-  "Wissen ist so unendlich wie die Sterne im Universum und die Zellen in einer Vene.",
-  "La conoscenza è infinita come le stelle nell'universo e le cellule in una vena.",
-  "Cognitio infinita est sicut stellae in universo et cellulae in vena.",
+  "Bilgi,evrendeki yıldızlar ve damarlardaki hücreler gibi sonsuzdur.",
+  "Knowledge is as infinite as the stars in the universe and the cells in your veins.",
+  "El conocimiento es tan infinito como las estrellas en el universo y las células en las venas.",
+  "La connaissance est aussi infinie que les étoiles dans l'univers et les cellules dans les veines.",
+  "Wissen ist so unendlich wie die Sterne im Universum und die Zellen in den Blutgefäßen.",
+  "La conoscenza è infinita come le stelle nell'universo e le cellule nelle vene.",
+  "Cognitio infinita est sicut stellae in universo et cellulae in venis.",
   "知識は、宇宙の星々や血管内の細胞のように無限です。",
-  "Знания так же бесконечны, как звезды во Вселенной и клетки в вене.",
-  "المعرفة لا حصر لها مثل النجوم في الكون والخلايا في الوريد."
+  "Знания так же бесконечны, как звезды во Вселенной и клетки в венах.",
+  "المعرفة لا حصر لها مثل النجوم في الكون والخلايا في الأوردة."
 ];
 
 function QuoteCarousel() {
@@ -323,32 +327,43 @@ function QuoteCarousel() {
 
   return (
     <div style={{ 
-      marginTop: '2.5rem', 
-      minHeight: '5rem', // Prevent layout shift while allowing multiline
-      display: 'flex', 
-      justifyContent: 'center',
-      alignItems: 'center'
+      marginTop: '2rem', 
+      height: '80px', // Fixed height prevents the card from growing/shrinking
+      position: 'relative', 
+      width: '100%'
     }}>
       <AnimatePresence mode="wait">
-        <motion.p
+        <motion.div
           key={index}
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -15 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
           style={{ 
+            position: 'absolute', 
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <p style={{
             fontSize: '1.05rem', 
             fontStyle: 'italic', 
             opacity: 0.8,
             fontWeight: 500,
             textAlign: 'center',
-            width: '100%',
             lineHeight: '1.6',
-            margin: 0
-          }}
-        >
-          &quot;{quotes[index]}&quot;
-        </motion.p>
+            margin: '0 auto',
+            maxWidth: '450px', // Forces quotes to span exactly 2 lines
+            padding: '0 1rem'
+          }}>
+            &quot;{quotes[index]}&quot;
+          </p>
+        </motion.div>
       </AnimatePresence>
     </div>
   );

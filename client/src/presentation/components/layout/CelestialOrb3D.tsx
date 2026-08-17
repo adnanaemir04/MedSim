@@ -2,7 +2,7 @@
 
 import React, { useRef, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Sphere, useTexture, Environment } from '@react-three/drei';
+import { Sphere, Environment, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 
@@ -64,8 +64,8 @@ function Sun() {
 function Moon() {
   const meshRef = useRef<THREE.Mesh>(null);
   
-  // Reliable high-res public domain moon texture from Three.js repo
-  const colorMap = useTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg');
+  // Use locally hosted texture to avoid GitHub raw rate limits/CORS
+  const colorMap = useTexture('/textures/moon.jpg');
 
   useFrame(() => {
     if (meshRef.current) {
