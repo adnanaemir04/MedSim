@@ -269,7 +269,7 @@ export default function LandingPage({ onNavigateToAuth }: LandingPageProps) {
             Geleceğin <span className="highlight">Tıp Eğitimi</span>
           </h1>
           <p className="hero-subtitle">
-            Yapay zeka destekli, prosedürel ve sonsuz medikal simülasyonlarla klinik karar verme becerilerinizi kusursuzlaştırın.
+            Yapay zeka destekli, prosedürel ve sonsuz tıbbi simülasyonlarla klinik karar verme becerilerinizi kusursuzlaştırın.
           </p>
 
           <div className="action-buttons">
