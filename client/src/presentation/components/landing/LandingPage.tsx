@@ -323,9 +323,8 @@ function QuoteCarousel() {
 
   return (
     <div style={{ 
-      marginTop: '3.5rem', 
-      height: '2rem', 
-      position: 'relative', 
+      marginTop: '2.5rem', 
+      minHeight: '5rem', // Prevent layout shift while allowing multiline
       display: 'flex', 
       justifyContent: 'center',
       alignItems: 'center'
@@ -338,13 +337,14 @@ function QuoteCarousel() {
           exit={{ opacity: 0, y: -15 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
           style={{ 
-            position: 'absolute', 
             fontSize: '1.05rem', 
             fontStyle: 'italic', 
-            opacity: 0.7,
+            opacity: 0.8,
             fontWeight: 500,
             textAlign: 'center',
-            width: '100%'
+            width: '100%',
+            lineHeight: '1.6',
+            margin: 0
           }}
         >
           &quot;{quotes[index]}&quot;
