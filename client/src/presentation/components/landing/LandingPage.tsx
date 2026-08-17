@@ -317,7 +317,7 @@ function QuoteCarousel() {
   React.useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % quotes.length);
-    }, 15000); // 15 seconds interval
+    }, 8000); // 8 seconds interval
     return () => clearInterval(interval);
   }, []);
 
