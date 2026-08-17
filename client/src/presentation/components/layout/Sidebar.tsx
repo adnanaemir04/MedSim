@@ -39,7 +39,7 @@ const yearIconMap: Record<number, React.ReactNode> = {
 interface SidebarProps {
   user: User | null;
   onLogout: () => void;
-  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases', subjectFilter?: string) => void;
+  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription', subjectFilter?: string) => void;
 }
 
 export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
@@ -49,12 +49,12 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
   if (!user) return null;
 
   const deptsByYear: Record<number, string[]> = {
-    1: ["Anatomi", "Tıbbi Biyoloji", "Histoloji"],
-    2: ["Fizyoloji", "Mikrobiyoloji", "Biyokimya"],
-    3: ["Farmakoloji", "Patoloji"],
-    4: ["Dahiliye", "Genel Cerrahi", "Kadın Hastalıkları", "Pediatri"],
-    5: ["Ortopedi", "Göz Hastalıkları", "KBB", "Psikiyatri", "Dermatoloji"],
-    6: ["Acil Tıp", "Aile Hekimliği", "Yoğun Bakım"]
+    1: ["Anatomi", "Fizyoloji", "Tıbbi Biyokimya", "Histoloji ve Embriyoloji", "Tıbbi Biyoloji ve Genetik"],
+    2: ["Tıbbi Mikrobiyoloji", "Nöroanatomi", "Biyofizik", "İlk Yardım"],
+    3: ["Tıbbi Patoloji", "Tıbbi Farmakoloji", "Klinik Bilimlere Giriş", "Biyoistatistik"],
+    4: ["İç Hastalıkları (Dahiliye)", "Çocuk Sağlığı ve Hastalıkları", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum"],
+    5: ["Nöroloji", "Psikiyatri", "Ortopedi ve Travmatoloji", "Göz Hastalıkları", "KBB", "Üroloji", "Dermatoloji", "Enfeksiyon Hastalıkları", "Kardiyoloji"],
+    6: ["Acil Tıp", "Aile Hekimliği", "Halk Sağlığı", "Yoğun Bakım"]
   };
 
   return (

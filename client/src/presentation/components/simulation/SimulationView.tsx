@@ -88,67 +88,71 @@ export default function SimulationView({ subject, caseIndex, generatedData, onBa
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: patientInfo ? '340px 1fr' : '1fr', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: patientInfo ? '460px 1fr' : '1fr', gap: '1.5rem', alignItems: 'start' }}>
 
         {/* ── LEFT: Patient Card ── */}
         {patientInfo && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-            {/* Demographics */}
-            <div className="glass-panel" style={{ padding: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                <User size={14} /> Hasta Bilgileri
+            
+            <div style={{ display: 'grid', gridTemplateColumns: vitalItems.length > 0 ? '1fr 1fr' : '1fr', gap: '1rem' }}>
+              {/* Demographics */}
+              <div className="glass-panel" style={{ padding: '1.2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: 'var(--primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <User size={14} /> Hasta Bilgileri
+                </div>
+                <p style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.2rem' }}>{patientInfo.name}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                  {patientInfo.age} yaş · {patientInfo.gender}
+                </p>
+                {patientInfo.chiefComplaint && (
+                  <div style={{ background: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.2)', borderRadius: 'var(--radius-sm)', padding: '0.5rem 0.75rem' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#f43f5e', textTransform: 'uppercase' }}>Şikayet</span>
+                    <p style={{ marginTop: '0.2rem', fontSize: '0.8rem', lineHeight: 1.4, fontStyle: 'italic', color: 'var(--text-main)' }}>
+                      "{patientInfo.chiefComplaint}"
+                    </p>
+                  </div>
+                )}
               </div>
-              <p style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.3rem' }}>{patientInfo.name}</p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.85rem' }}>
-                {patientInfo.age} yaş · {patientInfo.gender}
-              </p>
-              {patientInfo.chiefComplaint && (
-                <div style={{ background: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.2)', borderRadius: 'var(--radius-md)', padding: '0.75rem 1rem' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#f43f5e', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Başvuru Şikayeti</span>
-                  <p style={{ marginTop: '0.3rem', fontSize: '0.88rem', lineHeight: 1.5, fontStyle: 'italic', color: 'var(--text-main)' }}>
-                    "{patientInfo.chiefComplaint}"
-                  </p>
+
+              {/* Vitals */}
+              {vitalItems.length > 0 && (
+                <div className="glass-panel" style={{ padding: '1.2rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#f43f5e', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Activity size={14} /> Vitals
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    {vitalItems.map((v, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-sm)' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{v.label}</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-main)' }}>{v.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Vitals */}
-            {vitalItems.length > 0 && (
-              <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem', color: '#f43f5e', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  <Activity size={14} /> Vital Bulgular
+            <div style={{ display: 'grid', gridTemplateColumns: (patientInfo.physicalExam && patientInfo.medicalHistory) ? '1fr 1fr' : '1fr', gap: '1rem' }}>
+              {/* Physical Exam */}
+              {patientInfo.physicalExam && (
+                <div className="glass-panel" style={{ padding: '1.2rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#8b5cf6', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Stethoscope size={14} /> Fizik Muayene
+                  </div>
+                  <p style={{ fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--text-muted)' }}>{patientInfo.physicalExam}</p>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {vitalItems.map((v, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.45rem 0.75rem', background: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-sm)' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{v.label}</span>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>{v.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Physical Exam */}
-            {patientInfo.physicalExam && (
-              <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', color: '#8b5cf6', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  <Stethoscope size={14} /> Fizik Muayene
+              {/* Medical History */}
+              {patientInfo.medicalHistory && (
+                <div className="glass-panel" style={{ padding: '1.2rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#10b981', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <FileText size={14} /> Özgeçmiş
+                  </div>
+                  <p style={{ fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--text-muted)' }}>{patientInfo.medicalHistory}</p>
                 </div>
-                <p style={{ fontSize: '0.855rem', lineHeight: 1.7, color: 'var(--text-muted)' }}>{patientInfo.physicalExam}</p>
-              </div>
-            )}
-
-            {/* Medical History */}
-            {patientInfo.medicalHistory && (
-              <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', color: '#10b981', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  <FileText size={14} /> Özgeçmiş & İlaçlar
-                </div>
-                <p style={{ fontSize: '0.855rem', lineHeight: 1.7, color: 'var(--text-muted)' }}>{patientInfo.medicalHistory}</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 

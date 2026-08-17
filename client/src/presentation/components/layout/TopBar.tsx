@@ -1,15 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { Moon, Sun, Home, CreditCard } from 'lucide-react';
+import { Moon, Sun, Home, CreditCard, X, AlertTriangle } from 'lucide-react';
 import CelestialOrb3D from './CelestialOrb3D';
 
-export default function TopBar() {
+export default function TopBar({ onNavigate }: { onNavigate?: (view: string) => void }) {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
   const handleToggle = () => {
     toggleTheme();
   };
+
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
 
   return (
     <>
@@ -17,7 +20,7 @@ export default function TopBar() {
         {/* Navigation Links */}
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => onNavigate && onNavigate('dashboard')}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '0.5rem', 
               padding: '0.5rem 1rem', borderRadius: '12px',
@@ -41,7 +44,7 @@ export default function TopBar() {
             Anasayfa
           </button>
           <button 
-            onClick={() => window.location.href = '/subscription'}
+            onClick={() => onNavigate && onNavigate('subscription')}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '0.5rem', 
               padding: '0.5rem 1rem', borderRadius: '12px',
@@ -64,6 +67,64 @@ export default function TopBar() {
             <CreditCard size={16} />
             Abonelik Planları
           </button>
+
+          {/* Medical Disclaimer */}
+          {showDisclaimer ? (
+            <div style={{
+              marginLeft: '2rem',
+              padding: '0.75rem 1.25rem',
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              borderLeft: '4px solid #ef4444',
+              borderRadius: '12px',
+              maxWidth: '650px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+            }}>
+              <AlertTriangle size={24} color="#ef4444" style={{ flexShrink: 0 }} />
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 500, lineHeight: 1.5, flex: 1 }}>
+                <span style={{ color: '#ef4444', fontWeight: 800 }}>Tıbbi Simülasyon Uyarısı:</span> Bu platformdaki senaryo ve kararlar tamamen <strong style={{ color: '#f87171' }}>yapay zeka</strong> tarafından oluşturulur. Gerçek tıbbi teşhis/tedavi referansı olarak <strong style={{ textDecoration: 'underline' }}>kullanılamaz</strong>.
+              </p>
+              <button 
+                onClick={() => setShowDisclaimer(false)}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)', border: 'none',
+                  color: '#ef4444', cursor: 'pointer', padding: '0.25rem',
+                  borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                aria-label="Kapat"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setShowDisclaimer(true)}
+              style={{
+                marginLeft: '2rem',
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '12px',
+                color: '#ef4444',
+                fontWeight: 600, fontSize: '0.85rem',
+                cursor: 'pointer', transition: 'all 0.2s',
+                backdropFilter: 'blur(5px)'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+            >
+              <AlertTriangle size={16} />
+              Simülasyon Uyarısı
+            </button>
+          )}
         </div>
 
         <div className="topbar-actions">

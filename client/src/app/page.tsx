@@ -9,10 +9,14 @@ import SimulationView from '../presentation/components/simulation/SimulationView
 import Profile from '../presentation/components/profile/Profile';
 import Leaderboard from '../presentation/components/leaderboard/Leaderboard';
 import PastCases from '../presentation/components/profile/PastCases';
+import LandingPage from '../presentation/components/landing/LandingPage';
+import SubscriptionPage from '../presentation/components/subscription/SubscriptionPage';
 
-type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases';
+type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription';
 
 export default function Home() {
+  const [isLanding, setIsLanding] = useState(true);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const [selectedCase, setSelectedCase] = useState<{subject: string, index: number, data?: any} | null>(null);
@@ -27,21 +31,45 @@ export default function Home() {
     solvedCases: []
   });
 
-  if (!isAuthenticated) {
-    return <AuthForm onLoginSuccess={() => setIsAuthenticated(true)} />;
-  }
-
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setIsLanding(true);
   };
+
+  if (isLanding && !isAuthenticated) {
+    return (
+      <LandingPage 
+        onNavigateToAuth={(mode) => {
+          setAuthMode(mode);
+          setIsLanding(false);
+        }} 
+      />
+    );
+  }
+
+  if (!isLanding && !isAuthenticated) {
+    return (
+      <AuthForm 
+        initialMode={authMode}
+        onLoginSuccess={() => setIsAuthenticated(true)} 
+        onBackToLanding={() => setIsLanding(true)}
+      />
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <TopBar />
+      <TopBar 
+        onNavigate={(view) => {
+          if (view === 'subscription' || view === 'dashboard') {
+            setCurrentView(view as any);
+          }
+        }} 
+      />
       <div className="app-layout">
         <Sidebar 
           user={user as any} 
-          onLogout={() => setIsAuthenticated(false)}
+          onLogout={handleLogout}
           onNavigate={(view, subjectFilter) => {
             setCurrentView(view);
             setFilterSubject(subjectFilter);
@@ -69,13 +97,27 @@ export default function Home() {
                 const newPoints = user.points + points;
                 setUser({ ...user, points: newPoints, solvedCases: [...user.solvedCases, "case_completed"] as any });
                 try {
+                  // Update points
                   await fetch('http://localhost:5211/api/Auth/updateProfile', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: user.email, nickname: user.nickname, avatar: user.avatar, points: newPoints })
                   });
+
+                  // Save solved case
+                  if (selectedCase.data?.id) {
+                    await fetch('http://localhost:5211/api/Profile/solve-case', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        email: user.email, 
+                        medicalCaseId: selectedCase.data.id,
+                        points: points 
+                      })
+                    });
+                  }
                 } catch (e) {
-                  console.error("Failed to save points", e);
+                  console.error("Failed to save points or solved case", e);
                 }
               }}
             />
@@ -95,6 +137,10 @@ export default function Home() {
               onUpdate={(updatedUser) => setUser({ ...user, ...updatedUser })} 
               onLogout={handleLogout} 
             />
+          )}
+
+          {currentView === 'subscription' && (
+            <SubscriptionPage />
           )}
         </div>
       </div>

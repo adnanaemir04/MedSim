@@ -76,4 +76,46 @@ public class ProfileController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPost("solve-case")]
+    public async Task<IActionResult> SolveCase([FromBody] SolveCaseRequest request)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+
+        var medicalCase = await _context.MedicalCases.FindAsync(request.MedicalCaseId);
+        if (medicalCase == null) return NotFound("Vaka bulunamadı.");
+
+        // Check if already solved
+        var existingSolve = await _context.SolvedCases
+            .FirstOrDefaultAsync(sc => sc.UserId == user.Id && sc.MedicalCaseId == request.MedicalCaseId);
+
+        if (existingSolve != null)
+        {
+            // Just update points if we want, or do nothing. We'll do nothing.
+            return Ok(new { message = "Bu vaka zaten çözülmüş." });
+        }
+
+        var solvedCase = new MedSim.Domain.Entities.SolvedCase
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            MedicalCaseId = request.MedicalCaseId,
+            EarnedPoints = request.Points,
+            IsSolved = true,
+            SolvedAt = DateTime.UtcNow
+        };
+
+        _context.SolvedCases.Add(solvedCase);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Vaka başarıyla kaydedildi." });
+    }
+}
+
+public class SolveCaseRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public Guid MedicalCaseId { get; set; }
+    public int Points { get; set; }
 }

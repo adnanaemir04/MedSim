@@ -81,13 +81,36 @@ public class SimulationController : ControllerBase
 
         for (int i = 0; i < request.Count; i++)
         {
-            var newCase = await _generatorService.GenerateCaseAsync(department.Name, department.Id);
-            // Benzersizliği sağlamak için ufak oynamalar yapabiliriz
-            newCase.Title += $" - Vaka {DateTime.UtcNow.Ticks % 1000}";
-            generatedCases.Add(newCase);
+            var newCaseDto = await _generatorService.GenerateCaseAsync(department.Name, department.Id);
+            newCaseDto.Title += $" - Vaka {DateTime.UtcNow.Ticks % 1000}";
+            
+            var newCase = new MedicalCase
+            {
+                Id = newCaseDto.Id,
+                DepartmentId = newCaseDto.DepartmentId,
+                Title = newCaseDto.Title,
+                InitialText = newCaseDto.InitialText,
+                IsProcedural = newCaseDto.IsProcedural,
+                Stages = newCaseDto.Stages.Select(s => new CaseStage
+                {
+                    Id = s.Id,
+                    OrderIndex = s.OrderIndex,
+                    Text = s.Text,
+                    Options = s.Options.Select(o => new CaseOption
+                    {
+                        Id = o.Id,
+                        Text = o.Text,
+                        IsCorrect = o.IsCorrect,
+                        Feedback = o.Feedback
+                    }).ToList()
+                }).ToList()
+            };
+
+            _context.MedicalCases.Add(newCase);
+            generatedCases.Add(newCaseDto);
         }
 
-        // İsteğe bağlı olarak DB'ye kaydedilebilir, şimdilik Frontend'e dönüyoruz.
+        await _context.SaveChangesAsync();
 
         return Ok(generatedCases);
     }

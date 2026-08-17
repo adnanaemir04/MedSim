@@ -3,8 +3,16 @@
 import { useState } from 'react';
 import { ApiUserRepository } from '../../../infrastructure/repositories/ApiUserRepository';
 
-export default function AuthForm({ onLoginSuccess }: { onLoginSuccess: () => void }) {
-  const [isLoginMode, setIsLoginMode] = useState(true);
+export default function AuthForm({ 
+  onLoginSuccess, 
+  onBackToLanding,
+  initialMode = 'login'
+}: { 
+  onLoginSuccess: () => void,
+  onBackToLanding: () => void,
+  initialMode?: 'login' | 'register'
+}) {
+  const [isLoginMode, setIsLoginMode] = useState(initialMode === 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
@@ -30,6 +38,9 @@ export default function AuthForm({ onLoginSuccess }: { onLoginSuccess: () => voi
 
   return (
     <div className="auth-container">
+      <button className="btn-back" onClick={onBackToLanding}>
+        &larr; Anasayfa
+      </button>
       <div className="auth-box glass-panel">
         <h1 className="auth-title">MedSim</h1>
         <p className="auth-subtitle">Klinik Simülasyon Platformuna Hoş Geldiniz</p>

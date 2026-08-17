@@ -41,13 +41,25 @@ export default function Dashboard({ filterSubject, onStartCase }: DashboardProps
     fetchData();
   }, []);
 
-  // Update subject dropdown when year changes
+  // Update subject dropdown when year changes, IF filterSubject is NOT active
   useEffect(() => {
+    if (filterSubject) return; // Don't auto-change if we are locked to a subject
     const subjectsForYear = departments.filter(d => d.year === Number(genYear));
     if (subjectsForYear.length > 0 && !subjectsForYear.find(d => d.name === genSubject)) {
       setGenSubject(subjectsForYear[0].name);
     }
-  }, [genYear, departments]);
+  }, [genYear, departments, filterSubject]);
+
+  // When filterSubject or departments change, lock to that subject
+  useEffect(() => {
+    if (filterSubject && departments.length > 0) {
+      const dept = departments.find(d => d.name === filterSubject);
+      if (dept) {
+        setGenSubject(dept.name);
+        setGenYear(dept.year.toString());
+      }
+    }
+  }, [filterSubject, departments]);
 
   const handleGenerate = async () => {
     let count = Math.max(1, Math.min(10, genCount));
@@ -343,17 +355,19 @@ export default function Dashboard({ filterSubject, onStartCase }: DashboardProps
                   <select 
                     value={genYear} 
                     onChange={e => setGenYear(e.target.value)} 
+                    disabled={!!filterSubject}
                     style={{ 
                       width: '100%', padding: '1.2rem 1rem', 
                       borderRadius: '20px', 
-                      background: isLight ? '#f1f5f9' : 'rgba(0,0,0,0.3)', 
+                      background: !!filterSubject ? (isLight ? '#e2e8f0' : 'rgba(0,0,0,0.5)') : (isLight ? '#f1f5f9' : 'rgba(0,0,0,0.3)'), 
                       border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', 
-                      color: isLight ? '#0f172a' : 'white',
+                      color: !!filterSubject ? (isLight ? '#64748b' : '#94a3b8') : (isLight ? '#0f172a' : 'white'),
                       fontSize: '1rem', fontWeight: 600,
                       outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
-                      appearance: 'none'
+                      appearance: 'none',
+                      cursor: !!filterSubject ? 'not-allowed' : 'pointer'
                     }}
-                    onFocus={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.boxShadow = '0 0 0 4px var(--primary-glow)'; }}
+                    onFocus={e => { if (!filterSubject) { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.boxShadow = '0 0 0 4px var(--primary-glow)'; } }}
                     onBlur={e => { e.currentTarget.style.borderColor = isLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
                     {uniqueYears.map(year => (
@@ -369,17 +383,19 @@ export default function Dashboard({ filterSubject, onStartCase }: DashboardProps
                   <select 
                     value={genSubject} 
                     onChange={e => setGenSubject(e.target.value)} 
+                    disabled={!!filterSubject}
                     style={{ 
                       width: '100%', padding: '1.2rem 1rem', 
                       borderRadius: '20px', 
-                      background: isLight ? '#f1f5f9' : 'rgba(0,0,0,0.3)', 
+                      background: !!filterSubject ? (isLight ? '#e2e8f0' : 'rgba(0,0,0,0.5)') : (isLight ? '#f1f5f9' : 'rgba(0,0,0,0.3)'), 
                       border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', 
-                      color: isLight ? '#0f172a' : 'white',
+                      color: !!filterSubject ? (isLight ? '#64748b' : '#94a3b8') : (isLight ? '#0f172a' : 'white'),
                       fontSize: '1rem', fontWeight: 600,
                       outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
-                      appearance: 'none'
+                      appearance: 'none',
+                      cursor: !!filterSubject ? 'not-allowed' : 'pointer'
                     }}
-                    onFocus={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.boxShadow = '0 0 0 4px var(--primary-glow)'; }}
+                    onFocus={e => { if (!filterSubject) { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.boxShadow = '0 0 0 4px var(--primary-glow)'; } }}
                     onBlur={e => { e.currentTarget.style.borderColor = isLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
                     {departments.filter(d => d.year === Number(genYear)).map(subj => (

@@ -12,12 +12,12 @@ public static class DatabaseSeeder
         {
             var deptsByYear = new Dictionary<int, string[]>
             {
-                { 1, new[] { "Anatomi", "Tıbbi Biyoloji", "Histoloji" } },
-                { 2, new[] { "Fizyoloji", "Mikrobiyoloji", "Biyokimya" } },
-                { 3, new[] { "Farmakoloji", "Patoloji" } },
-                { 4, new[] { "Dahiliye", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum", "Pediatri" } },
-                { 5, new[] { "Ortopedi", "Göz Hastalıkları", "KBB", "Psikiyatri", "Dermatoloji" } },
-                { 6, new[] { "Acil Tıp", "Aile Hekimliği", "Yoğun Bakım" } }
+                { 1, new[] { "Anatomi", "Fizyoloji", "Tıbbi Biyokimya", "Histoloji ve Embriyoloji", "Tıbbi Biyoloji ve Genetik" } },
+                { 2, new[] { "Tıbbi Mikrobiyoloji", "Nöroanatomi", "Biyofizik", "İlk Yardım" } },
+                { 3, new[] { "Tıbbi Patoloji", "Tıbbi Farmakoloji", "Klinik Bilimlere Giriş", "Biyoistatistik" } },
+                { 4, new[] { "İç Hastalıkları (Dahiliye)", "Çocuk Sağlığı ve Hastalıkları", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum" } },
+                { 5, new[] { "Nöroloji", "Psikiyatri", "Ortopedi ve Travmatoloji", "Göz Hastalıkları", "KBB", "Üroloji", "Dermatoloji", "Enfeksiyon Hastalıkları", "Kardiyoloji" } },
+                { 6, new[] { "Acil Tıp", "Aile Hekimliği", "Halk Sağlığı", "Yoğun Bakım" } }
             };
 
             foreach (var year in deptsByYear)
