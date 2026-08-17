@@ -785,8 +785,13 @@ body.dark .auth-tabs {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
-  color: white;
+  background-color: #0f172a;
+  transition: background-color 1s ease;
+}
+
+body:not(.dark) .landing-container {
+  background: radial-gradient(circle at 50% 0%, #ffffff 0%, #fef2f2 50%, #fee2e2 100%);
+  animation: none;
 }
 
 .canvas-container {
@@ -796,6 +801,40 @@ body.dark .auth-tabs {
   width: 100%;
   height: 100%;
   z-index: 1;
+}
+
+.landing-theme-toggle {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+body:not(.dark) .landing-theme-toggle {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 1);
+  color: #f59e0b;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+}
+.landing-theme-toggle:hover {
+  transform: scale(1.15) rotate(15deg);
+  background: rgba(255, 255, 255, 0.2);
+}
+body:not(.dark) .landing-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 40px rgba(245, 158, 11, 0.5);
 }
 
 .landing-content {
@@ -810,55 +849,101 @@ body.dark .auth-tabs {
 }
 
 .hero-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 36px;
+  padding: 4rem 3rem;
+  max-width: 800px;
+  text-align: center;
+  box-shadow: 0 40px 100px -20px rgba(225, 29, 72, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 1);
+  transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .hero-card {
   background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  padding: 4rem 3rem;
-  max-width: 800px;
-  text-align: center;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .logo-badge {
   display: inline-block;
-  padding: 0.5rem 1rem;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #60a5fa;
+  padding: 0.5rem 1.25rem;
+  background: rgba(14, 165, 233, 0.15);
+  border: 1px solid rgba(14, 165, 233, 0.4);
+  color: #0284c7;
   border-radius: 999px;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: 2rem;
+  transition: all 1s ease;
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.1);
+}
+
+.dark .logo-badge {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  box-shadow: none;
 }
 
 .hero-title {
   font-size: 4.5rem;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1.1;
   margin-bottom: 1.5rem;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  transition: color 1s ease;
+}
+
+.dark .hero-title {
   color: #f8fafc;
+  font-weight: 800;
 }
 
 .hero-title .highlight {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% auto;
+  animation: shine 4s linear infinite;
+}
+
+.dark .hero-title .highlight {
   background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: none;
+}
+
+@keyframes shine {
+  to { background-position: 200% center; }
 }
 
 .hero-subtitle {
   font-size: 1.25rem;
-  color: #94a3b8;
+  color: #334155;
   line-height: 1.6;
   margin-bottom: 3rem;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+  font-weight: 500;
+  transition: color 1s ease;
+}
+
+.dark .hero-subtitle {
+  color: #94a3b8;
+  font-weight: 400;
 }
 
 .action-buttons {
@@ -869,37 +954,65 @@ body.dark .auth-tabs {
 }
 
 .btn-primary-large {
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
   color: white;
   border: none;
-  padding: 1rem 2.5rem;
-  border-radius: 12px;
+  padding: 1.2rem 3rem;
+  border-radius: 16px;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.5);
+  transition: all 0.3s ease;
+}
+
+.dark .btn-primary-large {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
   box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
-  transition: box-shadow 0.3s ease;
 }
 
 .btn-primary-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px -5px rgba(14, 165, 233, 0.7);
+}
+
+.dark .btn-primary-large:hover {
   box-shadow: 0 15px 35px -5px rgba(59, 130, 246, 0.7);
 }
 
 .btn-secondary-large {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+  border: 1px solid rgba(225, 29, 72, 0.4);
+  padding: 1.2rem 3rem;
+  border-radius: 16px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.dark .btn-secondary-large {
   background: rgba(255, 255, 255, 0.05);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1rem 2.5rem;
-  border-radius: 12px;
-  font-size: 1.125rem;
+  box-shadow: none;
   font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .btn-secondary-large:hover {
+  background: white;
+  border-color: rgba(14, 165, 233, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.15);
+}
+
+.dark .btn-secondary-large:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-back {
