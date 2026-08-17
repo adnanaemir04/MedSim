@@ -11,6 +11,7 @@ public class MedSimDbContext : DbContext
 
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<SolvedCase> SolvedCases { get; set; } = null!;
+    public DbSet<UserFriend> UserFriends { get; set; } = null!;
     
     // Simulation Engine Entities
     public DbSet<Department> Departments { get; set; } = null!;
@@ -39,6 +40,21 @@ public class MedSimDbContext : DbContext
             entity.HasOne(e => e.MedicalCase)
                   .WithMany()
                   .HasForeignKey(e => e.MedicalCaseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<UserFriend>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.FriendId });
+            
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.Friends)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasOne(e => e.Friend)
+                  .WithMany()
+                  .HasForeignKey(e => e.FriendId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 

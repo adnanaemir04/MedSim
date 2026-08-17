@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { User } from '../../../../domain/entities/User';
 import { Camera } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { getUserRank } from '../../../utils/rankSystem';
 
 interface ProfileProps {
   user: User;
@@ -19,9 +20,51 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   
+  const [friends, setFriends] = useState<any[]>([]);
+  const [friendNickname, setFriendNickname] = useState('');
+  const [friendMsg, setFriendMsg] = useState('');
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme } = useTheme();
   const isLight = theme === 'light';
+
+  const fetchFriends = async () => {
+    try {
+      const res = await fetch(`http://localhost:5211/api/Profile/friends?email=${user.email}`);
+      if (res.ok) {
+        const data = await res.json();
+        setFriends(data);
+      }
+    } catch (err) {
+      console.error("Friends fetch error:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFriends();
+  }, [user.email]);
+
+  const handleAddFriend = async () => {
+    if (!friendNickname.trim()) return;
+    try {
+      const res = await fetch('http://localhost:5211/api/Profile/add-friend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail: user.email, friendNickname })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setFriendMsg("Arkadaş eklendi!");
+        setFriendNickname('');
+        fetchFriends();
+      } else {
+        setFriendMsg(data.message || "Hata oluştu.");
+      }
+    } catch (err) {
+      setFriendMsg("Hata oluştu.");
+    }
+    setTimeout(() => setFriendMsg(''), 3000);
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -143,6 +186,23 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
               <Camera size={18} color="var(--text-muted)" />
             </div>
           </div>
+          
+          {(() => {
+            const rank = getUserRank(user.points);
+            return (
+              <div style={{ 
+                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.4rem 1rem', background: rank.bg,
+                border: isLight ? 'none' : `1px solid ${rank.border}`,
+                borderRadius: '20px', color: rank.color, fontWeight: 700,
+                boxShadow: !isLight ? `0 0 15px ${rank.bg}` : 'none'
+              }}>
+                <span style={{ fontSize: '1.1rem' }}>{rank.icon}</span>
+                <span>{rank.title}</span>
+              </div>
+            );
+          })()}
+          
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Fotoğraf Değiştir</span>
         </div>
 
@@ -199,6 +259,59 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
           </div>
           
           {message && <div style={{ marginTop: '1rem', color: 'var(--primary)', fontWeight: 600 }}>{message}</div>}
+        </div>
+      </div>
+      
+      {/* ── Arkadaşlarım Section ── */}
+      <div style={{ marginTop: '4rem', paddingTop: '3rem', borderTop: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid var(--glass-border)' }}>
+        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem', color: isLight ? '#1e293b' : 'white' }}>
+          Arkadaşlarım
+        </h3>
+        
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', maxWidth: '500px' }}>
+          <input 
+            type="text" 
+            placeholder="Arkadaşının nickname'ini yaz..." 
+            value={friendNickname}
+            onChange={e => setFriendNickname(e.target.value)}
+            style={{ ...inputStyle, flex: 1 }}
+          />
+          <button className="btn-primary" onClick={handleAddFriend} style={{ padding: '0 1.5rem' }}>Ekle</button>
+        </div>
+        {friendMsg && <div style={{ marginBottom: '1.5rem', color: 'var(--primary)', fontWeight: 600 }}>{friendMsg}</div>}
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+          {friends.length === 0 && (
+            <p style={{ color: 'var(--text-muted)' }}>Henüz arkadaş eklemediniz.</p>
+          )}
+          {friends.map((friend, idx) => {
+            const rank = getUserRank(friend.points);
+            return (
+              <div key={idx} style={{ 
+                background: isLight ? 'rgba(255,255,255,0.7)' : 'var(--bg-main)', 
+                padding: '1.2rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '1rem',
+                border: isLight ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.05)',
+                boxShadow: isLight ? '0 5px 15px rgba(0,0,0,0.02)' : '0 5px 15px rgba(0,0,0,0.2)'
+              }}>
+                <div style={{ 
+                  fontSize: friend.avatar?.startsWith('data:image') ? '0' : '1.8rem', 
+                  background: friend.avatar?.startsWith('data:image') ? `url(${friend.avatar}) center/cover` : 'rgba(255,255,255,0.1)',
+                  width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' 
+                }}>
+                  {!friend.avatar?.startsWith('data:image') && friend.avatar}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 800, color: isLight ? '#1e293b' : 'white', fontSize: '1.1rem' }}>{friend.nickname}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{friend.points} Puan</span>
+                    <span style={{ fontSize: '0.75rem', background: rank.bg, color: rank.color, padding: '0.1rem 0.4rem', borderRadius: '8px', fontWeight: 700 }}>
+                      {rank.icon} {rank.title}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
       

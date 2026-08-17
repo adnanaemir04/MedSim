@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { User } from '../../../../domain/entities/User';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { getUserRank } from '../../../utils/rankSystem';
 
 export default function Leaderboard() {
   const [users, setUsers] = useState<User[]>([]);
@@ -142,22 +143,26 @@ export default function Leaderboard() {
                   }}>
                     {user.nickname}
                   </span>
-                  {index === 0 && (
-                    <span style={{ 
-                      fontSize: '0.85rem', 
-                      color: isLight ? '#d97706' : '#fcd34d', 
-                      fontWeight: 700,
-                      background: isLight ? 'rgba(217, 119, 6, 0.1)' : 'rgba(252, 211, 77, 0.1)',
-                      border: isLight ? 'none' : '1px solid rgba(252, 211, 77, 0.2)',
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '12px',
-                      display: 'inline-block',
-                      marginTop: '0.3rem',
-                      boxShadow: !isLight ? '0 0 10px rgba(252, 211, 77, 0.1)' : 'none'
-                    }}>
-                      🏆 Başhekim
-                    </span>
-                  )}
+                  
+                  {(() => {
+                    const rank = getUserRank(user.points);
+                    return (
+                      <span style={{ 
+                        fontSize: '0.85rem', 
+                        color: rank.color, 
+                        fontWeight: 700,
+                        background: rank.bg,
+                        border: isLight ? 'none' : `1px solid ${rank.border}`,
+                        padding: '0.2rem 0.6rem',
+                        borderRadius: '12px',
+                        display: 'inline-block',
+                        marginTop: '0.3rem',
+                        boxShadow: !isLight ? `0 0 10px ${rank.bg}` : 'none'
+                      }}>
+                        {rank.icon} {rank.title}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 

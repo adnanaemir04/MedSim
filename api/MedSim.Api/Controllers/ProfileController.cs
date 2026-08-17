@@ -111,6 +111,72 @@ public class ProfileController : ControllerBase
 
         return Ok(new { message = "Vaka başarıyla kaydedildi." });
     }
+    [HttpPost("add-friend")]
+    public async Task<IActionResult> AddFriend([FromBody] FriendRequest request)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.UserEmail);
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+
+        var friend = await _context.Users.FirstOrDefaultAsync(u => u.Nickname == request.FriendNickname);
+        if (friend == null) return NotFound("Arkadaş bulunamadı.");
+
+        if (user.Id == friend.Id) return BadRequest("Kendinizi ekleyemezsiniz.");
+
+        var existingFriend = await _context.UserFriends
+            .FirstOrDefaultAsync(f => f.UserId == user.Id && f.FriendId == friend.Id);
+            
+        if (existingFriend != null) return BadRequest("Bu kullanıcı zaten arkadaşınız.");
+
+        _context.UserFriends.Add(new MedSim.Domain.Entities.UserFriend
+        {
+            UserId = user.Id,
+            FriendId = friend.Id
+        });
+
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "Arkadaş başarıyla eklendi." });
+    }
+
+    [HttpDelete("remove-friend")]
+    public async Task<IActionResult> RemoveFriend([FromBody] FriendRequest request)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.UserEmail);
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+
+        var friend = await _context.Users.FirstOrDefaultAsync(u => u.Nickname == request.FriendNickname);
+        if (friend == null) return NotFound("Arkadaş bulunamadı.");
+
+        var userFriend = await _context.UserFriends
+            .FirstOrDefaultAsync(f => f.UserId == user.Id && f.FriendId == friend.Id);
+            
+        if (userFriend == null) return NotFound("Bu kullanıcı arkadaş listenizde yok.");
+
+        _context.UserFriends.Remove(userFriend);
+        await _context.SaveChangesAsync();
+        
+        return Ok(new { message = "Arkadaş başarıyla çıkarıldı." });
+    }
+
+    [HttpGet("friends")]
+    public async Task<IActionResult> GetFriends([FromQuery] string email)
+    {
+        var user = await _context.Users
+            .Include(u => u.Friends)
+            .ThenInclude(f => f.Friend)
+            .FirstOrDefaultAsync(u => u.Email == email);
+            
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+
+        var friends = user.Friends.Select(f => new
+        {
+            Nickname = f.Friend.Nickname,
+            Avatar = f.Friend.Avatar,
+            Points = f.Friend.Points,
+            AddedAt = f.AddedAt
+        }).OrderByDescending(f => f.Points).ToList();
+
+        return Ok(friends);
+    }
 }
 
 public class SolveCaseRequest
@@ -118,4 +184,10 @@ public class SolveCaseRequest
     public string Email { get; set; } = string.Empty;
     public Guid MedicalCaseId { get; set; }
     public int Points { get; set; }
+}
+
+public class FriendRequest
+{
+    public string UserEmail { get; set; } = string.Empty;
+    public string FriendNickname { get; set; } = string.Empty;
 }
