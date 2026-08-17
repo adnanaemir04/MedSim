@@ -7,16 +7,7 @@ import { useState } from 'react';
 export default function TopBar() {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
-  const [sunAnimationKey, setSunAnimationKey] = useState(0);
-
   const handleToggle = () => {
-    if (isDarkMode) {
-      // Switching TO light mode -> Trigger Sun
-      setSunAnimationKey(prev => prev + 1);
-    } else {
-      // Switching TO dark mode -> Remove Sun
-      setSunAnimationKey(0);
-    }
     toggleTheme();
   };
 
@@ -87,8 +78,8 @@ export default function TopBar() {
       </header>
       
       {/* The Animated Background Orb (Only for Light Mode) */}
-      {sunAnimationKey > 0 && !isDarkMode && (
-        <div key={sunAnimationKey} className="flying-orb sun-orb" />
+      {!isDarkMode && (
+        <div className="flying-orb sun-orb" />
       )}
     </>
   );
