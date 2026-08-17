@@ -133,22 +133,38 @@ export default function Dashboard({ filterSubject, onStartCase }: DashboardProps
           {filterSubject ? `${filterSubject} Vakaları` : 'Tüm Vakalarım'}
         </h2>
         <button 
-          className="btn-primary" 
           style={{ 
-            padding: '1rem 2rem', 
+            padding: '1rem 2.5rem', 
             fontSize: '1.2rem', 
-            fontWeight: 800, 
-            borderRadius: '30px', 
-            boxShadow: '0 10px 25px rgba(79, 70, 229, 0.4)',
-            letterSpacing: '0.5px',
-            transition: 'transform 0.2s, box-shadow 0.2s',
-            cursor: 'pointer'
+            fontWeight: 900, 
+            borderRadius: '50px', 
+            background: 'linear-gradient(135deg, #4f46e5, #06b6d4, #3b82f6)',
+            backgroundSize: '200% auto',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 10px 30px rgba(6, 182, 212, 0.4), inset 0 2px 0 rgba(255,255,255,0.3)',
+            letterSpacing: '1px',
+            transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.8rem',
+            animation: 'pulseGlow 2s infinite'
           }} 
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 15px 30px rgba(79, 70, 229, 0.6)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(79, 70, 229, 0.4)'; }}
+          onMouseEnter={e => { 
+            e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)'; 
+            e.currentTarget.style.boxShadow = '0 20px 40px rgba(6, 182, 212, 0.6), inset 0 2px 0 rgba(255,255,255,0.5)'; 
+            e.currentTarget.style.backgroundPosition = 'right center';
+          }}
+          onMouseLeave={e => { 
+            e.currentTarget.style.transform = 'translateY(0) scale(1)'; 
+            e.currentTarget.style.boxShadow = '0 10px 30px rgba(6, 182, 212, 0.4), inset 0 2px 0 rgba(255,255,255,0.3)'; 
+            e.currentTarget.style.backgroundPosition = 'left center';
+          }}
           onClick={() => setShowGenerateModal(true)}
         >
-          + Yeni Vaka Üret
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          SİMÜLASYON YARAT
         </button>
       </div>
 
@@ -498,6 +514,11 @@ export default function Dashboard({ filterSubject, onStartCase }: DashboardProps
               @keyframes pulse {
                 0%, 100% { transform: scale(0.6); opacity: 0.4; }
                 50% { transform: scale(1); opacity: 1; }
+              }
+              @keyframes pulseGlow {
+                0% { box-shadow: 0 10px 30px rgba(6, 182, 212, 0.4), inset 0 2px 0 rgba(255,255,255,0.3); }
+                50% { box-shadow: 0 15px 40px rgba(6, 182, 212, 0.7), inset 0 2px 0 rgba(255,255,255,0.5); }
+                100% { box-shadow: 0 10px 30px rgba(6, 182, 212, 0.4), inset 0 2px 0 rgba(255,255,255,0.3); }
               }
             `}</style>
           </div>
