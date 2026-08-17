@@ -1,3 +1,4 @@
+using MedSim.Application.Services;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -10,16 +11,41 @@ namespace MedSim.Api.Controllers;
 public class TusController : ControllerBase
 {
     private readonly MedSimDbContext _context;
+    private readonly IProceduralGeneratorService _proceduralGeneratorService;
 
-    public TusController(MedSimDbContext context)
+    public TusController(MedSimDbContext context, IProceduralGeneratorService proceduralGeneratorService)
     {
         _context = context;
+        _proceduralGeneratorService = proceduralGeneratorService;
+    }
+
+    [HttpGet("subjects")]
+    public async Task<IActionResult> GetSubjects()
+    {
+        var subjects = await _context.TusQuestions
+            .GroupBy(q => q.Subject)
+            .Select(g => new
+            {
+                Name = g.Key,
+                QuestionCount = g.Count()
+            })
+            .OrderBy(s => s.Name)
+            .ToListAsync();
+
+        return Ok(subjects);
     }
 
     [HttpGet("questions")]
-    public async Task<IActionResult> GetQuestions([FromQuery] int count = 5)
+    public async Task<IActionResult> GetQuestions([FromQuery] int count = 5, [FromQuery] string? subject = null)
     {
-        var questions = await _context.TusQuestions
+        var query = _context.TusQuestions.AsQueryable();
+
+        if (!string.IsNullOrEmpty(subject))
+        {
+            query = query.Where(q => q.Subject == subject);
+        }
+
+        var questions = await query
             .OrderBy(q => EF.Functions.Random())
             .Take(count)
             .Select(q => new
@@ -109,6 +135,54 @@ public class TusController : ControllerBase
 
         return Ok(leaderboard);
     }
+
+    [HttpPost("explain-concepts")]
+    public async Task<IActionResult> ExplainConcepts([FromBody] ExplainConceptRequest request)
+    {
+        var question = await _context.TusQuestions.FindAsync(request.QuestionId);
+        if (question == null) return NotFound("Soru bulunamadı.");
+
+        try
+        {
+            var explanation = await _proceduralGeneratorService.ExplainTusConceptsAsync(
+                question.QuestionText,
+                question.OptionA,
+                question.OptionB,
+                question.OptionC,
+                question.OptionD,
+                question.OptionE,
+                question.CorrectOption,
+                question.Explanation
+            );
+
+            return Ok(new { explanation });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Kavram açıklaması üretilemedi: " + ex.Message });
+        }
+    }
+    [HttpPost("generate-questions")]
+    public async Task<IActionResult> GenerateQuestions([FromBody] GenerateTusQuestionsRequest request)
+    {
+        try
+        {
+            var questions = await _proceduralGeneratorService.GenerateTusQuestionsAsync(request.Subject, request.Count);
+            
+            if (questions != null && questions.Any())
+            {
+                _context.TusQuestions.AddRange(questions);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = $"{questions.Count} adet soru üretildi ve kaydedildi.", questions });
+            }
+            
+            return BadRequest("Soru üretilemedi.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Soru üretimi sırasında hata oluştu: " + ex.Message });
+        }
+    }
 }
 
 public class TusAnswerRequest
@@ -116,4 +190,15 @@ public class TusAnswerRequest
     public string Email { get; set; } = string.Empty;
     public Guid QuestionId { get; set; }
     public string SelectedOption { get; set; } = string.Empty;
+}
+
+public class ExplainConceptRequest
+{
+    public Guid QuestionId { get; set; }
+}
+
+public class GenerateTusQuestionsRequest
+{
+    public string Subject { get; set; } = string.Empty;
+    public int Count { get; set; } = 5;
 }

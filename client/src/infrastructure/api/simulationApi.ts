@@ -99,3 +99,23 @@ export const getSolvedCases = async (
     const response = await axios.get<PagedResult<SolvedCaseDto>>(url);
     return response.data;
 };
+
+export interface TusSubjectDto {
+    name: string;
+    questionCount: number;
+}
+
+export const getTusSubjects = async (): Promise<TusSubjectDto[]> => {
+    const response = await axios.get<TusSubjectDto[]>('http://localhost:5211/api/tus/subjects');
+    return response.data;
+};
+
+export const getTusConceptExplanation = async (questionId: string): Promise<string> => {
+    const response = await axios.post<{explanation: string}>('http://localhost:5211/api/tus/explain-concepts', { questionId });
+    return response.data.explanation;
+};
+
+export const generateTusQuestions = async (subject: string, count: number = 5): Promise<any> => {
+    const response = await axios.post('http://localhost:5211/api/tus/generate-questions', { subject, count });
+    return response.data;
+};
