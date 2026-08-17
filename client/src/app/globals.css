@@ -124,17 +124,53 @@ body {
 /* FLOATING TOPBAR */
 .topbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 1rem 2rem;
   margin: 1rem 2rem 0 2rem;
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-float), var(--shadow-inner);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0;
+  box-shadow: none;
   z-index: 100;
   transition: background 0.8s, border-color 0.8s, box-shadow 0.8s;
+}
+
+/* =========================================
+   FLYING ORB ANIMATION (SUN/MOON)
+========================================= */
+.flying-orb {
+  position: fixed;
+  top: 30px;
+  right: 50px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: flyToButton 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+.sun-orb {
+  background: radial-gradient(circle, rgba(253, 224, 71, 0.8) 0%, rgba(245, 158, 11, 0.4) 100%);
+}
+.moon-orb {
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.8) 0%, rgba(79, 70, 229, 0.4) 100%);
+}
+
+@keyframes flyToButton {
+  0% {
+    top: 30px;
+    right: 50px;
+    transform: scale(0.5);
+    opacity: 0.9;
+  }
+  100% {
+    top: 130px; /* Aligned with Yeni Vaka Üret button */
+    right: 80px;
+    transform: scale(2);
+    opacity: 0.75;
+  }
 }
 
 .topbar-logo {

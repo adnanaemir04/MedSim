@@ -59,6 +59,13 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
 
   return (
     <aside className="sidebar">
+      {/* MedSim Logo */}
+      <div className="topbar-logo" style={{ padding: '0 0.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: '2.4rem', fontWeight: 900, background: 'linear-gradient(90deg, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-1px' }}>
+          MedSim
+        </span>
+      </div>
+
       <div className="user-profile-sidebar" onClick={() => onNavigate('profile')}>
         <div className="user-avatar" style={{
           background: user.avatar?.startsWith('data:image') ? `url(${user.avatar}) center/cover` : 'var(--bg-main)',
