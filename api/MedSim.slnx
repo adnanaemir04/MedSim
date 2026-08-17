@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MedSim.Api/MedSim.Api.csproj" />
+  <Project Path="MedSim.Application/MedSim.Application.csproj" />
+  <Project Path="MedSim.Domain/MedSim.Domain.csproj" />
+  <Project Path="MedSim.Infrastructure/MedSim.Infrastructure.csproj" />
+</Solution>
