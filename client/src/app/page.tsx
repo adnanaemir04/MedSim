@@ -1,69 +1,65 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useState } from 'react';
+import AuthForm from '../presentation/components/auth/AuthForm';
+import Sidebar from '../presentation/components/layout/Sidebar';
+import Dashboard from '../presentation/components/dashboard/Dashboard';
+import SimulationView from '../presentation/components/simulation/SimulationView';
+
+type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile';
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentView, setCurrentView] = useState<ViewState>('dashboard');
+  
+  // Mock user for testing UI until we fully connect Redux/Context
+  const [user, setUser] = useState({
+    email: 'test@test.com',
+    nickname: 'Dr. John Doe',
+    points: 120,
+    avatar: '👨‍⚕️',
+    solvedCases: []
+  });
+
+  if (!isAuthenticated) {
+    return <AuthForm onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="app-layout">
+      <Sidebar 
+        user={user} 
+        onLogout={handleLogout} 
+        onNavigate={(view) => setCurrentView(view)} 
+      />
+
+      <div className="main-content">
+        {currentView === 'dashboard' && (
+          <Dashboard onStartCase={() => setCurrentView('simulation')} />
+        )}
+        
+        {currentView === 'simulation' && (
+          <SimulationView onBack={() => setCurrentView('dashboard')} />
+        )}
+
+        {currentView === 'leaderboard' && (
+          <main className="glass-panel">
+            <h2>Liderlik Tablosu</h2>
+            <p>Yapım aşamasında...</p>
+          </main>
+        )}
+
+        {currentView === 'profile' && (
+          <main className="glass-panel">
+            <h2>Profilim</h2>
+            <p>Yapım aşamasında...</p>
+          </main>
+        )}
+      </div>
     </div>
   );
 }
