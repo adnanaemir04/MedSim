@@ -9,15 +9,27 @@ export const metadata: Metadata = {
   description: "Tıp öğrencileri için interaktif klinik vaka simülasyon platformu.",
 };
 
+import { ThemeProvider } from "../presentation/context/ThemeContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr">
+    <html lang="tr" suppressHydrationWarning>
       <body className={inter.className}>
-        {children}
+        <ThemeProvider>
+          {/* Animated Background Mesh */}
+          <div className="bg-mesh">
+            <div className="mesh-blob blob-1"></div>
+            <div className="mesh-blob blob-2"></div>
+            <div className="mesh-blob blob-3"></div>
+          </div>
+          <div className="app-wrapper">
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

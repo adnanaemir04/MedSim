@@ -67,4 +67,48 @@ public class AuthController : ControllerBase
             Avatar = user.Avatar
         });
     }
+
+    [HttpPut("updateProfile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        var user = await _userRepository.GetByEmailAsync(dto.Email);
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+
+        // Check if nickname is taken by someone else
+        if (user.Nickname != dto.Nickname)
+        {
+            var existingNickname = await _userRepository.GetByNicknameAsync(dto.Nickname);
+            if (existingNickname != null) return BadRequest("Bu nickname zaten kullanımda.");
+        }
+
+        user.Nickname = dto.Nickname;
+        if (!string.IsNullOrEmpty(dto.Avatar))
+        {
+            user.Avatar = dto.Avatar;
+        }
+
+        await _userRepository.UpdateAsync(user);
+        await _userRepository.SaveChangesAsync();
+
+        return Ok(new UserResponseDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Nickname = user.Nickname,
+            Points = user.Points,
+            Avatar = user.Avatar
+        });
+    }
+
+    [HttpDelete("deleteAccount/{email}")]
+    public async Task<IActionResult> DeleteAccount(string email)
+    {
+        var user = await _userRepository.GetByEmailAsync(email);
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+
+        await _userRepository.DeleteAsync(user);
+        await _userRepository.SaveChangesAsync();
+
+        return Ok(new { message = "Hesap başarıyla silindi." });
+    }
 }

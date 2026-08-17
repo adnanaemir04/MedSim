@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import AuthForm from '../presentation/components/auth/AuthForm';
 import Sidebar from '../presentation/components/layout/Sidebar';
+import TopBar from '../presentation/components/layout/TopBar';
 import Dashboard from '../presentation/components/dashboard/Dashboard';
 import SimulationView from '../presentation/components/simulation/SimulationView';
+import Profile from '../presentation/components/profile/Profile';
 
 type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile';
 
@@ -30,35 +32,39 @@ export default function Home() {
   };
 
   return (
-    <div className="app-layout">
-      <Sidebar 
-        user={user} 
-        onLogout={handleLogout} 
-        onNavigate={(view) => setCurrentView(view)} 
-      />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <TopBar />
+      <div className="app-layout">
+        <Sidebar 
+          user={user} 
+          onLogout={handleLogout} 
+          onNavigate={(view) => setCurrentView(view)} 
+        />
 
-      <div className="main-content">
-        {currentView === 'dashboard' && (
-          <Dashboard onStartCase={() => setCurrentView('simulation')} />
-        )}
-        
-        {currentView === 'simulation' && (
-          <SimulationView onBack={() => setCurrentView('dashboard')} />
-        )}
+        <div className="main-content">
+          {currentView === 'dashboard' && (
+            <Dashboard onStartCase={() => setCurrentView('simulation')} />
+          )}
+          
+          {currentView === 'simulation' && (
+            <SimulationView onBack={() => setCurrentView('dashboard')} />
+          )}
 
-        {currentView === 'leaderboard' && (
-          <main className="glass-panel">
-            <h2>Liderlik Tablosu</h2>
-            <p>Yapım aşamasında...</p>
-          </main>
-        )}
+          {currentView === 'leaderboard' && (
+            <main className="glass-panel">
+              <h2>Liderlik Tablosu</h2>
+              <p>Yapım aşamasında...</p>
+            </main>
+          )}
 
-        {currentView === 'profile' && (
-          <main className="glass-panel">
-            <h2>Profilim</h2>
-            <p>Yapım aşamasında...</p>
-          </main>
-        )}
+          {currentView === 'profile' && (
+            <Profile 
+              user={user} 
+              onUpdate={(updatedUser) => setUser({ ...user, ...updatedUser })} 
+              onLogout={handleLogout} 
+            />
+          )}
+        </div>
       </div>
     </div>
   );
