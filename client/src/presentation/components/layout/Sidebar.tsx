@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { User } from '../../../../domain/entities/User';
-import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap } from 'lucide-react';
+import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Anatomi': <UserIcon size={14} />,
@@ -39,7 +39,7 @@ const yearIconMap: Record<number, React.ReactNode> = {
 interface SidebarProps {
   user: User | null;
   onLogout: () => void;
-  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription', subjectFilter?: string) => void;
+  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus', subjectFilter?: string) => void;
 }
 
 export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
@@ -89,6 +89,14 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
         <button className="nav-item active" onClick={() => onNavigate('dashboard')}>
           <Folder size={18} />
           <span>Tüm Vakalarım</span>
+        </button>
+
+        <button className="nav-item" onClick={() => onNavigate('tus')} style={{
+          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1))',
+          borderLeft: '4px solid #ef4444'
+        }}>
+          <BookOpen size={18} color="#ef4444" />
+          <span style={{ fontWeight: 800, color: '#ef4444' }}>TUS Merkezi</span>
         </button>
         
         <div className="nav-accordion">

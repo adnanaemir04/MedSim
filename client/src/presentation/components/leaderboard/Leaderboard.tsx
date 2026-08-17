@@ -7,13 +7,19 @@ import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';
 
 export default function Leaderboard() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [boardType, setBoardType] = useState<'general' | 'tus'>('general');
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
   useEffect(() => {
-    fetch('http://localhost:5211/api/Auth/leaderboard')
+    setLoading(true);
+    const url = boardType === 'general' 
+      ? 'http://localhost:5211/api/Auth/leaderboard'
+      : 'http://localhost:5211/api/Tus/leaderboard';
+      
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         setUsers(data);
@@ -23,7 +29,7 @@ export default function Leaderboard() {
         console.error("Leaderboard fetch error:", err);
         setLoading(false);
       });
-  }, []);
+  }, [boardType]);
 
   const containerStyle = {
     padding: '3rem', maxWidth: '900px', margin: '2rem auto',
@@ -75,7 +81,7 @@ export default function Leaderboard() {
 
   return (
     <main style={containerStyle}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '3rem', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
         <div style={{ 
           padding: '1.2rem', 
           background: isLight ? 'linear-gradient(135deg, #ffcc00, #ff9900)' : 'linear-gradient(135deg, rgba(255,204,0,0.2), rgba(255,153,0,0.05))', 
@@ -95,9 +101,40 @@ export default function Leaderboard() {
             Liderlik Tablosu
           </h2>
           <p style={{ color: isLight ? '#64748b' : 'var(--text-muted)', fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: 500 }}>
-            En çok vaka çözen ve yüksek puan toplayan hekimlerimiz.
+            {boardType === 'general' ? 'En çok vaka çözen ve yüksek puan toplayan hekimlerimiz.' : 'TUS sorularında en yüksek neti yapan başarılı hekimlerimiz.'}
           </p>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '3rem' }}>
+        <button 
+          onClick={() => setBoardType('general')}
+          style={{
+            padding: '0.8rem 1.5rem',
+            borderRadius: '12px',
+            background: boardType === 'general' ? 'var(--primary)' : 'transparent',
+            color: boardType === 'general' ? 'white' : 'var(--text-muted)',
+            fontWeight: 700,
+            border: boardType === 'general' ? 'none' : '1px solid var(--border-light)',
+            cursor: 'pointer'
+          }}
+        >
+          Klinik Puanlar
+        </button>
+        <button 
+          onClick={() => setBoardType('tus')}
+          style={{
+            padding: '0.8rem 1.5rem',
+            borderRadius: '12px',
+            background: boardType === 'tus' ? '#ef4444' : 'transparent',
+            color: boardType === 'tus' ? 'white' : 'var(--text-muted)',
+            fontWeight: 700,
+            border: boardType === 'tus' ? 'none' : '1px solid var(--border-light)',
+            cursor: 'pointer'
+          }}
+        >
+          TUS Sıralaması
+        </button>
       </div>
 
       {loading ? (
@@ -167,10 +204,12 @@ export default function Leaderboard() {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.3)', padding: '0.8rem 1.5rem', borderRadius: '20px', boxShadow: isLight ? 'inset 0 2px 5px rgba(0,0,0,0.02)' : 'inset 0 2px 5px rgba(0,0,0,0.2)' }}>
-                <span style={{ fontSize: '1.8rem', fontWeight: 900, color: isLight ? '#0ea5e9' : '#38bdf8', letterSpacing: '-1px' }}>
-                  {user.points}
+                <span style={{ fontSize: '1.8rem', fontWeight: 900, color: isLight ? (boardType === 'tus' ? '#ef4444' : '#0ea5e9') : (boardType === 'tus' ? '#f87171' : '#38bdf8'), letterSpacing: '-1px' }}>
+                  {boardType === 'general' ? user.points : user.tusCorrects}
                 </span>
-                <span style={{ fontSize: '1rem', color: isLight ? '#64748b' : '#94a3b8', fontWeight: 700 }}>Puan</span>
+                <span style={{ fontSize: '1rem', color: isLight ? '#64748b' : '#94a3b8', fontWeight: 700 }}>
+                  {boardType === 'general' ? 'Puan' : 'Doğru'}
+                </span>
               </div>
             </div>
           ))}

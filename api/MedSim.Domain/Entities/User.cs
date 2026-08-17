@@ -12,6 +12,7 @@ public class User
     // Navigation Property
     public ICollection<SolvedCase> SolvedCases { get; set; } = new List<SolvedCase>();
     public ICollection<UserFriend> Friends { get; set; } = new List<UserFriend>();
+    public ICollection<TusSolvedQuestion> TusSolvedQuestions { get; set; } = new List<TusSolvedQuestion>();
 }
 
 public class SolvedCase

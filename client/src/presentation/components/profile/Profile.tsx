@@ -28,6 +28,8 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
+  const [tusStats, setTusStats] = useState({ totalSolved: 0, correctCount: 0, wrongCount: 0, successRate: 0 });
+
   const fetchFriends = async () => {
     try {
       const res = await fetch(`http://localhost:5211/api/Profile/friends?email=${user.email}`);
@@ -40,8 +42,20 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
     }
   };
 
+  const fetchTusStats = async () => {
+    try {
+      const res = await fetch(`http://localhost:5211/api/Tus/stats?email=${user.email}`);
+      if (res.ok) {
+        setTusStats(await res.json());
+      }
+    } catch (err) {
+      console.error("TUS stats fetch error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchFriends();
+    fetchTusStats();
   }, [user.email]);
 
   const handleAddFriend = async () => {
@@ -208,7 +222,7 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
 
         {/* Form and Stats Section */}
         <div style={{ flex: 1, minWidth: '300px' }}>
-          <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2.5rem' }}>
+          <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
             <div style={statBoxStyle}>
               <span style={{ display: 'block', fontSize: '0.85rem', color: isLight ? '#64748b' : 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>Toplam Puan</span>
               <span style={{ fontSize: '2.2rem', fontWeight: 900, color: isLight ? '#0ea5e9' : 'var(--primary)' }}>{user.points}</span>
@@ -216,6 +230,18 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
             <div style={statBoxStyle}>
               <span style={{ display: 'block', fontSize: '0.85rem', color: isLight ? '#64748b' : 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>Çözülen Vaka</span>
               <span style={{ fontSize: '2.2rem', fontWeight: 900, color: isLight ? '#1e293b' : 'white' }}>{user.solvedCases?.length || 0}</span>
+            </div>
+            <div style={statBoxStyle}>
+              <span style={{ display: 'block', fontSize: '0.85rem', color: isLight ? '#64748b' : 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>TUS Doğru/Yanlış</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                <span style={{ fontSize: '2.2rem', fontWeight: 900, color: '#10b981' }}>{tusStats.correctCount}</span>
+                <span style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-muted)' }}>/</span>
+                <span style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ef4444' }}>{tusStats.wrongCount}</span>
+              </div>
+            </div>
+            <div style={statBoxStyle}>
+              <span style={{ display: 'block', fontSize: '0.85rem', color: isLight ? '#64748b' : 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>TUS Başarı Oranı</span>
+              <span style={{ fontSize: '2.2rem', fontWeight: 900, color: '#f59e0b' }}>%{tusStats.successRate}</span>
             </div>
           </div>
 

@@ -11,8 +11,9 @@ import Leaderboard from '../presentation/components/leaderboard/Leaderboard';
 import PastCases from '../presentation/components/profile/PastCases';
 import LandingPage from '../presentation/components/landing/LandingPage';
 import SubscriptionPage from '../presentation/components/subscription/SubscriptionPage';
+import TusCenter from '../presentation/components/tus/TusCenter';
 
-type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription';
+type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus';
 
 export default function Home() {
   const [isLanding, setIsLanding] = useState(true);
@@ -141,6 +142,10 @@ export default function Home() {
 
           {currentView === 'subscription' && (
             <SubscriptionPage />
+          )}
+
+          {currentView === 'tus' && (
+            <TusCenter userEmail={user.email} />
           )}
         </div>
       </div>
