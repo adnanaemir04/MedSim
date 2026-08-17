@@ -34,6 +34,14 @@ public class UserRepository : IUserRepository
         return await _context.Users.ToListAsync();
     }
 
+    public async Task<IEnumerable<User>> GetLeaderboardAsync(int top = 10)
+    {
+        return await _context.Users
+            .OrderByDescending(u => u.Points)
+            .Take(top)
+            .ToListAsync();
+    }
+
     public async Task AddAsync(User user)
     {
         await _context.Users.AddAsync(user);

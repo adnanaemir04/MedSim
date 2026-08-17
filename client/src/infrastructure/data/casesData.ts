@@ -1,7 +1,6 @@
-export 
 // Kapsamlı Tıbbi Vaka Üretim Motoru (Çok Aşamalı - Multi Stage)
 
-const deptsByYear = {
+export const deptsByYear: Record<number, string[]> = {
   1: ["Anatomi", "Tıbbi Biyoloji", "Histoloji"],
   2: ["Fizyoloji", "Mikrobiyoloji", "Biyokimya"],
   3: ["Farmakoloji", "Patoloji"],
@@ -10,7 +9,7 @@ const deptsByYear = {
   6: ["Acil Tıp", "Aile Hekimliği", "Yoğun Bakım"]
 };
 
-const medCasesData = {
+export const medCasesData: Record<string, any> = {
   // --- DÖNEM 1 ---
   "Anatomi": {
     titles: ["Kadavra Diseksiyonu: Boyun Üçgenleri", "Eklemler ve Hareket Açıklığı", "Kafa Çiftleri Lezyonu"],

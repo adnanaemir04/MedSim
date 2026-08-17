@@ -67,6 +67,7 @@ body {
   font-family: inherit;
   min-height: 100vh;
   overflow: hidden; /* Prevent scrolling on body, handled by wrapper */
+  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1), color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* =========================================
@@ -78,7 +79,7 @@ body {
   z-index: -1;
   overflow: hidden;
   background: var(--bg-color);
-  transition: background-color 0.5s ease;
+  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .mesh-blob {
   position: absolute;

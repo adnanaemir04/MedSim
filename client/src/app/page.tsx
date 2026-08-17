@@ -7,12 +7,14 @@ import TopBar from '../presentation/components/layout/TopBar';
 import Dashboard from '../presentation/components/dashboard/Dashboard';
 import SimulationView from '../presentation/components/simulation/SimulationView';
 import Profile from '../presentation/components/profile/Profile';
+import Leaderboard from '../presentation/components/leaderboard/Leaderboard';
 
 type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile';
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
+  const [selectedCase, setSelectedCase] = useState<{subject: string, index: number} | null>(null);
   
   // Mock user for testing UI until we fully connect Redux/Context
   const [user, setUser] = useState({
@@ -43,18 +45,27 @@ export default function Home() {
 
         <div className="main-content">
           {currentView === 'dashboard' && (
-            <Dashboard onStartCase={() => setCurrentView('simulation')} />
+            <Dashboard onStartCase={(subject, index) => {
+              setSelectedCase({ subject, index });
+              setCurrentView('simulation');
+            }} />
           )}
           
-          {currentView === 'simulation' && (
-            <SimulationView onBack={() => setCurrentView('dashboard')} />
+          {currentView === 'simulation' && selectedCase && (
+            <SimulationView 
+              subject={selectedCase.subject}
+              caseIndex={selectedCase.index}
+              onBack={() => setCurrentView('dashboard')} 
+              onCaseComplete={async (points) => {
+                const newPoints = user.points + points;
+                setUser({ ...user, points: newPoints, solvedCases: [...user.solvedCases, "case_completed"] as any });
+                // Note: Normally we'd call the API here to save progress
+              }}
+            />
           )}
 
           {currentView === 'leaderboard' && (
-            <main className="glass-panel">
-              <h2>Liderlik Tablosu</h2>
-              <p>Yapım aşamasında...</p>
-            </main>
+            <Leaderboard />
           )}
 
           {currentView === 'profile' && (

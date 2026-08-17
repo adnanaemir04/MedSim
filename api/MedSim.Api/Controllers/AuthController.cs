@@ -111,4 +111,20 @@ public class AuthController : ControllerBase
 
         return Ok(new { message = "Hesap başarıyla silindi." });
     }
+
+    [HttpGet("leaderboard")]
+    public async Task<IActionResult> GetLeaderboard()
+    {
+        var users = await _userRepository.GetLeaderboardAsync(20); // top 20
+        var dtoList = users.Select(u => new UserResponseDto
+        {
+            Id = u.Id,
+            Email = u.Email, // Might want to hide this in prod, but ok for now
+            Nickname = u.Nickname,
+            Points = u.Points,
+            Avatar = u.Avatar
+        }).ToList();
+
+        return Ok(dtoList);
+    }
 }

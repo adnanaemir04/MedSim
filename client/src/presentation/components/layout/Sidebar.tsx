@@ -16,6 +16,15 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
 
   if (!user) return null;
 
+  const deptsByYear: Record<number, string[]> = {
+    1: ["Anatomi", "Tıbbi Biyoloji", "Histoloji"],
+    2: ["Fizyoloji", "Mikrobiyoloji", "Biyokimya"],
+    3: ["Farmakoloji", "Patoloji"],
+    4: ["Dahiliye", "Genel Cerrahi", "Kadın Hastalıkları", "Pediatri"],
+    5: ["Ortopedi", "Göz Hastalıkları", "KBB", "Psikiyatri", "Dermatoloji"],
+    6: ["Acil Tıp", "Aile Hekimliği", "Yoğun Bakım"]
+  };
+
   return (
     <aside className="sidebar">
       <div className="user-profile-sidebar" onClick={() => onNavigate('profile')}>
@@ -50,13 +59,24 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
           {isClassExpanded && (
             <div className="accordion-content">
               {[1, 2, 3, 4, 5, 6].map(num => (
-                <button 
-                  key={num} 
-                  className={`nav-sub-item ${selectedClass === num ? 'active' : ''}`}
-                  onClick={() => setSelectedClass(num)}
-                >
-                  Tıp {num}
-                </button>
+                <div key={num} style={{ marginBottom: '0.5rem' }}>
+                  <button 
+                    className={`nav-sub-item ${selectedClass === num ? 'active' : ''}`}
+                    onClick={() => setSelectedClass(selectedClass === num ? null : num)}
+                    style={{ width: '100%', fontWeight: selectedClass === num ? 800 : 500, color: selectedClass === num ? 'var(--text-main)' : 'var(--text-muted)' }}
+                  >
+                    Tıp {num}
+                  </button>
+                  {selectedClass === num && (
+                    <div style={{ paddingLeft: '1rem', marginTop: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      {deptsByYear[num].map(dept => (
+                        <span key={dept} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} onClick={() => onNavigate('dashboard')}>
+                          • {dept}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
