@@ -11,6 +11,12 @@ public class MedSimDbContext : DbContext
 
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<SolvedCase> SolvedCases { get; set; } = null!;
+    
+    // Simulation Engine Entities
+    public DbSet<Department> Departments { get; set; } = null!;
+    public DbSet<MedicalCase> MedicalCases { get; set; } = null!;
+    public DbSet<CaseStage> CaseStages { get; set; } = null!;
+    public DbSet<CaseOption> CaseOptions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +35,44 @@ public class MedSimDbContext : DbContext
             entity.HasOne(e => e.User)
                   .WithMany(u => u.SolvedCases)
                   .HasForeignKey(e => e.UserId);
+                  
+            entity.HasOne(e => e.MedicalCase)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicalCaseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Simulation Relationships
+        modelBuilder.Entity<Department>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasMany(e => e.Cases)
+                  .WithOne(c => c.Department)
+                  .HasForeignKey(c => c.DepartmentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<MedicalCase>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasMany(e => e.Stages)
+                  .WithOne(s => s.MedicalCase)
+                  .HasForeignKey(s => s.MedicalCaseId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CaseStage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasMany(e => e.Options)
+                  .WithOne(o => o.CaseStage)
+                  .HasForeignKey(o => o.CaseStageId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        modelBuilder.Entity<CaseOption>(entity =>
+        {
+            entity.HasKey(e => e.Id);
         });
     }
 }

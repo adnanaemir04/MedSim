@@ -18,7 +18,10 @@ public class SolvedCase
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
-    public string CaseId { get; set; } = string.Empty; // ID from the frontend JSON cases
+    
+    public Guid MedicalCaseId { get; set; }
+    public MedicalCase MedicalCase { get; set; } = null!;
+    
     public bool IsSolved { get; set; }
     public int EarnedPoints { get; set; }
     public DateTime SolvedAt { get; set; } = DateTime.UtcNow;

@@ -39,7 +39,7 @@ const yearIconMap: Record<number, React.ReactNode> = {
 interface SidebarProps {
   user: User | null;
   onLogout: () => void;
-  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile', subjectFilter?: string) => void;
+  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases', subjectFilter?: string) => void;
 }
 
 export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
@@ -208,6 +208,11 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
             </div>
           )}
         </div>
+
+        <button className="nav-item" onClick={() => onNavigate('past_cases')}>
+          <Activity size={18} />
+          <span>Geçmiş Vakalar</span>
+        </button>
 
         <button className="nav-item" onClick={() => onNavigate('leaderboard')}>
           <Trophy size={18} />

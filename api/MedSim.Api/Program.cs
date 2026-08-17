@@ -1,4 +1,5 @@
 using MedSim.Application.Interfaces;
+using MedSim.Application.Services;
 using MedSim.Infrastructure.Data;
 using MedSim.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -10,14 +11,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure EF Core with SQLite
+// Configure EF Core with PostgreSQL
 builder.Services.AddDbContext<MedSimDbContext>(options =>
 {
-    options.UseSqlite("Data Source=medsim.db");
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
 // Dependency Injection for Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddHttpClient<IProceduralGeneratorService, ProceduralGeneratorService>();
 
 var app = builder.Build();
 
@@ -41,6 +43,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MedSimDbContext>();
     db.Database.Migrate();
+
+    // Seed Data
+    DatabaseSeeder.SeedAsync(db).GetAwaiter().GetResult();
 }
 
 app.Run();

@@ -8,8 +8,9 @@ import Dashboard from '../presentation/components/dashboard/Dashboard';
 import SimulationView from '../presentation/components/simulation/SimulationView';
 import Profile from '../presentation/components/profile/Profile';
 import Leaderboard from '../presentation/components/leaderboard/Leaderboard';
+import PastCases from '../presentation/components/profile/PastCases';
 
-type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile';
+type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases';
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -82,6 +83,10 @@ export default function Home() {
 
           {currentView === 'leaderboard' && (
             <Leaderboard />
+          )}
+
+          {currentView === 'past_cases' && (
+            <PastCases userEmail={user.email} />
           )}
 
           {currentView === 'profile' && (
