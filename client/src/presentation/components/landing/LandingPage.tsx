@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial, PerspectiveCamera, Torus, MeshDistortMaterial, Float } from '@react-three/drei';
 import * as random from 'maath/random/dist/maath-random.esm';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import { Sun, MoonIcon } from 'lucide-react';
 import CelestialOrb3D from '../layout/CelestialOrb3D';
@@ -290,8 +290,66 @@ export default function LandingPage({ onNavigateToAuth }: LandingPageProps) {
               Giriş Yap
             </motion.button>
           </div>
+
+          <QuoteCarousel />
         </motion.div>
       </div>
+    </div>
+  );
+}
+
+const quotes = [
+  "Bilgi, evrendeki yıldızlar ve damardaki hücreler gibi sonsuzdur.",
+  "Knowledge is as infinite as the stars in the universe and the cells in a vein.",
+  "El conocimiento es tan infinito como las estrellas en el universo y las células en una vena.",
+  "La connaissance est aussi infinie que les étoiles dans l'univers et les cellules dans une veine.",
+  "Wissen ist so unendlich wie die Sterne im Universum und die Zellen in einer Vene.",
+  "La conoscenza è infinita come le stelle nell'universo e le cellule in una vena.",
+  "Cognitio infinita est sicut stellae in universo et cellulae in vena.",
+  "知識は、宇宙の星々や血管内の細胞のように無限です。",
+  "Знания так же бесконечны, как звезды во Вселенной и клетки в вене.",
+  "المعرفة لا حصر لها مثل النجوم في الكون والخلايا في الوريد."
+];
+
+function QuoteCarousel() {
+  const [index, setIndex] = useState(0);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % quotes.length);
+    }, 8000); // 8 seconds interval
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ 
+      marginTop: '3.5rem', 
+      height: '2rem', 
+      position: 'relative', 
+      display: 'flex', 
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={index}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          style={{ 
+            position: 'absolute', 
+            fontSize: '1.05rem', 
+            fontStyle: 'italic', 
+            opacity: 0.7,
+            fontWeight: 500,
+            textAlign: 'center',
+            width: '100%'
+          }}
+        >
+          &quot;{quotes[index]}&quot;
+        </motion.p>
+      </AnimatePresence>
     </div>
   );
 }
