@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { User } from '../../../../domain/entities/User';
 import { Camera } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ProfileProps {
   user: User;
@@ -19,6 +20,8 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
   const [message, setMessage] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -72,9 +75,47 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
     }
   };
 
+  const containerStyle = {
+    padding: '3rem', maxWidth: '850px', margin: isLight ? '2rem auto' : '0 auto',
+    background: isLight 
+      ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1))'
+      : 'var(--bg-panel)',
+    backdropFilter: isLight ? 'blur(40px)' : 'none',
+    WebkitBackdropFilter: isLight ? 'blur(40px)' : 'none',
+    borderRadius: isLight ? '32px' : 'var(--radius-lg)',
+    border: isLight ? '1px solid rgba(255, 255, 255, 0.6)' : '1px solid var(--glass-border)',
+    boxShadow: isLight ? '0 30px 60px rgba(0, 50, 150, 0.08), inset 0 0 0 1px rgba(255,255,255,0.5)' : 'var(--shadow-lg)'
+  };
+
+  const statBoxStyle = {
+    flex: 1, 
+    background: isLight ? 'rgba(255,255,255,0.7)' : 'var(--bg-main)', 
+    padding: '1.5rem', 
+    borderRadius: '20px',
+    border: isLight ? '1px solid rgba(255,255,255,0.9)' : 'none',
+    boxShadow: isLight ? '0 10px 25px rgba(0,0,0,0.03)' : 'none'
+  };
+
+  const labelStyle = {
+    display: 'block', 
+    marginBottom: '0.6rem', 
+    fontSize: '0.9rem', 
+    color: isLight ? '#475569' : 'var(--text-muted)', 
+    fontWeight: 600
+  };
+
+  const inputStyle = isLight ? {
+    background: 'rgba(255,255,255,0.8)',
+    border: '1px solid rgba(0,0,0,0.1)',
+    color: '#1e293b',
+    boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.02)'
+  } : {};
+
   return (
-    <main className="glass-panel" style={{ padding: '3rem', maxWidth: '800px' }}>
-      <h2 style={{ fontSize: '1.8rem', fontWeight: 700, marginBottom: '2rem' }}>Profil Bilgileri</h2>
+    <main className={isLight ? "" : "glass-panel"} style={containerStyle}>
+      <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '2.5rem', color: isLight ? '#1e293b' : 'white', letterSpacing: '-0.5px' }}>
+        Profil Bilgileri
+      </h2>
       
       <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
         
@@ -108,32 +149,33 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
         {/* Form and Stats Section */}
         <div style={{ flex: 1, minWidth: '300px' }}>
           <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2.5rem' }}>
-            <div style={{ flex: 1, background: 'var(--bg-main)', padding: '1.5rem', borderRadius: 'var(--radius-lg)' }}>
-              <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Toplam Puan</span>
-              <span style={{ fontSize: '2rem', fontWeight: 700 }}>{user.points}</span>
+            <div style={statBoxStyle}>
+              <span style={{ display: 'block', fontSize: '0.85rem', color: isLight ? '#64748b' : 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>Toplam Puan</span>
+              <span style={{ fontSize: '2.2rem', fontWeight: 900, color: isLight ? '#0ea5e9' : 'var(--primary)' }}>{user.points}</span>
             </div>
-            <div style={{ flex: 1, background: 'var(--bg-main)', padding: '1.5rem', borderRadius: 'var(--radius-lg)' }}>
-              <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Çözülen Vaka</span>
-              <span style={{ fontSize: '2rem', fontWeight: 700 }}>{user.solvedCases?.length || 0}</span>
+            <div style={statBoxStyle}>
+              <span style={{ display: 'block', fontSize: '0.85rem', color: isLight ? '#64748b' : 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>Çözülen Vaka</span>
+              <span style={{ fontSize: '2.2rem', fontWeight: 900, color: isLight ? '#1e293b' : 'white' }}>{user.solvedCases?.length || 0}</span>
             </div>
           </div>
 
-          <div className="form-group">
-            <label>E-posta Adresi</label>
-            <input type="text" value={user.email} disabled style={{ opacity: 0.6 }} />
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label style={labelStyle}>E-posta Adresi</label>
+            <input type="text" value={user.email} disabled style={{ ...inputStyle, opacity: 0.7, cursor: 'not-allowed' }} />
           </div>
 
-          <div className="form-group">
-            <label>Görünür İsim (Nickname)</label>
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label style={labelStyle}>Görünür İsim (Nickname)</label>
             <input 
               type="text" 
               value={nickname} 
               onChange={e => setNickname(e.target.value)} 
+              style={inputStyle}
             />
           </div>
           
-          <div style={{ marginTop: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>Veya Avatar Seç</label>
+          <div style={{ marginTop: '2rem' }}>
+            <label style={labelStyle}>Veya Avatar Seç</label>
             <div className="avatar-selector">
               {AVATAR_OPTIONS.map(opt => (
                 <button 
