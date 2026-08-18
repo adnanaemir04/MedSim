@@ -110,6 +110,23 @@ export const getTusSubjects = async (): Promise<TusSubjectDto[]> => {
     return response.data;
 };
 
+export interface TusStatsDto {
+    totalSolved: number;
+    correctCount: number;
+    wrongCount: number;
+    successRate: number;
+    accuracy: number;
+}
+
+export const getTusUserStats = async (email: string, subject?: string): Promise<TusStatsDto> => {
+    let url = `http://localhost:5211/api/tus/stats?email=${encodeURIComponent(email)}`;
+    if (subject) {
+        url += `&subject=${encodeURIComponent(subject)}`;
+    }
+    const response = await axios.get<TusStatsDto>(url);
+    return response.data;
+};
+
 export const getTusConceptExplanation = async (questionId: string): Promise<string> => {
     const response = await axios.post<{explanation: string}>('http://localhost:5211/api/tus/explain-concepts', { questionId });
     return response.data.explanation;

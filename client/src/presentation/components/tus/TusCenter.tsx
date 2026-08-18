@@ -2,19 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { BookOpen, Stethoscope, ChevronRight, Loader2, Sparkles } from 'lucide-react';
-import { getTusSubjects, TusSubjectDto, generateTusQuestions } from '../../../infrastructure/api/simulationApi';
+import { BookOpen, Stethoscope, ChevronRight, Loader2, Sparkles, Target, TrendingUp, CheckCircle, BrainCircuit } from 'lucide-react';
+import { getTusSubjects, TusSubjectDto, generateTusQuestions, getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simulationApi';
 import TusSolveView from './TusSolveView';
+import TusSubjectStatsView from './TusSubjectStatsView';
 
 interface TusCenterProps {
   userEmail: string;
 }
 
+const STANDARD_TUS_SUBJECTS = [
+  "Anatomi", "Histoloji ve Embriyoloji", "Fizyoloji", "Biyokimya", "Mikrobiyoloji", "Patoloji", "Farmakoloji",
+  "Dahiliye", "Pediatri", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum", "Küçük Stajlar"
+];
+
 export default function TusCenter({ userEmail }: TusCenterProps) {
   const [subjects, setSubjects] = useState<TusSubjectDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeSubject, setActiveSubject] = useState<string | null>(null);
+  const [viewState, setViewState] = useState<'list' | 'stats' | 'solve'>('list');
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
+  const [genericStats, setGenericStats] = useState<TusStatsDto | null>(null);
   
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -27,7 +35,19 @@ export default function TusCenter({ userEmail }: TusCenterProps) {
     setIsLoading(true);
     try {
       const data = await getTusSubjects();
-      setSubjects(data);
+      const statsData = await getTusUserStats(userEmail);
+      setGenericStats(statsData);
+      
+      // Merge with standard TUS subjects so we always show all of them
+      const mergedSubjects: TusSubjectDto[] = STANDARD_TUS_SUBJECTS.map(name => {
+        const found = data.find(d => d.name === name);
+        return {
+          name: name,
+          questionCount: found ? found.questionCount : 0
+        };
+      });
+      
+      setSubjects(mergedSubjects);
     } catch (e) {
       console.error("Dersler yüklenirken hata:", e);
     } finally {
@@ -35,19 +55,99 @@ export default function TusCenter({ userEmail }: TusCenterProps) {
     }
   };
 
-  if (activeSubject) {
-    return <TusSolveView subject={activeSubject} userEmail={userEmail} onBack={() => setActiveSubject(null)} />;
+  const handleSubjectClick = (subjectName: string) => {
+    setActiveSubject(subjectName);
+    setViewState('stats');
+  };
+
+  if (viewState === 'stats' && activeSubject) {
+    return (
+      <TusSubjectStatsView 
+        subject={activeSubject} 
+        userEmail={userEmail} 
+        onSolveQuestions={() => setViewState('solve')} 
+        onBack={() => { setActiveSubject(null); setViewState('list'); }} 
+      />
+    );
   }
 
+  if (viewState === 'solve' && activeSubject) {
+    return (
+      <TusSolveView 
+        subject={activeSubject} 
+        userEmail={userEmail} 
+        onBack={() => { setViewState('stats'); fetchSubjects(); }} 
+      />
+    );
+  }
+
+
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', animation: 'fadeIn 0.3s ease-out' }}>
+      
+      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
         <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
           <Stethoscope size={24} />
         </div>
         <div>
           <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>TUS Merkezi</h2>
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Uzmanlık sınavı için ders bazlı simülasyon ve yapay zeka destekli soru çözümü</p>
+          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Tüm dersler için kişiselleştirilmiş istatistikler ve yapay zeka destekli soru çözümü</p>
+        </div>
+      </div>
+
+      {/* Global TUS Statistics */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+        <div className="glass-panel" 
+             style={{ 
+               padding: '1.5rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '1.2rem',
+               background: isLight ? 'linear-gradient(135deg, #ffffff, #f1f5f9)' : 'var(--glass-bg)',
+               boxShadow: isLight ? '0 10px 30px rgba(79, 70, 229, 0.1), inset 0 2px 0 rgba(255,255,255,0.8)' : 'var(--shadow-float)',
+               border: isLight ? '1px solid rgba(79, 70, 229, 0.15)' : '1px solid var(--glass-border)',
+               transition: 'transform 0.3s, box-shadow 0.3s'
+             }}
+             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = isLight ? '0 15px 35px rgba(79, 70, 229, 0.15), inset 0 2px 0 rgba(255,255,255,1)' : 'var(--shadow-float)'; }}
+             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isLight ? '0 10px 30px rgba(79, 70, 229, 0.1), inset 0 2px 0 rgba(255,255,255,0.8)' : 'var(--shadow-float)'; }}
+        >
+          <div style={{ width: 56, height: 56, borderRadius: '16px', background: isLight ? 'linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(79, 70, 229, 0.05))' : 'rgba(79, 70, 229, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}><Target size={28} /></div>
+          <div>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>{genericStats?.totalSolved || 0}</div>
+            <div style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Toplam Çözülen</div>
+          </div>
+        </div>
+        <div className="glass-panel" 
+             style={{ 
+               padding: '1.5rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '1.2rem',
+               background: isLight ? 'linear-gradient(135deg, #ffffff, #f0fdf4)' : 'var(--glass-bg)',
+               boxShadow: isLight ? '0 10px 30px rgba(16, 185, 129, 0.1), inset 0 2px 0 rgba(255,255,255,0.8)' : 'var(--shadow-float)',
+               border: isLight ? '1px solid rgba(16, 185, 129, 0.15)' : '1px solid var(--glass-border)',
+               transition: 'transform 0.3s, box-shadow 0.3s'
+             }}
+             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = isLight ? '0 15px 35px rgba(16, 185, 129, 0.15), inset 0 2px 0 rgba(255,255,255,1)' : 'var(--shadow-float)'; }}
+             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isLight ? '0 10px 30px rgba(16, 185, 129, 0.1), inset 0 2px 0 rgba(255,255,255,0.8)' : 'var(--shadow-float)'; }}
+        >
+          <div style={{ width: 56, height: 56, borderRadius: '16px', background: isLight ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05))' : 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--success)' }}><TrendingUp size={28} /></div>
+          <div>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>%{genericStats?.successRate || 0}</div>
+            <div style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Genel Başarı</div>
+          </div>
+        </div>
+        <div className="glass-panel" 
+             style={{ 
+               padding: '1.5rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '1.2rem',
+               background: isLight ? 'linear-gradient(135deg, #ffffff, #ecfeff)' : 'var(--glass-bg)',
+               boxShadow: isLight ? '0 10px 30px rgba(6, 182, 212, 0.1), inset 0 2px 0 rgba(255,255,255,0.8)' : 'var(--shadow-float)',
+               border: isLight ? '1px solid rgba(6, 182, 212, 0.15)' : '1px solid var(--glass-border)',
+               transition: 'transform 0.3s, box-shadow 0.3s'
+             }}
+             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = isLight ? '0 15px 35px rgba(6, 182, 212, 0.15), inset 0 2px 0 rgba(255,255,255,1)' : 'var(--shadow-float)'; }}
+             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isLight ? '0 10px 30px rgba(6, 182, 212, 0.1), inset 0 2px 0 rgba(255,255,255,0.8)' : 'var(--shadow-float)'; }}
+        >
+          <div style={{ width: 56, height: 56, borderRadius: '16px', background: isLight ? 'linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.05))' : 'rgba(6, 182, 212, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)' }}><CheckCircle size={28} /></div>
+          <div>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>%{genericStats?.accuracy || 0}</div>
+            <div style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ort. Doğruluk</div>
+          </div>
         </div>
       </div>
 
@@ -62,9 +162,27 @@ export default function TusCenter({ userEmail }: TusCenterProps) {
             <div
               key={subject.name}
               className="glass-panel hover-scale"
-              style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'all 0.3s' }}
+              style={{ 
+                padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', cursor: 'pointer',
+                background: isLight ? 'linear-gradient(135deg, #ffffff, #f8fafc)' : 'var(--glass-bg)',
+                boxShadow: isLight ? '0 8px 25px rgba(0, 0, 0, 0.04), inset 0 2px 0 rgba(255,255,255,1)' : 'var(--shadow-float)',
+                border: isLight ? '1px solid rgba(0, 0, 0, 0.05)' : '1px solid var(--glass-border)'
+              }}
+              onMouseEnter={e => {
+                if (isLight) {
+                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(79, 70, 229, 0.1), inset 0 2px 0 rgba(255,255,255,1)';
+                  e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+                }
+              }}
+              onMouseLeave={e => {
+                if (isLight) {
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.04), inset 0 2px 0 rgba(255,255,255,1)';
+                  e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onClick={() => handleSubjectClick(subject.name)}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => setActiveSubject(subject.name)}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ width: 40, height: 40, borderRadius: '10px', background: 'rgba(79, 70, 229, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                   <BookOpen size={20} />
                 </div>
@@ -73,60 +191,23 @@ export default function TusCenter({ userEmail }: TusCenterProps) {
                 </div>
               </div>
               
-              <div style={{ cursor: 'pointer' }} onClick={() => setActiveSubject(subject.name)}>
+              <div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 0.2rem 0', color: 'var(--text-main)' }}>{subject.name}</h3>
-                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Toplam {subject.questionCount} soru</p>
+                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Sistemde {subject.questionCount} soru var</p>
               </div>
 
               <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <button 
-                  className="btn-primary" 
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.6rem' }}
-                  onClick={() => setActiveSubject(subject.name)}
+                  className="btn-review-case btn-full"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                 >
-                  Çözmeye Başla
-                </button>
-                <button 
-                  className="btn-secondary" 
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.6rem', background: 'var(--glass-bg)', color: 'var(--text-main)', border: '1px solid var(--glass-border)' }}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (isGenerating === subject.name) return;
-                    setIsGenerating(subject.name);
-                    try {
-                      await generateTusQuestions(subject.name, 5);
-                      await fetchSubjects();
-                    } catch (err) {
-                      console.error("Soru üretme hatası:", err);
-                      alert("Soru üretilirken hata oluştu.");
-                    } finally {
-                      setIsGenerating(null);
-                    }
-                  }}
-                  disabled={isGenerating === subject.name}
-                >
-                  {isGenerating === subject.name ? <Loader2 size={16} className="spin" /> : <Sparkles size={16} />}
-                  {isGenerating === subject.name ? 'Üretiliyor...' : '5 Yeni Soru Üret'}
+                  <BrainCircuit size={16} /> Ders İstatistikleri & Çözüm
                 </button>
               </div>
             </div>
           ))}
         </div>
       )}
-
-      <style jsx>{`
-        .spin {
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          100% { transform: rotate(360deg); }
-        }
-        .hover-scale:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-          border-color: var(--primary);
-        }
-      `}</style>
     </div>
   );
 }

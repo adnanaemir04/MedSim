@@ -97,13 +97,20 @@ public class TusController : ControllerBase
     }
 
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats([FromQuery] string email)
+    public async Task<IActionResult> GetStats([FromQuery] string email, [FromQuery] string? subject = null)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null) return NotFound();
 
-        var solvedCount = await _context.TusSolvedQuestions.CountAsync(t => t.UserId == user.Id);
-        var correctCount = await _context.TusSolvedQuestions.CountAsync(t => t.UserId == user.Id && t.IsCorrect);
+        var query = _context.TusSolvedQuestions.Where(t => t.UserId == user.Id);
+        
+        if (!string.IsNullOrEmpty(subject))
+        {
+            query = query.Where(t => t.Question.Subject == subject);
+        }
+
+        var solvedCount = await query.CountAsync();
+        var correctCount = await query.CountAsync(t => t.IsCorrect);
         
         var wrongCount = solvedCount - correctCount;
         var percentage = solvedCount > 0 ? (int)Math.Round((double)correctCount / solvedCount * 100) : 0;
@@ -113,7 +120,8 @@ public class TusController : ControllerBase
             totalSolved = solvedCount,
             correctCount,
             wrongCount,
-            successRate = percentage
+            successRate = percentage,
+            accuracy = percentage // Adding accuracy for the UI
         });
     }
 

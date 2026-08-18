@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { medCasesData } from '../../../infrastructure/data/casesData';
 import { CheckCircle, XCircle, ArrowRight, HeartPulse, Activity, User, FileText, Stethoscope } from 'lucide-react';
 
@@ -14,15 +15,32 @@ interface SimulationViewProps {
 }
 
 export default function SimulationView({ subject, caseIndex, generatedData, initialAnswers, onBack, onCaseComplete }: SimulationViewProps) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const caseData = generatedData || medCasesData[subject];
   const caseTitle = generatedData?.title || (caseData.titles?.[caseIndex] || caseData.titles?.[0] || 'Klinik Vaka');
   const stages = caseData.stages;
-  const patientInfo = caseData.patientInfo;
+  const patientInfo = {
+    name: "Ahmet Yılmaz",
+    age: 58,
+    gender: "Erkek",
+    chiefComplaint: "Yaklaşık 3 gündür devam eden zonklayıcı tarzda baş ağrısı, aralıklı baş dönmesi ve eforla gelen hafif nefes darlığı şikayeti.",
+    medicalHistory: "Kronik Hastalıklar: Hipertansiyon (5 yıldır, düzensiz ilaç kullanımı), Tip 2 Diabetes Mellitus (Diyetle regüle).\nAlışkanlıklar: Aktif sigara içicisi (20 paket/yıl), alkol kullanımı yok.\nKullandığı İlaçlar: Amlodipin 5mg 1x1 (Düzensiz), Metformin 500mg 2x1.\nSoygeçmiş: Babasında 62 yaşında Myokard Enfarktüsü (MI) öyküsü mevcut.\nAlerjiler: Penisilin alerjisi bildiriyor (Döküntü).",
+    physicalExam: "Genel Durum: İyi, bilinci açık, koopere ve oryante.\nKardiyovasküler Sistem: S1 ve S2 doğal, ek ses veya üfürüm duyulmadı. Periferik nabızlar bilateral eşit alınıyor. İnspeksiyonda boyun venöz dolgunluğu izlenmedi. Pretibial ödem (-/-).\nSolunum Sistemi: Her iki hemitoraks solunuma eşit katılıyor. Dinlemekle bilateral bazallerde ince raller mevcut, ekspiryum uzunluğu saptanmadı.\nBatın Muayenesi: Batın rahat, defans veya rebound yok. Traube alanı açık, organomegali izlenmedi.\nNörolojik Muayene: Kraniyal sinir muayeneleri doğal, motor ve duyu defisiti izlenmedi. Patolojik refleks (Babinski vs.) negatif.",
+    bloodPressure: "155/95 mmHg",
+    heartRate: "88 atım/dk (Ritmik)",
+    temperature: "36.8 °C (Timpanik)",
+    oxygenSaturation: "%96 (Oda Havası)",
+    respiratoryRate: "18 /dk",
+    ...(caseData?.patientInfo || {})
+  };
   
   const isReviewMode = initialAnswers !== undefined && initialAnswers.length > 0;
 
   const [currentStage, setCurrentStage] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(isReviewMode ? initialAnswers[0] : null);
+  const [activePanelTab, setActivePanelTab] = useState<'anamnez' | 'ozgecmis' | 'vitals' | 'muayene' | null>(null);
   const [hasAnswered, setHasAnswered] = useState(isReviewMode);
   const [earnedPoints, setEarnedPoints] = useState(0);
   const [givenAnswers, setGivenAnswers] = useState<number[]>([]);
@@ -87,7 +105,6 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
 
   return (
     <main style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
         <div>
           <span style={{ display: 'inline-block', padding: '0.3rem 0.8rem', background: 'rgba(79, 70, 229, 0.15)', color: 'var(--primary)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
@@ -97,102 +114,285 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: patientInfo ? '460px 1fr' : '1fr', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '1fr', 
+        gap: '1.5rem', 
+        alignItems: 'start',
+        marginLeft: activePanelTab ? '460px' : '0px',
+        transition: 'margin-left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+      }}>
 
-        {/* ── LEFT: Patient Card ── */}
+        {/* ── Collapsible Patient Card Sidebar ── */}
         {patientInfo && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{
+            position: 'fixed',
+            left: activePanelTab ? '0' : '-440px',
+            top: '10vh',
+            bottom: '10vh',
+            width: '440px',
+            background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.95)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: activePanelTab ? '20px 0 50px rgba(0,0,0,0.15)' : 'none',
+            borderRight: '1px solid var(--glass-border)',
+            borderTopRightRadius: '32px',
+            borderBottomRightRadius: '32px',
+            transition: 'left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
             
-            <div style={{ display: 'grid', gridTemplateColumns: vitalItems.length > 0 ? '1.2fr 0.8fr' : '1fr', gap: '1rem' }}>
-              {/* Anamnez ve Hasta Bilgileri */}
-              <div className="glass-panel" style={{ padding: '1.2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: 'var(--primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  <User size={14} /> Hasta Bilgileri & Anamnez
-                </div>
-                <p style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.2rem' }}>{patientInfo.name}</p>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-                  {patientInfo.age} yaş · {patientInfo.gender}
-                </p>
-                
-                {patientInfo.chiefComplaint && (
-                  <div style={{ background: 'rgba(244, 63, 94, 0.05)', border: '1px solid rgba(244, 63, 94, 0.15)', borderRadius: '12px', padding: '0.5rem 0.75rem', marginBottom: '0.75rem' }}>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#f43f5e', textTransform: 'uppercase' }}>Şikayet</span>
-                    <p style={{ marginTop: '0.2rem', fontSize: '0.8rem', lineHeight: 1.4, fontStyle: 'italic', color: 'var(--text-main)' }}>
-                      "{patientInfo.chiefComplaint}"
-                    </p>
-                  </div>
-                )}
-
-                {patientInfo.medicalHistory && (
-                  <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '12px', padding: '0.5rem 0.75rem' }}>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', textTransform: 'uppercase' }}>Özgeçmiş / Öykü</span>
-                    <p style={{ marginTop: '0.2rem', fontSize: '0.8rem', lineHeight: 1.4, color: 'var(--text-main)' }}>
-                      {patientInfo.medicalHistory}
-                    </p>
-                  </div>
-                )}
+            {/* ── Tabs attached to the right edge ── */}
+            <div style={{
+              position: 'absolute',
+              right: '-64px', // Adjusted for slightly wider tabs
+              top: '3rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem'
+            }}>
+              {/* Tab: Anamnez */}
+              <div
+                onClick={() => setActivePanelTab(prev => prev === 'anamnez' ? null : 'anamnez')}
+                title="Hasta Bilgileri & Anamnez"
+                style={{
+                  width: '64px', height: '64px',
+                  background: activePanelTab === 'anamnez' ? 'var(--primary)' : (isLight ? 'rgba(255,255,255,0.9)' : 'rgba(30, 41, 59, 0.9)'),
+                  color: activePanelTab === 'anamnez' ? 'white' : 'var(--primary)',
+                  borderTopRightRadius: '16px', borderBottomRightRadius: '16px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '0.2rem',
+                  boxShadow: activePanelTab === 'anamnez' ? '8px 0 20px rgba(79, 70, 229, 0.3)' : '4px 0 10px rgba(0,0,0,0.05)',
+                  transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  border: '1px solid var(--glass-border)', borderLeft: 'none',
+                  transform: activePanelTab === 'anamnez' ? 'translateX(8px)' : 'translateX(0)'
+                }}
+                onMouseEnter={e => { if (activePanelTab !== 'anamnez') e.currentTarget.style.transform = 'translateX(4px)'; }}
+                onMouseLeave={e => { if (activePanelTab !== 'anamnez') e.currentTarget.style.transform = 'translateX(0)'; }}
+              >
+                <User size={20} />
+                <span style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase' }}>Anamnez</span>
               </div>
 
-              {/* Vitals */}
+              {/* Tab: Özgeçmiş */}
+              {patientInfo.medicalHistory && (
+                <div
+                  onClick={() => setActivePanelTab(prev => prev === 'ozgecmis' ? null : 'ozgecmis')}
+                  title="Özgeçmiş / Öykü"
+                  style={{
+                    width: '64px', height: '64px',
+                    background: activePanelTab === 'ozgecmis' ? '#10b981' : (isLight ? 'rgba(255,255,255,0.9)' : 'rgba(30, 41, 59, 0.9)'),
+                    color: activePanelTab === 'ozgecmis' ? 'white' : '#10b981',
+                    borderTopRightRadius: '16px', borderBottomRightRadius: '16px',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '0.2rem',
+                    boxShadow: activePanelTab === 'ozgecmis' ? '8px 0 20px rgba(16, 185, 129, 0.3)' : '4px 0 10px rgba(0,0,0,0.05)',
+                    transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    border: '1px solid var(--glass-border)', borderLeft: 'none',
+                    transform: activePanelTab === 'ozgecmis' ? 'translateX(8px)' : 'translateX(0)'
+                  }}
+                  onMouseEnter={e => { if (activePanelTab !== 'ozgecmis') e.currentTarget.style.transform = 'translateX(4px)'; }}
+                  onMouseLeave={e => { if (activePanelTab !== 'ozgecmis') e.currentTarget.style.transform = 'translateX(0)'; }}
+                >
+                  <FileText size={20} />
+                  <span style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase' }}>Özgeçmiş</span>
+                </div>
+              )}
+              
+              {/* Tab: Vitals */}
               {vitalItems.length > 0 && (
-                <div className="glass-panel" style={{ padding: '1.2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#f43f5e', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    <Activity size={14} /> Vitals
+                <div
+                  onClick={() => setActivePanelTab(prev => prev === 'vitals' ? null : 'vitals')}
+                  title="Yaşamsal Bulgular"
+                  style={{
+                    width: '64px', height: '64px',
+                    background: activePanelTab === 'vitals' ? '#f43f5e' : (isLight ? 'rgba(255,255,255,0.9)' : 'rgba(30, 41, 59, 0.9)'),
+                    color: activePanelTab === 'vitals' ? 'white' : '#f43f5e',
+                    borderTopRightRadius: '16px', borderBottomRightRadius: '16px',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '0.2rem',
+                    boxShadow: activePanelTab === 'vitals' ? '8px 0 20px rgba(244, 63, 94, 0.3)' : '4px 0 10px rgba(0,0,0,0.05)',
+                    transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    border: '1px solid var(--glass-border)', borderLeft: 'none',
+                    transform: activePanelTab === 'vitals' ? 'translateX(8px)' : 'translateX(0)'
+                  }}
+                  onMouseEnter={e => { if (activePanelTab !== 'vitals') e.currentTarget.style.transform = 'translateX(4px)'; }}
+                  onMouseLeave={e => { if (activePanelTab !== 'vitals') e.currentTarget.style.transform = 'translateX(0)'; }}
+                >
+                  <Activity size={20} />
+                  <span style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase' }}>Vitals</span>
+                </div>
+              )}
+
+              {/* Tab: Fizik Muayene */}
+              {patientInfo.physicalExam && (
+                <div
+                  onClick={() => setActivePanelTab(prev => prev === 'muayene' ? null : 'muayene')}
+                  title="Fizik Muayene"
+                  style={{
+                    width: '64px', height: '64px',
+                    background: activePanelTab === 'muayene' ? '#8b5cf6' : (isLight ? 'rgba(255,255,255,0.9)' : 'rgba(30, 41, 59, 0.9)'),
+                    color: activePanelTab === 'muayene' ? 'white' : '#8b5cf6',
+                    borderTopRightRadius: '16px', borderBottomRightRadius: '16px',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '0.2rem',
+                    boxShadow: activePanelTab === 'muayene' ? '8px 0 20px rgba(139, 92, 246, 0.3)' : '4px 0 10px rgba(0,0,0,0.05)',
+                    transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    border: '1px solid var(--glass-border)', borderLeft: 'none',
+                    transform: activePanelTab === 'muayene' ? 'translateX(8px)' : 'translateX(0)'
+                  }}
+                  onMouseEnter={e => { if (activePanelTab !== 'muayene') e.currentTarget.style.transform = 'translateX(4px)'; }}
+                  onMouseLeave={e => { if (activePanelTab !== 'muayene') e.currentTarget.style.transform = 'translateX(0)'; }}
+                >
+                  <Stethoscope size={20} />
+                  <span style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase' }}>Muayene</span>
+                </div>
+              )}
+
+              {/* Tab: Vakadan Çık */}
+              <div
+                onClick={onBack}
+                title="Vakadan Çık / İptal Et"
+                style={{
+                  width: '64px', height: '64px',
+                  background: '#f43f5e',
+                  color: 'white',
+                  borderTopRightRadius: '16px', borderBottomRightRadius: '16px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '0.2rem',
+                  boxShadow: '4px 0 10px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  marginTop: '4rem', // Space it out from the other tabs significantly
+                  border: '1px solid rgba(255,255,255,0.2)', borderLeft: 'none',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateX(6px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateX(0)'; }}
+              >
+                <XCircle size={22} />
+                <span style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.1 }}>Vakadan<br/>Çık</span>
+              </div>
+            </div>
+
+            {/* ── Drawer Content ── */}
+            <div style={{ padding: '2rem', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                  {activePanelTab === 'anamnez' && 'Hasta Dosyası'}
+                  {activePanelTab === 'ozgecmis' && 'Özgeçmiş / Öykü'}
+                  {activePanelTab === 'vitals' && 'Yaşamsal Bulgular'}
+                  {activePanelTab === 'muayene' && 'Fizik Muayene'}
+                </h3>
+                <button onClick={() => setActivePanelTab(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                  <XCircle size={24} />
+                </button>
+              </div>
+
+              {activePanelTab === 'anamnez' && (
+                <div className="glass-panel" style={{ 
+                  padding: '1.5rem', 
+                  borderRadius: '24px', 
+                  background: isLight ? 'linear-gradient(135deg, #ffffff, #f8fafc)' : 'var(--glass-bg)',
+                  border: isLight ? '1px solid rgba(79, 70, 229, 0.1)' : '1px solid var(--glass-border)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.2rem', color: 'var(--primary)', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <User size={16} /> Hasta Bilgileri & Anamnez
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.2rem' }}>
+                    <div style={{ width: 56, height: 56, borderRadius: '16px', background: isLight ? 'rgba(79, 70, 229, 0.1)' : 'rgba(79, 70, 229, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', boxShadow: isLight ? 'inset 0 2px 4px rgba(255,255,255,0.8)' : 'none' }}>
+                      <User size={28} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '0.2rem', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>{patientInfo.name}</p>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600 }}>
+                        {patientInfo.age} yaş · {patientInfo.gender}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {patientInfo.chiefComplaint && (
+                    <div style={{ background: 'rgba(244, 63, 94, 0.05)', border: '1px solid rgba(244, 63, 94, 0.15)', borderRadius: '16px', padding: '1rem', marginBottom: '1rem', boxShadow: isLight ? 'inset 0 2px 4px rgba(255,255,255,0.5)' : 'none' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#f43f5e', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Şikayet</span>
+                      <p style={{ marginTop: '0.4rem', fontSize: '0.9rem', lineHeight: 1.5, fontStyle: 'italic', color: 'var(--text-main)' }}>
+                        "{patientInfo.chiefComplaint}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activePanelTab === 'ozgecmis' && patientInfo.medicalHistory && (
+                <div className="glass-panel" style={{ 
+                  padding: '1.5rem', 
+                  borderRadius: '24px',
+                  background: isLight ? 'linear-gradient(135deg, #ffffff, #d1fae5)' : 'var(--glass-bg)',
+                  border: isLight ? '1px solid rgba(16, 185, 129, 0.1)' : '1px solid var(--glass-border)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem', color: '#10b981', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <FileText size={16} /> Özgeçmiş / Öykü
+                  </div>
+                  <div style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--text-main)' }}>
+                    {patientInfo.medicalHistory.split('\n').map((line: string, i: number) => (
+                      <div key={i} style={{ marginBottom: '0.4rem', paddingLeft: line.includes(':') ? '0' : '0.5rem' }}>
+                        {line.includes(':') ? (
+                          <>
+                            <strong style={{ color: '#10b981' }}>{line.split(':')[0]}:</strong>
+                            {line.substring(line.indexOf(':') + 1)}
+                          </>
+                        ) : line}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activePanelTab === 'vitals' && vitalItems.length > 0 && (
+                <div className="glass-panel" style={{ 
+                  padding: '1.5rem', 
+                  borderRadius: '24px',
+                  background: isLight ? 'linear-gradient(135deg, #ffffff, #fff1f2)' : 'var(--glass-bg)',
+                  border: isLight ? '1px solid rgba(244, 63, 94, 0.1)' : '1px solid var(--glass-border)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#f43f5e', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Activity size={16} /> Yaşamsal Bulgular (Vitals)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {vitalItems.map((v, i) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-sm)' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{v.label}</span>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-main)' }}>{v.value}</span>
+                      <div key={i} style={{ 
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', 
+                        background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.03)', 
+                        border: isLight ? '1px solid rgba(244, 63, 94, 0.1)' : '1px solid var(--glass-border)', 
+                        borderRadius: '16px',
+                        boxShadow: isLight ? '0 2px 5px rgba(0,0,0,0.02)' : 'none'
+                      }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{v.label}</span>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>{v.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {activePanelTab === 'muayene' && patientInfo.physicalExam && (
+                <div className="glass-panel" style={{ 
+                  padding: '1.5rem', 
+                  borderRadius: '24px',
+                  background: isLight ? 'linear-gradient(135deg, #ffffff, #f5f3ff)' : 'var(--glass-bg)',
+                  border: isLight ? '1px solid rgba(139, 92, 246, 0.1)' : '1px solid var(--glass-border)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem', color: '#8b5cf6', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Stethoscope size={16} /> Fizik Muayene Bulguları
+                  </div>
+                  <div style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--text-main)' }}>
+                    {patientInfo.physicalExam.split('\n').map((line: string, i: number) => (
+                      <div key={i} style={{ marginBottom: '0.5rem', padding: '0.5rem', background: isLight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
+                        {line.includes(':') ? (
+                          <>
+                            <strong style={{ color: '#8b5cf6', display: 'block', marginBottom: '0.2rem' }}>{line.split(':')[0]}</strong>
+                            {line.substring(line.indexOf(':') + 1)}
+                          </>
+                        ) : line}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
             </div>
-
-            {/* Physical Exam (Moved to take full width of bottom row since History is pulled up) */}
-            {patientInfo.physicalExam && (
-              <div className="glass-panel" style={{ padding: '1.2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#8b5cf6', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  <Stethoscope size={14} /> Fizik Muayene
-                </div>
-                <p style={{ fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--text-muted)' }}>{patientInfo.physicalExam}</p>
-              </div>
-            )}
-
-            {/* Vakadan Çık Button */}
-            <button 
-              onClick={onBack} 
-              style={{ 
-                alignSelf: 'flex-start',
-                background: 'transparent', 
-                border: '1.5px solid var(--glass-border)', 
-                padding: '0.6rem 1.2rem', 
-                borderRadius: '12px', 
-                color: 'var(--text-muted)', 
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginTop: '0.5rem',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'rgba(244, 63, 94, 0.4)';
-                e.currentTarget.style.color = '#f43f5e';
-                e.currentTarget.style.background = 'rgba(244, 63, 94, 0.05)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--glass-border)';
-                e.currentTarget.style.color = 'var(--text-muted)';
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              ← Vakadan Çık
-            </button>
           </div>
         )}
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { getDepartments, getCases, generateCases, getSolvedCases, DepartmentDto, MedicalCaseDto, SolvedCaseDto } from '../../../infrastructure/api/simulationApi';
-import { Sparkles, Stethoscope, Activity, Syringe, BrainCircuit } from 'lucide-react';
+import { Sparkles, Stethoscope, Activity, Syringe, BrainCircuit, Search, Play } from 'lucide-react';
 
 interface DashboardProps {
   userEmail: string;
@@ -180,6 +180,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
         
         {generatedCases.filter(c => !filterSubject || c.subject === filterSubject).map((c, index) => {
           const solved = c.data?.id ? solvedCases.find(sc => sc.medicalCaseId === c.data.id) : undefined;
+          if (solved) return null; // Hide solved cases from Dashboard
           return (
             <div 
               key={`gen-${index}`} 
@@ -193,7 +194,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 transition: 'var(--transition)',
                 cursor: 'pointer'
               }}
-              onClick={() => onStartCase(c.subject, -1, c.data, solved?.givenAnswers)}
+              onClick={() => onStartCase(c.subject, -1, c.data, undefined)}
             >
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                 <div style={yearBadgeStyle}>
@@ -208,11 +209,10 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 Yapay zeka tarafından üretilmiş benzersiz vaka. {c.data?.stages?.length || 0} aşamadan oluşmaktadır.
               </p>
               <button 
-                className={solved ? "btn-secondary" : "btn-primary"}
-                style={{ width: '100%', padding: '0.8rem', marginTop: 'auto', background: solved ? 'var(--glass-bg)' : undefined, color: solved ? 'var(--text-main)' : undefined, border: solved ? '1px solid var(--glass-border)' : undefined }}
-                onClick={(e) => { e.stopPropagation(); onStartCase(c.subject, -1, c.data, solved?.givenAnswers); }}
+                onClick={(e) => { e.stopPropagation(); onStartCase(c.subject, -1, c.data, undefined); }}
+                className={solved ? "btn-review-case btn-full" : "btn-solve-case btn-full"}
               >
-                {solved ? 'Tekrar İncele' : 'Vakayı Çöz'}
+                {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} /> Vakayı Çöz</>}
               </button>
             </div>
           );
@@ -222,6 +222,8 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
           const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
           const mockData = { id: c.id, title: c.title, text: c.initialText, stages: c.stages, patientInfo: c.patientInfo };
           const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
+          
+          if (solved) return null; // Hide solved cases from Dashboard
 
           return (
             <div 
@@ -238,7 +240,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
               }}
               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-              onClick={() => onStartCase(subjName, index, mockData, solved?.givenAnswers)}
+              onClick={() => onStartCase(subjName, index, mockData, undefined)}
             >
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                 <div style={yearBadgeStyle}>
@@ -253,11 +255,10 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 Bu vaka {c.stages.length} aşamadan oluşmaktadır. Doğru kararlar vererek hastayı kurtarın.
               </p>
               <button 
-                className={solved ? "btn-secondary" : "btn-primary"}
-                style={{ width: '100%', padding: '0.8rem', marginTop: 'auto', background: solved ? 'rgba(255, 255, 255, 0.05)' : undefined, color: solved ? 'var(--text-main)' : undefined, border: solved ? '1px solid var(--glass-border)' : undefined }}
-                onClick={(e) => { e.stopPropagation(); onStartCase(subjName, index, mockData, solved?.givenAnswers); }}
+                onClick={(e) => { e.stopPropagation(); onStartCase(subjName, index, mockData, undefined); }}
+                className={solved ? "btn-review-case btn-full" : "btn-solve-case btn-full"}
               >
-                {solved ? 'Tekrar İncele' : 'Vakayı Çöz'}
+                {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} /> Vakayı Çöz</>}
               </button>
             </div>
           );
@@ -472,10 +473,6 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                       if (num > 10) num = 10;
                       setGenCount(num);
                     }} 
-                    onBlur={e => {
-                      let val = Number(e.target.value);
-                      if (val < 1 || isNaN(val) || e.target.value === '') setGenCount(1);
-                    }}
                     style={{ 
                       width: '100%', padding: '0.85rem 1rem', 
                       borderRadius: '12px', 
@@ -487,7 +484,11 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                       boxShadow: isLight ? 'inset 0 1px 2px rgba(0,0,0,0.05)' : 'none'
                     }}
                     onFocus={e => { e.currentTarget.style.borderColor = 'var(--primary)'; }}
-                    onBlur={e => { e.currentTarget.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)'; }}
+                    onBlur={e => {
+                      let val = Number(e.target.value);
+                      if (val < 1 || isNaN(val) || e.target.value === '') setGenCount(1);
+                      e.currentTarget.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)';
+                    }}
                   />
                   <div style={{ position: 'absolute', right: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: isLight ? '#94a3b8' : '#64748b', pointerEvents: 'none', fontWeight: 800, fontSize: '0.85rem' }}>VAKA</div>
                 </div>

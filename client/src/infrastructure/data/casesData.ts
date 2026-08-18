@@ -234,7 +234,7 @@ export const medCasesData: Record<string, any> = {
   }
 };
 
-function generateRandomCase(yearParam, deptParam) {
+function generateRandomCase(yearParam: string | number | null = null, deptParam: string | null = null) {
   const departmentsByYear = deptsByYear;
 
   let year = yearParam;

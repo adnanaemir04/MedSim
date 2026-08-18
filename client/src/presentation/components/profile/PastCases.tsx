@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { getSolvedCases, getDepartments, getCases, SolvedCaseDto, DepartmentDto, MedicalCaseDto } from '../../../infrastructure/api/simulationApi';
-import { ChevronLeft, ChevronRight, Filter, Activity, Trophy, Clock, CheckCircle2, HeartPulse, Stethoscope, User, ArrowLeft, Brain } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, Activity, Trophy, Clock, CheckCircle2, HeartPulse, Stethoscope, User, ArrowLeft, Brain, Search } from 'lucide-react';
 
 interface PastCasesProps {
   userEmail: string;
@@ -420,35 +420,14 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
                       onClick={() => handleReviewCase(c.medicalCaseId, c.departmentName, c.givenAnswers)}
-                      style={{
-                        padding: '0.6rem 1.2rem', borderRadius: '12px', border: '1px solid var(--glass-border)',
-                        background: 'var(--glass-bg)', color: 'var(--text-main)', fontSize: '0.85rem',
-                        fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.3rem'
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = 'var(--primary)';
-                        e.currentTarget.style.color = 'white';
-                        e.currentTarget.style.borderColor = 'transparent';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = 'var(--glass-bg)';
-                        e.currentTarget.style.color = 'var(--text-main)';
-                        e.currentTarget.style.borderColor = 'var(--glass-border)';
-                      }}
+                      className="btn-review-case btn-inline"
                     >
-                      Vakayı İncele
+                      <Search size={16} /> Vakayı İncele
                     </button>
                     {!c.isSolved && (
                       <button
                         onClick={() => handleResumeCase(c.medicalCaseId, c.departmentName)}
-                        style={{
-                          padding: '0.6rem 1.2rem', borderRadius: '12px', border: 'none',
-                          background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white',
-                          fontSize: '0.85rem', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s',
-                          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                        className="btn-solve-case btn-inline"
                       >
                         Vakaya Devam Et
                       </button>
