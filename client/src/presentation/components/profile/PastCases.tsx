@@ -23,10 +23,16 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
   
   const [filterYear, setFilterYear] = useState<number | ''>('');
   const [filterSubject, setFilterSubject] = useState<string>('');
+  const [filterDifficulty, setFilterDifficulty] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('desc');
 
   const [activeTab, setActiveTab] = useState<'cases' | 'tus'>('cases');
   const [tusQuestions, setTusQuestions] = useState<SolvedTusQuestionDto[]>([]);
   const [filterTusSubject, setFilterTusSubject] = useState<string>('');
+  const [filterTusDifficulty, setFilterTusDifficulty] = useState<string>('');
+  const [tusSortOrder, setTusSortOrder] = useState<string>('desc');
+  const [tusPage, setTusPage] = useState(1);
+  const [tusTotalPages, setTusTotalPages] = useState(1);
   const [loadingTus, setLoadingTus] = useState<boolean>(false);
 
   const [selectedReviewCase, setSelectedReviewCase] = useState<MedicalCaseDto | null>(null);
@@ -34,12 +40,15 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
   useEffect(() => {
     if (activeTab === 'tus') {
       setLoadingTus(true);
-      getSolvedTusQuestions(userEmail, filterTusSubject || undefined)
-        .then(data => setTusQuestions(data))
+      getSolvedTusQuestions(userEmail, filterTusSubject || undefined, tusPage, 6, filterTusDifficulty || undefined, tusSortOrder)
+        .then(data => {
+          setTusQuestions(data.items);
+          setTusTotalPages(data.totalPages || 1);
+        })
         .catch(err => console.error(err))
         .finally(() => setLoadingTus(false));
     }
-  }, [userEmail, activeTab, filterTusSubject]);
+  }, [userEmail, activeTab, filterTusSubject, filterTusDifficulty, tusSortOrder, tusPage]);
 
   useEffect(() => {
     // Fetch departments for the filter dropdown
@@ -52,7 +61,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
     const fetchCases = async () => {
       setLoading(true);
       try {
-        const result = await getSolvedCases(userEmail, page, 6, filterSubject || undefined, filterYear !== '' ? Number(filterYear) : undefined);
+        const result = await getSolvedCases(userEmail, page, 6, filterSubject || undefined, filterYear !== '' ? Number(filterYear) : undefined, filterDifficulty || undefined, sortOrder);
         setCases(result.items);
         setTotalPages(result.totalPages || 1);
         setTotalCount(result.totalCount || 0);
@@ -63,7 +72,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
       }
     };
     fetchCases();
-  }, [userEmail, page, filterSubject, filterYear]);
+  }, [userEmail, page, filterSubject, filterYear, filterDifficulty, sortOrder]);
 
   // Handle year filter change (reset subject filter if year changes)
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -362,8 +371,8 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
               </div>
 
               {/* Filters */}
-              <div style={{ display: 'flex', gap: '1rem', background: 'var(--glass-bg)', padding: '0.8rem', borderRadius: '20px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', background: 'var(--glass-bg)', padding: '0.8rem', borderRadius: '20px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', paddingLeft: '0.5rem' }}>
                   <Filter size={18} />
                 </div>
                 <select 
@@ -393,6 +402,32 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                   {filteredSubjects.map(d => (
                     <option key={d.id} value={d.name} style={{ color: 'black' }}>{d.name}</option>
                   ))}
+                </select>
+                <div style={{ width: '1px', background: 'var(--glass-border)' }}></div>
+                <select 
+                  value={filterDifficulty} 
+                  onChange={(e) => { setFilterDifficulty(e.target.value); setPage(1); }}
+                  style={{ 
+                    background: 'transparent', border: 'none', color: 'var(--text-main)', 
+                    fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem'
+                  }}
+                >
+                  <option value="" style={{ color: 'black' }}>Tüm Zorluklar</option>
+                  <option value="Kolay" style={{ color: 'black' }}>Kolay</option>
+                  <option value="Orta" style={{ color: 'black' }}>Orta</option>
+                  <option value="Zor" style={{ color: 'black' }}>Zor</option>
+                </select>
+                <div style={{ width: '1px', background: 'var(--glass-border)' }}></div>
+                <select 
+                  value={sortOrder} 
+                  onChange={(e) => { setSortOrder(e.target.value); setPage(1); }}
+                  style={{ 
+                    background: 'transparent', border: 'none', color: 'var(--text-main)', 
+                    fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem'
+                  }}
+                >
+                  <option value="desc" style={{ color: 'black' }}>En Yeni</option>
+                  <option value="asc" style={{ color: 'black' }}>En Eski</option>
                 </select>
               </div>
             </div>
@@ -512,45 +547,44 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                 </div>
 
                 {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem' }}>
-                    <button 
-                      disabled={page === 1}
-                      onClick={() => setPage(p => Math.max(1, p - 1))}
-                      style={{ 
-                        padding: '0.8rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-                        color: page === 1 ? 'var(--text-muted)' : 'var(--text-main)',
-                        cursor: page === 1 ? 'not-allowed' : 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={e => { if(page !== 1) e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
-                      onMouseLeave={e => { if(page !== 1) { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.color = 'var(--text-main)'; } }}
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                    
-                    <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>
-                      Sayfa {page} / {totalPages}
-                    </span>
+                {/* Pagination Controls */}
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
+                  <button 
+                    disabled={page === 1}
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    style={{ 
+                      padding: '0.8rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
+                      color: page === 1 ? 'var(--text-muted)' : 'var(--text-main)',
+                      cursor: page === 1 ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => { if(page !== 1) e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={e => { if(page !== 1) { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.color = 'var(--text-main)'; } }}
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  
+                  <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                    Sayfa {page} / {Math.max(1, totalPages)}
+                  </span>
 
-                    <button 
-                      disabled={page === totalPages}
-                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                      style={{ 
-                        padding: '0.8rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-                        color: page === totalPages ? 'var(--text-muted)' : 'var(--text-main)',
-                        cursor: page === totalPages ? 'not-allowed' : 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={e => { if(page !== totalPages) e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
-                      onMouseLeave={e => { if(page !== totalPages) { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.color = 'var(--text-main)'; } }}
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-                  </div>
-                )}
+                  <button 
+                    disabled={page >= totalPages || totalPages === 0}
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    style={{ 
+                      padding: '0.8rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
+                      color: (page >= totalPages || totalPages === 0) ? 'var(--text-muted)' : 'var(--text-main)',
+                      cursor: (page >= totalPages || totalPages === 0) ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => { if(page < totalPages) e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={e => { if(page < totalPages) { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.color = 'var(--text-main)'; } }}
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
               </>
             )}
           </>
@@ -563,14 +597,14 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                 </p>
               </div>
 
-              {/* TUS Subject Filter */}
-              <div style={{ display: 'flex', gap: '1rem', background: 'var(--glass-bg)', padding: '0.8rem', borderRadius: '20px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
+              {/* TUS Filters */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', background: 'var(--glass-bg)', padding: '0.8rem', borderRadius: '20px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', paddingLeft: '0.5rem' }}>
                   <Filter size={18} />
                 </div>
                 <select 
                   value={filterTusSubject} 
-                  onChange={(e) => setFilterTusSubject(e.target.value)}
+                  onChange={(e) => { setFilterTusSubject(e.target.value); setTusPage(1); }}
                   style={{ 
                     background: 'transparent', border: 'none', color: 'var(--text-main)', 
                     fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem'
@@ -580,6 +614,32 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                   {["Anatomi", "Histoloji ve Embriyoloji", "Fizyoloji", "Biyokimya", "Mikrobiyoloji", "Patoloji", "Farmakoloji", "Dahiliye", "Pediatri", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum", "Küçük Stajlar"].map(subj => (
                     <option key={subj} value={subj} style={{ color: 'black' }}>{subj}</option>
                   ))}
+                </select>
+                <div style={{ width: '1px', background: 'var(--glass-border)' }}></div>
+                <select 
+                  value={filterTusDifficulty} 
+                  onChange={(e) => { setFilterTusDifficulty(e.target.value); setTusPage(1); }}
+                  style={{ 
+                    background: 'transparent', border: 'none', color: 'var(--text-main)', 
+                    fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem'
+                  }}
+                >
+                  <option value="" style={{ color: 'black' }}>Tüm Zorluklar</option>
+                  <option value="Kolay" style={{ color: 'black' }}>Kolay</option>
+                  <option value="Orta" style={{ color: 'black' }}>Orta</option>
+                  <option value="Zor" style={{ color: 'black' }}>Zor</option>
+                </select>
+                <div style={{ width: '1px', background: 'var(--glass-border)' }}></div>
+                <select 
+                  value={tusSortOrder} 
+                  onChange={(e) => { setTusSortOrder(e.target.value); setTusPage(1); }}
+                  style={{ 
+                    background: 'transparent', border: 'none', color: 'var(--text-main)', 
+                    fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem'
+                  }}
+                >
+                  <option value="desc" style={{ color: 'black' }}>En Yeni</option>
+                  <option value="asc" style={{ color: 'black' }}>En Eski</option>
                 </select>
               </div>
             </div>
@@ -595,64 +655,105 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                 <p style={{ color: 'var(--text-muted)' }}>Seçtiğiniz filtrelere uygun çözülmüş bir TUS sorusu yok.</p>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.2rem' }}>
-                {tusQuestions.map((q, index) => (
-                  <div 
-                    key={q.id} 
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.2rem' }}>
+                  {tusQuestions.map((q, index) => (
+                    <div 
+                      key={q.id} 
+                      style={{ 
+                        background: 'var(--glass-bg)', 
+                        border: '1px solid var(--glass-border)',
+                        borderLeft: q.isCorrect ? '4px solid var(--success, #10b981)' : '4px solid var(--danger, #f43f5e)',
+                        borderRadius: '16px', 
+                        padding: '1.5rem',
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        gap: '1rem',
+                        transition: 'transform 0.2s',
+                        animation: `slideLeft ${(index + 1) * 0.1}s ease-out`
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'translateX(5px)';
+                        e.currentTarget.style.boxShadow = 'var(--shadow-float)';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'translateX(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                          <span style={{ 
+                            padding: '0.2rem 0.8rem', 
+                            background: 'rgba(79, 70, 229, 0.1)', 
+                            color: 'var(--primary)', 
+                            borderRadius: '12px', 
+                            fontSize: '0.75rem', 
+                            fontWeight: 800 
+                          }}>
+                            {q.category}
+                          </span>
+                          <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.9rem' }}>
+                            {q.subject}
+                          </span>
+                        </div>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: q.isCorrect ? 'var(--success, #10b981)' : 'var(--danger, #f43f5e)', fontWeight: 800 }}>
+                          {q.isCorrect ? <CheckCircle2 size={18} /> : <ArrowLeft size={18} style={{ transform: 'rotate(-45deg)' }} />}
+                          <span>{q.isCorrect ? 'Doğru' : 'Yanlış'}</span>
+                        </div>
+                      </div>
+
+                      <div style={{ color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: 600 }}>
+                        <span dangerouslySetInnerHTML={{ __html: q.questionText }}></span>
+                      </div>
+
+                      <div style={{ padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', borderLeft: '3px solid var(--primary)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        <strong>Açıklama:</strong> <span dangerouslySetInnerHTML={{ __html: q.explanation }}></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* TUS Pagination Controls */}
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                  <button 
+                    disabled={tusPage === 1}
+                    onClick={() => setTusPage(p => Math.max(1, p - 1))}
                     style={{ 
-                      background: 'var(--glass-bg)', 
-                      border: '1px solid var(--glass-border)',
-                      borderLeft: q.isCorrect ? '4px solid var(--success, #10b981)' : '4px solid var(--danger, #f43f5e)',
-                      borderRadius: '16px', 
-                      padding: '1.5rem',
-                      display: 'flex', 
-                      flexDirection: 'column',
-                      gap: '1rem',
-                      transition: 'transform 0.2s',
-                      animation: `slideLeft ${(index + 1) * 0.1}s ease-out`
+                      padding: '0.8rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
+                      color: tusPage === 1 ? 'var(--text-muted)' : 'var(--text-main)',
+                      cursor: tusPage === 1 ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s'
                     }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.transform = 'translateX(5px)';
-                      e.currentTarget.style.boxShadow = 'var(--shadow-float)';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.transform = 'translateX(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    onMouseEnter={e => { if(tusPage !== 1) e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={e => { if(tusPage !== 1) { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.color = 'var(--text-main)'; } }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                        <span style={{ 
-                          padding: '0.2rem 0.8rem', 
-                          background: 'rgba(79, 70, 229, 0.1)', 
-                          color: 'var(--primary)', 
-                          borderRadius: '12px', 
-                          fontSize: '0.75rem', 
-                          fontWeight: 800 
-                        }}>
-                          {q.category}
-                        </span>
-                        <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.9rem' }}>
-                          {q.subject}
-                        </span>
-                      </div>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: q.isCorrect ? 'var(--success, #10b981)' : 'var(--danger, #f43f5e)', fontWeight: 800 }}>
-                        {q.isCorrect ? <CheckCircle2 size={18} /> : <ArrowLeft size={18} style={{ transform: 'rotate(-45deg)' }} />}
-                        <span>{q.isCorrect ? 'Doğru' : 'Yanlış'}</span>
-                      </div>
-                    </div>
+                    <ChevronLeft size={20} />
+                  </button>
+                  
+                  <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                    Sayfa {tusPage} / {Math.max(1, tusTotalPages)}
+                  </span>
 
-                    <div style={{ color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: 600 }}>
-                      {q.questionText}
-                    </div>
-
-                    <div style={{ padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', borderLeft: '3px solid var(--primary)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      <strong>Açıklama:</strong> {q.explanation}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  <button 
+                    disabled={tusPage >= tusTotalPages || tusTotalPages === 0}
+                    onClick={() => setTusPage(p => Math.min(tusTotalPages, p + 1))}
+                    style={{ 
+                      padding: '0.8rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
+                      color: (tusPage >= tusTotalPages || tusTotalPages === 0) ? 'var(--text-muted)' : 'var(--text-main)',
+                      cursor: (tusPage >= tusTotalPages || tusTotalPages === 0) ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => { if(tusPage < tusTotalPages) e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={e => { if(tusPage < tusTotalPages) { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.color = 'var(--text-main)'; } }}
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+              </>
             )}
           </>
         )}

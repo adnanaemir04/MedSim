@@ -22,7 +22,9 @@ public class ProfileController : ControllerBase
         [FromQuery] int page = 1, 
         [FromQuery] int pageSize = 10,
         [FromQuery] string? subject = null,
-        [FromQuery] int? year = null)
+        [FromQuery] int? year = null,
+        [FromQuery] string? difficulty = null,
+        [FromQuery] string? sortOrder = "desc")
     {
         if (string.IsNullOrEmpty(email))
             return BadRequest("Email parametresi zorunludur.");
@@ -47,10 +49,23 @@ public class ProfileController : ControllerBase
             query = query.Where(sc => sc.MedicalCase.Department.Year == year.Value);
         }
 
+        if (!string.IsNullOrEmpty(difficulty))
+        {
+            query = query.Where(sc => sc.MedicalCase.Difficulty == difficulty);
+        }
+
         var totalCount = await query.CountAsync();
 
+        if (sortOrder?.ToLower() == "asc")
+        {
+            query = query.OrderBy(sc => sc.SolvedAt);
+        }
+        else
+        {
+            query = query.OrderByDescending(sc => sc.SolvedAt);
+        }
+
         var rawItems = await query
-            .OrderByDescending(sc => sc.SolvedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(sc => new

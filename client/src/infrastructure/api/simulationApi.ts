@@ -103,6 +103,7 @@ export interface SolvedTusQuestionDto {
     category: string;
     correctOption: string;
     explanation: string;
+    difficulty?: string;
 }
 
 export interface TusQuestionDto {
@@ -144,11 +145,15 @@ export const getSolvedCases = async (
     page: number = 1,
     pageSize: number = 10,
     subject?: string,
-    year?: number
+    year?: number,
+    difficulty?: string,
+    sortOrder?: string
 ): Promise<PagedResult<SolvedCaseDto>> => {
     let url = `/profile/solved-cases?email=${encodeURIComponent(email)}&page=${page}&pageSize=${pageSize}`;
     if (subject) url += `&subject=${encodeURIComponent(subject)}`;
     if (year) url += `&year=${year}`;
+    if (difficulty) url += `&difficulty=${encodeURIComponent(difficulty)}`;
+    if (sortOrder) url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
     
     const response = await apiClient.get<PagedResult<SolvedCaseDto>>(url);
     return response.data;
@@ -211,11 +216,18 @@ export const generateTusQuestions = async (subject: string, count: number = 5, d
 
 export const getSolvedTusQuestions = async (
     email: string,
-    subject?: string
-): Promise<SolvedTusQuestionDto[]> => {
-    let url = `/tus/solved-list?email=${encodeURIComponent(email)}`;
+    subject?: string,
+    page: number = 1,
+    pageSize: number = 10,
+    difficulty?: string,
+    sortOrder?: string
+): Promise<PagedResult<SolvedTusQuestionDto>> => {
+    let url = `/tus/solved-list?email=${encodeURIComponent(email)}&page=${page}&pageSize=${pageSize}`;
     if (subject) url += `&subject=${encodeURIComponent(subject)}`;
-    const response = await apiClient.get<SolvedTusQuestionDto[]>(url);
+    if (difficulty) url += `&difficulty=${encodeURIComponent(difficulty)}`;
+    if (sortOrder) url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+    
+    const response = await apiClient.get<PagedResult<SolvedTusQuestionDto>>(url);
     return response.data;
 };
 

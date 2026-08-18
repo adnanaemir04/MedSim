@@ -65,11 +65,17 @@ public class TusController : ControllerBase
     }
 
     [HttpGet("solved-list")]
-    public async Task<IActionResult> GetSolvedQuestionsList([FromQuery] string email, [FromQuery] string? subject = null)
+    public async Task<IActionResult> GetSolvedQuestionsList(
+        [FromQuery] string email, 
+        [FromQuery] string? subject = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? difficulty = null,
+        [FromQuery] string? sortOrder = "desc")
     {
         try
         {
-            var list = await _tusRepository.GetSolvedQuestionsListAsync(email, subject);
+            var list = await _tusRepository.GetSolvedQuestionsListAsync(email, subject, page, pageSize, difficulty, sortOrder);
             return Ok(list);
         }
         catch (KeyNotFoundException ex)

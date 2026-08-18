@@ -177,7 +177,7 @@ public class TusRepository : ITusRepository
         };
     }
 
-    public async Task<IEnumerable<object>> GetSolvedQuestionsListAsync(string email, string? subject)
+    public async Task<object> GetSolvedQuestionsListAsync(string email, string? subject, int page, int pageSize, string? difficulty, string? sortOrder)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
@@ -192,8 +192,25 @@ public class TusRepository : ITusRepository
             query = query.Where(t => t.TusQuestion.Subject == subject);
         }
 
-        return await query
-            .OrderByDescending(t => t.SolvedAt)
+        if (!string.IsNullOrEmpty(difficulty))
+        {
+            query = query.Where(t => t.TusQuestion.Difficulty == difficulty);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        if (sortOrder?.ToLower() == "asc")
+        {
+            query = query.OrderBy(t => t.SolvedAt);
+        }
+        else
+        {
+            query = query.OrderByDescending(t => t.SolvedAt);
+        }
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(t => new
             {
                 t.Id,
@@ -203,9 +220,19 @@ public class TusRepository : ITusRepository
                 Subject = t.TusQuestion.Subject,
                 Category = t.TusQuestion.Category,
                 CorrectOption = t.TusQuestion.CorrectOption,
-                Explanation = t.TusQuestion.Explanation
+                Explanation = t.TusQuestion.Explanation,
+                Difficulty = t.TusQuestion.Difficulty
             })
             .ToListAsync();
+
+        return new
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        };
     }
 
     public async Task<IEnumerable<object>> GetLeaderboardAsync()
