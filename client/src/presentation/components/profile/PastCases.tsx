@@ -634,6 +634,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
               </div>
             )}
           </>
+        )}
 
       <style>{`
         @keyframes slideLeft {
