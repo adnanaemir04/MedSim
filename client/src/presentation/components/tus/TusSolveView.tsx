@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { ArrowRight, ArrowLeft, CheckCircle, XCircle, BrainCircuit, RefreshCw, LogOut, Loader2 } from 'lucide-react';
-import { getTusConceptExplanation, getTusQuestions, submitTusAnswer } from '../../../infrastructure/api/simulationApi';
+import { getTusConceptExplanation, getTusQuestions, submitTusAnswer, generateTusQuestions } from '../../../infrastructure/api/simulationApi';
 
 interface TusQuestion {
   id: string;
@@ -15,17 +15,21 @@ interface TusQuestion {
   optionE: string;
   category: string;
   subject: string;
+  difficulty?: string;
+  difficultyScore?: number;
+  difficultyReason?: string;
 }
 
 interface TusSolveViewProps {
   subject: string;
   userEmail: string;
   count: number;
+  difficulty?: string;
   onBack: () => void;
   onCorrectAnswer?: (points: number) => void;
 }
 
-export default function TusSolveView({ subject, userEmail, count, onBack, onCorrectAnswer }: TusSolveViewProps) {
+export default function TusSolveView({ subject, userEmail, count, difficulty, onBack, onCorrectAnswer }: TusSolveViewProps) {
   const [questions, setQuestions] = useState<TusQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -55,7 +59,12 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
   const fetchQuestions = async () => {
     setIsLoading(true);
     try {
-      const data = await getTusQuestions(count, subject);
+      let data;
+      if (difficulty) {
+        data = await generateTusQuestions(subject, count, difficulty);
+      } else {
+        data = await getTusQuestions(count, subject);
+      }
       if (data && data.length > 0) {
         setQuestions(data);
         setCurrentIndex(0);
@@ -325,10 +334,28 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
         }}>
           {/* ── Left Side: Question & Options ── */}
           <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '2rem', borderRadius: '24px', background: isLight ? 'var(--glass-bg)' : 'rgba(15, 23, 42, 0.85)', border: isLight ? '1px solid var(--glass-border)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.9rem', width: '100%' }}>
               <span style={{ fontWeight: 600, color: 'var(--primary)', background: 'rgba(79, 70, 229, 0.1)', padding: '0.3rem 0.8rem', borderRadius: '20px' }}>
                 Soru {activeIndex + 1}
               </span>
+              
+              {currentQ.difficulty && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span 
+                    title={currentQ.difficultyReason || "Zorluk seviyesi bilgisi"}
+                    style={{ 
+                      fontWeight: 700, 
+                      color: currentQ.difficulty === 'Zor' ? '#f43f5e' : (currentQ.difficulty === 'Orta' ? '#f59e0b' : '#10b981'), 
+                      background: currentQ.difficulty === 'Zor' ? 'rgba(244,63,94,0.1)' : (currentQ.difficulty === 'Orta' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'), 
+                      padding: '0.3rem 0.8rem', 
+                      borderRadius: '20px',
+                      cursor: 'help'
+                    }}
+                  >
+                    {currentQ.difficulty} Seviye {currentQ.difficultyScore ? `(${currentQ.difficultyScore}/10)` : ''}
+                  </span>
+                </div>
+              )}
             </div>
             <p style={{ fontSize: '1.25rem', lineHeight: 1.7, fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
               {currentQ.questionText}

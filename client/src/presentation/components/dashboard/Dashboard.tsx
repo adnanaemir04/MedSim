@@ -54,6 +54,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [genYear, setGenYear] = useState<string>('4');
   const [genSubject, setGenSubject] = useState(filterSubject || 'Dahiliye');
+  const [genDifficulty, setGenDifficulty] = useState('Orta');
   const [genCount, setGenCount] = useState(1);
   const [generatedCases, setGeneratedCases] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -108,7 +109,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
     setGenerateError(null);
 
     try {
-      const newCases = await generateCases(genSubject, count);
+      const newCases = await generateCases(genSubject, count, genDifficulty);
       const mappedNewCases = newCases.map(c => ({
         subject: genSubject,
         title: c.title,
@@ -490,6 +491,40 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                       ▼
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
+                  <span>Zorluk Seviyesi</span>
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {['Kolay', 'Orta', 'Zor'].map((lvl) => (
+                    <button
+                      key={lvl}
+                      onClick={() => setGenDifficulty(lvl)}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        borderRadius: '10px',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        background: genDifficulty === lvl 
+                          ? (lvl === 'Zor' ? 'rgba(244,63,94,0.15)' : lvl === 'Orta' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)')
+                          : (isLight ? 'white' : 'rgba(30, 41, 59, 0.6)'),
+                        color: genDifficulty === lvl 
+                          ? (lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : '#10b981')
+                          : (isLight ? '#64748b' : '#94a3b8'),
+                        border: genDifficulty === lvl 
+                          ? `1.5px solid ${lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : '#10b981'}`
+                          : (isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)')
+                      }}
+                    >
+                      {lvl}
+                    </button>
+                  ))}
                 </div>
               </div>
 

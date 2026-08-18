@@ -25,7 +25,7 @@ export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const [selectedCase, setSelectedCase] = useState<{subject: string, index: number, data?: any, initialAnswers?: number[]} | null>(null);
-  const [selectedTusSolve, setSelectedTusSolve] = useState<{subject: string, count: number, mode: 'classic' | 'ai'} | null>(null);
+  const [selectedTusSolve, setSelectedTusSolve] = useState<{subject: string, count: number, mode: 'classic' | 'ai', difficulty?: string} | null>(null);
   const [filterSubject, setFilterSubject] = useState<string | undefined>();
   
   const [user, setUser] = useState<any>({
@@ -48,18 +48,23 @@ export default function Home() {
     });
   };
 
-  if (isLanding && !isAuthenticated) {
+  if (isLanding) {
     return (
       <LandingPage 
+        isAuthenticated={isAuthenticated}
         onNavigateToAuth={(mode) => {
           setAuthMode(mode);
           setIsLanding(false);
         }} 
+        onNavigateToDashboard={() => {
+          setIsLanding(false);
+          setCurrentView('dashboard');
+        }}
       />
     );
   }
 
-  if (!isLanding && !isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <AuthForm 
         initialMode={authMode}
@@ -106,6 +111,7 @@ export default function Home() {
         <TusSolveView 
           subject={selectedTusSolve.subject}
           count={selectedTusSolve.count}
+          difficulty={selectedTusSolve.difficulty}
           userEmail={user.email}
           onBack={() => setCurrentView('tus')}
           onCorrectAnswer={(newPoints) => {
@@ -151,6 +157,10 @@ export default function Home() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <TopBar 
         onNavigate={(view) => {
+          if (view === 'landing') {
+            setIsLanding(true);
+            return;
+          }
           if (view === 'subscription' || view === 'dashboard') {
             setCurrentView(view as any);
             if (view === 'dashboard') {
@@ -211,8 +221,8 @@ export default function Home() {
             <TusCenter 
               userEmail={user.email} 
               onNavigateToAbout={() => setCurrentView('tus_about')}
-              onNavigateToSolve={(subject, count, mode) => {
-                setSelectedTusSolve({ subject, count, mode });
+              onNavigateToSolve={(subject, count, mode, difficulty) => {
+                setSelectedTusSolve({ subject, count, mode, difficulty });
                 setCurrentView('tus_solve');
               }}
             />

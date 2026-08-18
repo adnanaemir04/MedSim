@@ -8,9 +8,9 @@ namespace MedSim.Application.Services;
 
 public interface IProceduralGeneratorService
 {
-    Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, Guid departmentId);
+    Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, Guid departmentId, string difficulty = "Orta");
     Task<string> ExplainTusConceptsAsync(string questionText, string optionA, string optionB, string optionC, string optionD, string optionE, string correctOption, string baseExplanation);
-    Task<List<TusQuestion>> GenerateTusQuestionsAsync(string subject, int count);
+    Task<List<TusQuestion>> GenerateTusQuestionsAsync(string subject, int count, string difficulty = "Orta");
 }
 
 public class ProceduralGeneratorService : IProceduralGeneratorService
@@ -25,7 +25,27 @@ public class ProceduralGeneratorService : IProceduralGeneratorService
         _configuration = configuration;
     }
 
-    public async Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, Guid departmentId)
+    private string GetDifficultyPromptForCase(string difficulty)
+    {
+        return difficulty switch
+        {
+            "Kolay" => "- ZORLUK SEVİYESİ: Kolay\n- Hastanın klinik tablosu oldukça belirgin olmalı. Tipik semptom ve bulgular kullanılmalı.\n- Ayırıcı tanı sayısı az olmalı. Temel bilgi ile doğru tanıya ulaşılabilmeli.\n- Hastanın öyküsü ve fizik muayenesi tanıya güçlü şekilde işaret etmeli.\n- Gerekli laboratuvar/görüntüleme bulguları tanıyı destekleyecek şekilde açık olmalı.",
+            "Zor" => "- ZORLUK SEVİYESİ: Zor\n- İleri düzey klinik muhakeme gerektirmelidir. Birden fazla olası tanı bulunmalı, ayırıcı tanı geniş olmalıdır.\n- Hastanın öyküsü, fizik muayenesi, laboratuvar ve görüntüleme sonuçları birlikte değerlendirilmelidir.\n- Tanıya ulaşmak için birden fazla klinik bilgi arasında bağlantı kurulması gerekebilir. Atipik veya yanıltıcı bulgular bulunabilir.\n- Sadece tek bir ezber bilgiyle çözülememelidir. Klinik karar verme ve çok aşamalı düşünme gerektirmelidir.",
+            _ => "- ZORLUK SEVİYESİ: Orta\n- Birden fazla klinik bulgunun birlikte değerlendirilmesi gerekir. Birkaç olası ayırıcı tanı bulunabilir.\n- Hastanın yaş, öykü, risk faktörleri ve klinik bulguları birlikte değerlendirilmelidir.\n- Ezberden ziyade klinik muhakeme gerektirmelidir ancak çok ileri uzmanlık bilgisi veya nadir bir hastalık bilgisi gerektirmemelidir."
+        };
+    }
+
+    private string GetDifficultyPromptForTus(string difficulty)
+    {
+        return difficulty switch
+        {
+            "Kolay" => "- ZORLUK SEVİYESİ: Kolay\n- Temel TUS bilgisini ölçmeli. Cevap doğrudan bilinen bir bilgiye dayanmalı.\n- Çok fazla yorum gerektirmemeli. Çeldiriciler çok karmaşık olmamalı.\n- Bir temel bilgiyle çözülebilmeli.",
+            "Zor" => "- ZORLUK SEVİYESİ: Zor\n- İleri düzey TUS bilgisi gerektirmeli. Birden fazla konunun birlikte kullanılmasını gerektirebilir.\n- Klinik muhakeme gerektirmeli. Benzer hastalıklar veya tedaviler arasında ince ayrımlar içermeli.\n- Atipik vaka sunumu kullanılabilir. Birden fazla aşamalı düşünme gerektirebilir.\n- Çeldiriciler güçlü ve birbirine yakın olmalıdır.",
+            _ => "- ZORLUK SEVİYESİ: Orta\n- Birden fazla bilginin birlikte değerlendirilmesini gerektirmeli. Klinik senaryo içerebilir.\n- Ayırıcı tanı veya mekanizma bilgisi gerekebilir. Temel bilgiyi klinik duruma uygulama gerektirmeli.\n- Çeldiriciler birbirine yakın olmalı. Soruyu çözmek için sadece tek bir ezber bilgi yeterli olmamalıdır."
+        };
+    }
+
+    public async Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, Guid departmentId, string difficulty = "Orta")
     {
         var apiKey = _configuration["AI_API_KEY"];
         if (string.IsNullOrEmpty(apiKey))
@@ -35,11 +55,13 @@ public class ProceduralGeneratorService : IProceduralGeneratorService
 
         var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={apiKey}";
 
+        var difficultyRules = GetDifficultyPromptForCase(difficulty);
         var prompt = $@"Sen bir tıp eğitmenisin. {departmentName} branşı için özgün bir klinik simülasyon vakası oluştur. SADECE JSON döndür, başka hiçbir şey yazma.
 
 Kurallar:
 - 2-4 aşama (orderIndex 1'den başlar)
 - Her aşamada tam 4 şık: 1 doğru (isCorrect:true), 3 yanlış (isCorrect:false)
+{difficultyRules}
 - CRITICAL RULE (ÇOK ÖNEMLİ):
   1. Doğru şık KESİNLİKLE en uzun veya en açıklayıcı şık OLMAMALIDIR. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
   2. Şıklarda KESİNLİKLE parantez içinde ek açıklamalar, detaylar veya ipuçları (örn. '... (en sık)', '... (altın standart)', '... (tercih edilen)') bulunmamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
@@ -52,6 +74,9 @@ JSON formatı:
 {{
   ""title"": ""kısa başlık"",
   ""initialText"": ""1-2 cümle geliş senaryosu"",
+  ""difficulty"": ""{difficulty}"",
+  ""difficultyScore"": 7,
+  ""difficultyReason"": ""Vakada X, Y ve Z bulgularının birlikte değerlendirilmesi gerektiği için bu zorluk seçilmiştir."",
   ""patientInfo"": {{
     ""name"": ""Türkçe Ad Soyad"",
     ""age"": 45,
@@ -124,6 +149,9 @@ JSON formatı:
                 Title = llmCase.Title,
                 InitialText = llmCase.InitialText,
                 IsProcedural = true,
+                Difficulty = llmCase.Difficulty,
+                DifficultyScore = llmCase.DifficultyScore,
+                DifficultyReason = llmCase.DifficultyReason,
                 PatientInfo = patientInfo,
                 Stages = llmCase.Stages.Select(s => new CaseStageDto
                 {
@@ -256,7 +284,7 @@ Lütfen yukarıdaki bilgiler ışığında, sadece sorunun doğru çözümünü 
         return "Gemini API geçerli bir metin döndürmedi.";
     }
 
-    public async Task<List<TusQuestion>> GenerateTusQuestionsAsync(string subject, int count)
+    public async Task<List<TusQuestion>> GenerateTusQuestionsAsync(string subject, int count, string difficulty = "Orta")
     {
         var apiKey = _configuration["AI_API_KEY"];
         if (string.IsNullOrEmpty(apiKey))
@@ -266,13 +294,16 @@ Lütfen yukarıdaki bilgiler ışığında, sadece sorunun doğru çözümünü 
 
         var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={apiKey}";
 
+        var difficultyRules = GetDifficultyPromptForTus(difficulty);
         var prompt = $@"
-Sen uzman bir tıp akademisyenisin. TUS (Tıpta Uzmanlık Sınavı) standartlarında '{subject}' dersi ile ilgili zor, ayırt edici ve öğretici tam {count} adet soru hazırla.
+Sen uzman bir tıp akademisyenisin. TUS (Tıpta Uzmanlık Sınavı) standartlarında '{subject}' dersi ile ilgili {difficulty} seviyesinde, ayırt edici ve öğretici tam {count} adet soru hazırla.
 
 Kritik Kural (Çok Önemli):
 1. Doğru şık KESİNLİKLE en uzun, en detaylı veya en açıklayıcı şık olmamalıdır. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
 2. Şıklarda KESİNLİKLE parantez içinde ek bilgiler, açıklamalar veya ipuçları (örn. '... (en olası)', '... (altın standart)', '... (en sık)') yer almamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
 3. Tüm şıklar (A, B, C, D, E) kelime sayısı olarak neredeyse birebir aynı boyutta olmalıdır.
+
+{difficultyRules}
 
 Çıktıyı KESİNLİKLE JSON formatında ver. Format aşağıdaki gibi bir liste (array) olmalı:
 
@@ -285,7 +316,10 @@ Kritik Kural (Çok Önemli):
     ""optionD"": ""D şıkkı"",
     ""optionE"": ""E şıkkı"",
     ""correctOption"": ""C"",
-    ""explanation"": ""Doğru cevabın açıklaması""
+    ""explanation"": ""Doğru cevabın açıklaması"",
+    ""difficulty"": ""{difficulty}"",
+    ""difficultyScore"": 8,
+    ""difficultyReason"": ""Bu soruyu çözmek için şu klinik bulguların sentezlenmesi gerekir...""
   }}
 ]
 
@@ -342,6 +376,9 @@ Lütfen JSON dışında hiçbir metin, açıklama veya markdown bloğu kullanma.
                         OptionE = q.OptionE,
                         CorrectOption = q.CorrectOption,
                         Explanation = q.Explanation,
+                        Difficulty = q.Difficulty,
+                        DifficultyScore = q.DifficultyScore,
+                        DifficultyReason = q.DifficultyReason,
                         Category = "Temel Bilimler", // Simplification
                         Subject = subject
                     }).ToList();
@@ -358,6 +395,11 @@ public class LLMCaseResponse
 {
     public string Title { get; set; } = string.Empty;
     public string InitialText { get; set; } = string.Empty;
+    
+    public string Difficulty { get; set; } = string.Empty;
+    public int DifficultyScore { get; set; }
+    public string DifficultyReason { get; set; } = string.Empty;
+
     public LLMPatientInfoResponse? PatientInfo { get; set; }
     public List<LLMStageResponse> Stages { get; set; } = new();
 }
@@ -401,4 +443,8 @@ public class LLMTusQuestionResponse
     public string OptionE { get; set; } = string.Empty;
     public string CorrectOption { get; set; } = string.Empty;
     public string Explanation { get; set; } = string.Empty;
+    
+    public string Difficulty { get; set; } = string.Empty;
+    public int DifficultyScore { get; set; }
+    public string DifficultyReason { get; set; } = string.Empty;
 }

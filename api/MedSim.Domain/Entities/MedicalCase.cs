@@ -11,5 +11,10 @@ public class MedicalCase
     public bool IsProcedural { get; set; } = false; // To identify if it was AI generated
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    // Difficulty Classification
+    public string Difficulty { get; set; } = string.Empty; // "Kolay", "Orta", "Zor"
+    public int DifficultyScore { get; set; } = 5; // 1-10
+    public string DifficultyReason { get; set; } = string.Empty;
+
     public ICollection<CaseStage> Stages { get; set; } = new List<CaseStage>();
 }

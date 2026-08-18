@@ -11,7 +11,7 @@ import TusAboutView from './TusAboutView';
 interface TusCenterProps {
   userEmail: string;
   onNavigateToAbout?: () => void;
-  onNavigateToSolve?: (subject: string, count: number, mode: 'classic' | 'ai') => void;
+  onNavigateToSolve?: (subject: string, count: number, mode: 'classic' | 'ai', difficulty?: string) => void;
 }
 
 const STANDARD_TUS_SUBJECTS = [
@@ -69,10 +69,10 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
       <TusSubjectStatsView 
         subject={activeSubject} 
         userEmail={userEmail} 
-        onSolveQuestions={(count, mode) => {
+        onSolveQuestions={(count, mode, difficulty) => {
           setSolveCount(count);
           if (onNavigateToSolve) {
-            onNavigateToSolve(activeSubject as string, count, mode);
+            onNavigateToSolve(activeSubject as string, count, mode, difficulty);
           } else {
             setViewState('solve');
           }

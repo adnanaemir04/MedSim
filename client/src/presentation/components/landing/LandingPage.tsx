@@ -221,10 +221,12 @@ function MicroscopicVein() {
 
 // --- Main Landing Page Component ---
 interface LandingPageProps {
-  onNavigateToAuth: (mode: 'login' | 'register') => void;
+  onNavigateToAuth?: (mode: 'login' | 'register') => void;
+  isAuthenticated?: boolean;
+  onNavigateToDashboard?: () => void;
 }
 
-export default function LandingPage({ onNavigateToAuth }: LandingPageProps) {
+export default function LandingPage({ onNavigateToAuth, isAuthenticated, onNavigateToDashboard }: LandingPageProps) {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -277,22 +279,35 @@ export default function LandingPage({ onNavigateToAuth }: LandingPageProps) {
           </p>
 
           <div className="action-buttons">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="btn-primary-large"
-              onClick={() => onNavigateToAuth('register')}
-            >
-              Hemen Başla
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="btn-secondary-large"
-              onClick={() => onNavigateToAuth('login')}
-            >
-              Giriş Yap
-            </motion.button>
+            {isAuthenticated ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="btn-primary-large"
+                onClick={() => onNavigateToDashboard && onNavigateToDashboard()}
+              >
+                Simülasyon Paneline Dön
+              </motion.button>
+            ) : (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn-primary-large"
+                  onClick={() => onNavigateToAuth && onNavigateToAuth('register')}
+                >
+                  Hemen Başla
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn-secondary-large"
+                  onClick={() => onNavigateToAuth && onNavigateToAuth('login')}
+                >
+                  Giriş Yap
+                </motion.button>
+              </>
+            )}
           </div>
 
           <QuoteCarousel />

@@ -81,7 +81,7 @@ public class SimulationController : ControllerBase
 
         for (int i = 0; i < request.Count; i++)
         {
-            var newCaseDto = await _generatorService.GenerateCaseAsync(department.Name, department.Id);
+            var newCaseDto = await _generatorService.GenerateCaseAsync(department.Name, department.Id, request.Difficulty);
             newCaseDto.Title += $" - Vaka {DateTime.UtcNow.Ticks % 1000}";
             
             var newCase = new MedicalCase
@@ -91,6 +91,9 @@ public class SimulationController : ControllerBase
                 Title = newCaseDto.Title,
                 InitialText = newCaseDto.InitialText,
                 IsProcedural = newCaseDto.IsProcedural,
+                Difficulty = newCaseDto.Difficulty,
+                DifficultyScore = newCaseDto.DifficultyScore,
+                DifficultyReason = newCaseDto.DifficultyReason,
                 Stages = newCaseDto.Stages.Select(s => new CaseStage
                 {
                     Id = s.Id,

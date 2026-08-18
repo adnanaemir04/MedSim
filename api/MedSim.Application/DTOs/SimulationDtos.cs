@@ -33,6 +33,11 @@ public class MedicalCaseDto
     public bool IsProcedural { get; set; }
     public PatientInfoDto? PatientInfo { get; set; }
     public List<CaseStageDto> Stages { get; set; } = new();
+
+    // Difficulty Classification
+    public string Difficulty { get; set; } = string.Empty;
+    public int DifficultyScore { get; set; }
+    public string DifficultyReason { get; set; } = string.Empty;
 }
 
 public class CaseStageDto
@@ -55,4 +60,5 @@ public class GenerateCaseRequest
 {
     public string DepartmentName { get; set; } = string.Empty;
     public int Count { get; set; } = 1;
+    public string Difficulty { get; set; } = "Orta";
 }

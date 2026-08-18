@@ -123,10 +123,11 @@ export const getCases = async (): Promise<MedicalCaseDto[]> => {
     return response.data;
 };
 
-export const generateCases = async (departmentName: string, count: number): Promise<MedicalCaseDto[]> => {
+export const generateCases = async (departmentName: string, count: number, difficulty: string = "Orta"): Promise<MedicalCaseDto[]> => {
     const response = await apiClient.post<MedicalCaseDto[]>('/simulation/generate', {
         departmentName,
-        count
+        count,
+        difficulty
     });
     return response.data;
 };
@@ -192,8 +193,8 @@ export const getTusConceptExplanation = async (questionId: string): Promise<stri
     return response.data.explanation;
 };
 
-export const generateTusQuestions = async (subject: string, count: number = 5): Promise<any> => {
-    const response = await apiClient.post('/tus/generate-questions', { subject, count });
+export const generateTusQuestions = async (subject: string, count: number = 5, difficulty: string = "Orta"): Promise<any> => {
+    const response = await apiClient.post('/tus/generate-questions', { subject, count, difficulty });
     return response.data;
 };
 

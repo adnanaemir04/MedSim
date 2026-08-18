@@ -21,4 +21,9 @@ public class TusQuestion
     
     // e.g., "Anatomi", "Dahiliye"
     public string Subject { get; set; } = string.Empty;
+    
+    // Difficulty Classification
+    public string Difficulty { get; set; } = string.Empty; // "Kolay", "Orta", "Zor"
+    public int DifficultyScore { get; set; } = 5; // 1-10
+    public string DifficultyReason { get; set; } = string.Empty;
 }

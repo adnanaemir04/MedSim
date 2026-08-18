@@ -125,9 +125,28 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
     <main style={{ maxWidth: '1100px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
         <div>
-          <span style={{ display: 'inline-block', padding: '0.3rem 0.8rem', background: 'rgba(79, 70, 229, 0.15)', color: 'var(--primary)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+          <span style={{ display: 'inline-block', padding: '0.3rem 0.8rem', background: 'rgba(79, 70, 229, 0.15)', color: 'var(--primary)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.5rem', marginRight: '0.5rem', letterSpacing: '0.05em' }}>
             {subject}
           </span>
+          {generatedData?.difficulty && (
+            <span 
+              title={generatedData.difficultyReason || "Zorluk seviyesi bilgisi"}
+              style={{ 
+                display: 'inline-block', 
+                padding: '0.3rem 0.8rem', 
+                borderRadius: '20px', 
+                fontSize: '0.8rem', 
+                fontWeight: 700, 
+                marginBottom: '0.5rem', 
+                letterSpacing: '0.05em',
+                cursor: 'help',
+                background: generatedData.difficulty === 'Zor' ? 'rgba(244,63,94,0.1)' : (generatedData.difficulty === 'Orta' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'),
+                color: generatedData.difficulty === 'Zor' ? '#f43f5e' : (generatedData.difficulty === 'Orta' ? '#f59e0b' : '#10b981')
+              }}
+            >
+              {generatedData.difficulty} Seviye {generatedData.difficultyScore ? `(${generatedData.difficultyScore}/10)` : ''}
+            </span>
+          )}
           <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>{caseTitle}</h2>
         </div>
       </div>

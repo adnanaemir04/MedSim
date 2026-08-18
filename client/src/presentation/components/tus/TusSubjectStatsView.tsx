@@ -8,7 +8,7 @@ import { getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simula
 interface TusSubjectStatsViewProps {
   subject: string;
   userEmail: string;
-  onSolveQuestions: (count: number, mode: 'classic' | 'ai') => void;
+  onSolveQuestions: (count: number, mode: 'classic' | 'ai', difficulty?: string) => void;
   onBack: () => void;
 }
 
@@ -19,6 +19,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
   const [stats, setStats] = useState<TusStatsDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [aiCount, setAiCount] = useState<number | string>(10);
+  const [aiDifficulty, setAiDifficulty] = useState('Orta');
 
   useEffect(() => {
     getTusUserStats(userEmail, subject)
@@ -280,15 +281,41 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
               <div style={{ fontSize: '0.85rem', color: 'var(--danger)', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(244, 63, 94, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
                 <Info size={16} /> Sadece 1 ile 30 arasında bir değer girebilirsiniz!
               </div>
-            ) : (
-              <div style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(245, 158, 11, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
+          <div style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(245, 158, 11, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
                 <Info size={16} /> Lütfen 1 - 30 arası bir değer girin
               </div>
             )}
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', background: 'rgba(0,0,0,0.03)', padding: '0.5rem 1rem', borderRadius: '16px' }}>
+              <label style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1rem' }}>Zorluk:</label>
+              <div style={{ display: 'flex', gap: '0.5rem', flex: 1 }}>
+                {['Kolay', 'Orta', 'Zor'].map((lvl) => (
+                  <button
+                    key={lvl}
+                    onClick={() => setAiDifficulty(lvl)}
+                    style={{
+                      flex: 1, padding: '0.6rem', borderRadius: '12px', fontWeight: 800, fontSize: '0.9rem',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      background: aiDifficulty === lvl 
+                        ? (lvl === 'Zor' ? 'rgba(244,63,94,0.15)' : lvl === 'Orta' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)')
+                        : (isLight ? 'white' : 'rgba(0,0,0,0.3)'),
+                      color: aiDifficulty === lvl 
+                        ? (lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : '#10b981')
+                        : 'var(--text-main)',
+                      border: aiDifficulty === lvl 
+                        ? `2px solid ${lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : '#10b981'}`
+                        : (isLight ? '2px solid transparent' : '2px solid rgba(255,255,255,0.1)')
+                    }}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <button 
-            onClick={() => { if (!isAiCountInvalid) onSolveQuestions(parsedAiCount, 'ai') }}
+            onClick={() => onSolveQuestions(parsedAiCount, 'ai', aiDifficulty)}
             disabled={isAiCountInvalid}
             style={{ 
               background: isAiCountInvalid ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, var(--primary), var(--secondary))',

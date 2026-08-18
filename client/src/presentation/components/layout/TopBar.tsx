@@ -20,7 +20,7 @@ export default function TopBar({ onNavigate }: { onNavigate?: (view: string) => 
         {/* Navigation Links */}
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <button 
-            onClick={() => onNavigate && onNavigate('dashboard')}
+            onClick={() => onNavigate && onNavigate('landing')}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '0.5rem', 
               padding: '0.5rem 1rem', borderRadius: '12px',

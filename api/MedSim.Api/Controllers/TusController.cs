@@ -464,7 +464,7 @@ public class TusController : ControllerBase
 
         try
         {
-            var questions = await _proceduralGeneratorService.GenerateTusQuestionsAsync(request.Subject, request.Count);
+            var questions = await _proceduralGeneratorService.GenerateTusQuestionsAsync(request.Subject, request.Count, request.Difficulty);
             
             if (questions != null && questions.Any())
             {
@@ -499,4 +499,5 @@ public class GenerateTusQuestionsRequest
 {
     public string Subject { get; set; } = string.Empty;
     public int Count { get; set; } = 5;
+    public string Difficulty { get; set; } = "Orta";
 }
