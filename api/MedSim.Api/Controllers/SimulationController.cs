@@ -51,6 +51,9 @@ public class SimulationController : ControllerBase
                 Title = c.Title,
                 InitialText = c.InitialText,
                 IsProcedural = c.IsProcedural,
+                Difficulty = c.Difficulty,
+                DifficultyScore = c.DifficultyScore,
+                DifficultyReason = c.DifficultyReason,
                 Stages = c.Stages.OrderBy(s => s.OrderIndex).Select(s => new CaseStageDto
                 {
                     Id = s.Id,
