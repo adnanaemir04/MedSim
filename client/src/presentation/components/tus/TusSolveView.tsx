@@ -30,6 +30,16 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [result, setResult] = useState<{ isCorrect: boolean, correctOption: string, explanation: string } | null>(null);
+  const [sessionResults, setSessionResults] = useState<Array<{
+    questionId: string;
+    selectedOption: string;
+    isCorrect: boolean;
+    correctOption: string;
+    explanation: string;
+  }>>([]);
+  const [isSessionComplete, setIsSessionComplete] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
+  const [reviewIndex, setReviewIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -49,6 +59,9 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
       if (data && data.length > 0) {
         setQuestions(data);
         setCurrentIndex(0);
+        setSessionResults([]);
+        setIsSessionComplete(false);
+        setReviewMode(false);
         resetState();
       } else {
         setQuestions([]);
@@ -84,6 +97,17 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
       const data = await submitTusAnswer(userEmail, currentQuestionId, optionKey, durationSeconds);
       
       setResult(data);
+      setSessionResults(prev => {
+        const exists = prev.some(r => r.questionId === currentQuestionId);
+        if (exists) return prev;
+        return [...prev, {
+          questionId: currentQuestionId,
+          selectedOption: optionKey,
+          isCorrect: data.isCorrect,
+          correctOption: data.correctOption,
+          explanation: data.explanation
+        }];
+      });
       if (onCorrectAnswer) {
         onCorrectAnswer(data.points);
       }
@@ -112,10 +136,59 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
       setCurrentIndex(currentIndex + 1);
       resetState();
     } else {
-      // End of batch, fetch more
-      fetchQuestions();
+      // End of batch
+      setIsSessionComplete(true);
     }
   };
+
+  const correctCount = sessionResults.filter(r => r.isCorrect).length;
+  const totalCount = questions.length;
+  const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+
+  if (isSessionComplete && !reviewMode) {
+    return (
+      <div style={{
+        position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 90,
+        background: isLight ? '#f1f5f9' : '#020617', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+      }}>
+        <div className="glass-panel" style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+          padding: '3rem 2rem', borderRadius: '24px', maxWidth: '500px', width: '100%',
+          background: isLight ? 'var(--glass-bg)' : 'rgba(15, 23, 42, 0.85)',
+          border: isLight ? '1px solid var(--glass-border)' : '1px solid rgba(255, 255, 255, 0.1)',
+          animation: 'fadeIn 0.5s ease-out'
+        }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            <CheckCircle size={40} color="var(--success)" />
+          </div>
+          <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '0.5rem', fontWeight: 800 }}>Oturum Tamamlandı!</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '1.1rem' }}>
+            {subject} testi için soruları bitirdiniz.
+          </p>
+          
+          <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2.5rem', width: '100%' }}>
+            <div style={{ flex: 1, padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)' }}>{correctCount}/{totalCount}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginTop: '0.3rem' }}>Doğru Sayısı</div>
+            </div>
+            <div style={{ flex: 1, padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: accuracy >= 70 ? 'var(--success)' : accuracy >= 40 ? '#f59e0b' : 'var(--danger)' }}>%{accuracy}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginTop: '0.3rem' }}>Başarı Oranı</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+            <button className="btn-primary" onClick={() => { setReviewMode(true); setReviewIndex(0); resetState(); }} style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+              <RefreshCw size={20} /> Soruları İncele
+            </button>
+            <button onClick={onBack} style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', background: 'transparent', border: '1px solid var(--text-muted)', color: 'var(--text-main)', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              <LogOut size={20} /> Ana Menüye Dön
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading && questions.length === 0) {
     return (
@@ -141,13 +214,16 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
     );
   }
 
-  const currentQ = questions[currentIndex];
+  const activeIndex = reviewMode ? reviewIndex : currentIndex;
+  const currentQ = questions[activeIndex];
+  const currentResult = reviewMode ? sessionResults[activeIndex] : result;
+  
   const optionsList = [
-    { key: 'A', text: currentQ.optionA },
-    { key: 'B', text: currentQ.optionB },
-    { key: 'C', text: currentQ.optionC },
-    { key: 'D', text: currentQ.optionD },
-    { key: 'E', text: currentQ.optionE }
+    { key: 'A', text: currentQ?.optionA || '' },
+    { key: 'B', text: currentQ?.optionB || '' },
+    { key: 'C', text: currentQ?.optionC || '' },
+    { key: 'D', text: currentQ?.optionD || '' },
+    { key: 'E', text: currentQ?.optionE || '' }
   ];
 
   return (
@@ -211,7 +287,7 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
             <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
               {subject}
             </h2>
-            <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-muted)' }}>Soru Çözümü</span>
+            <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-muted)' }}>{reviewMode ? 'Soru İnceleme' : 'Soru Çözümü'}</span>
           </div>
           
           {questions.length > 0 && (
@@ -223,7 +299,7 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
                 letterSpacing: '0.05em', textTransform: 'uppercase',
                 border: '1px solid rgba(139, 92, 246, 0.2)'
               }}>
-                {questions[currentIndex].category}
+                {currentQ.category}
               </span>
             </div>
           )}
@@ -251,7 +327,7 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
           <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '2rem', borderRadius: '24px', background: isLight ? 'var(--glass-bg)' : 'rgba(15, 23, 42, 0.85)', border: isLight ? '1px solid var(--glass-border)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
               <span style={{ fontWeight: 600, color: 'var(--primary)', background: 'rgba(79, 70, 229, 0.1)', padding: '0.3rem 0.8rem', borderRadius: '20px' }}>
-                Soru {currentIndex + 1}
+                Soru {activeIndex + 1}
               </span>
             </div>
             <p style={{ fontSize: '1.25rem', lineHeight: 1.7, fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
@@ -260,12 +336,12 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {optionsList.map(opt => {
-                const isSelected = selectedOption === opt.key;
+                const isSelected = (reviewMode && currentResult) ? currentResult.selectedOption === opt.key : selectedOption === opt.key;
                 let bgColor = 'rgba(255,255,255,0.03)';
                 let borderColor = 'rgba(255,255,255,0.1)';
                 
-                if (result) {
-                  if (opt.key === result.correctOption) {
+                if (currentResult) {
+                  if (opt.key === currentResult.correctOption) {
                     bgColor = 'rgba(16, 185, 129, 0.1)';
                     borderColor = 'var(--success)';
                   } else if (isSelected) {
@@ -280,7 +356,7 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
                   <button
                     key={opt.key}
                     onClick={() => handleAnswerSubmit(opt.key)}
-                    disabled={!!result}
+                    disabled={!!currentResult || reviewMode}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '0.8rem',
                       padding: '0.8rem 1rem',
@@ -289,9 +365,9 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
                       borderRadius: '12px',
                       color: 'var(--text-main)',
                       textAlign: 'left',
-                      cursor: result ? 'default' : 'pointer',
+                      cursor: currentResult || reviewMode ? 'default' : 'pointer',
                       transition: 'all 0.2s ease',
-                      opacity: result && opt.key !== result.correctOption && !isSelected ? 0.6 : 1
+                      opacity: currentResult && opt.key !== currentResult.correctOption && !isSelected ? 0.6 : 1
                     }}
                   >
                     <div style={{ 
@@ -306,8 +382,8 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
                     </div>
                     <span style={{ fontSize: '1rem', lineHeight: 1.5, fontWeight: 650, color: 'var(--text-main)' }}>{opt.text}</span>
                     
-                    {result && opt.key === result.correctOption && <CheckCircle color="var(--success)" size={20} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
-                    {result && isSelected && !result.isCorrect && <XCircle color="var(--danger)" size={20} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
+                    {currentResult && opt.key === currentResult.correctOption && <CheckCircle color="var(--success)" size={20} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
+                    {currentResult && isSelected && !currentResult.isCorrect && <XCircle color="var(--danger)" size={20} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
                   </button>
                 );
               })}
@@ -315,28 +391,56 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
           </div>
 
           {/* ── Right Side: Classic Explanation ── */}
-          {result && (
+          {currentResult && (
             <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: 'fit-content', animation: 'fadeIn 0.5s ease-out', padding: '2rem', borderRadius: '24px', gap: '1.2rem', background: isLight ? 'var(--glass-bg)' : 'rgba(15, 23, 42, 0.85)', border: isLight ? '1px solid var(--glass-border)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
-              <div style={{ padding: '1.5rem', borderRadius: '16px', background: result.isCorrect ? 'rgba(16, 185, 129, 0.05)' : 'rgba(244, 63, 94, 0.05)', borderLeft: `4px solid ${result.isCorrect ? 'var(--success)' : 'var(--danger)'}`, flex: 1, boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.02)' }}>
-                <h4 style={{ margin: '0 0 0.8rem 0', color: result.isCorrect ? 'var(--success)' : 'var(--danger)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
-                  {result.isCorrect ? <CheckCircle size={22} /> : <XCircle size={22} />}
-                  {result.isCorrect ? 'Tebrikler, Doğru Cevap!' : `Yanlış Cevap. Doğru Seçenek: ${result.correctOption}`}
+              <div style={{ padding: '1.5rem', borderRadius: '16px', background: currentResult.isCorrect ? 'rgba(16, 185, 129, 0.05)' : 'rgba(244, 63, 94, 0.05)', borderLeft: `4px solid ${currentResult.isCorrect ? 'var(--success)' : 'var(--danger)'}`, flex: 1, boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.02)' }}>
+                <h4 style={{ margin: '0 0 0.8rem 0', color: currentResult.isCorrect ? 'var(--success)' : 'var(--danger)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
+                  {currentResult.isCorrect ? <CheckCircle size={22} /> : <XCircle size={22} />}
+                  {currentResult.isCorrect ? 'Tebrikler, Doğru Cevap!' : `Yanlış Cevap. Doğru Seçenek: ${currentResult.correctOption}`}
                 </h4>
-                <p style={{ color: 'var(--text-main)', lineHeight: 1.7, margin: 0, fontSize: '0.95rem' }}>{result.explanation}</p>
+                <p style={{ color: 'var(--text-main)', lineHeight: 1.7, margin: 0, fontSize: '0.95rem' }}>{currentResult.explanation}</p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                <button 
-                  className="btn-primary"
-                  style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '1rem', width: '100%' }}
-                  onClick={handleNextQuestion}
-                >
-                  Sonraki Soru <ArrowRight size={18} />
-                </button>
+                {!reviewMode ? (
+                  <button 
+                    className="btn-primary"
+                    style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '1rem', width: '100%' }}
+                    onClick={handleNextQuestion}
+                  >
+                    Sonraki Soru <ArrowRight size={18} />
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', gap: '0.8rem' }}>
+                    <button 
+                      className="btn-primary"
+                      style={{ padding: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, background: reviewIndex > 0 ? 'var(--primary)' : 'rgba(255,255,255,0.1)', cursor: reviewIndex > 0 ? 'pointer' : 'not-allowed', color: reviewIndex > 0 ? 'white' : 'var(--text-muted)' }}
+                      onClick={() => { if(reviewIndex > 0) { setReviewIndex(reviewIndex - 1); resetState(); } }}
+                      disabled={reviewIndex === 0}
+                    >
+                      <ArrowLeft size={18} /> Önceki
+                    </button>
+                    <button 
+                      className="btn-primary"
+                      style={{ padding: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}
+                      onClick={() => {
+                        if(reviewIndex < questions.length - 1) { 
+                          setReviewIndex(reviewIndex + 1); 
+                          resetState(); 
+                        } else {
+                          setIsSessionComplete(true);
+                          setReviewMode(false);
+                        }
+                      }}
+                    >
+                      {reviewIndex < questions.length - 1 ? <><span style={{marginRight: '0.5rem'}}>Sonraki</span> <ArrowRight size={18} /></> : <><span style={{marginRight: '0.5rem'}}>Özeti Gör</span> <LogOut size={18} /></>}
+                    </button>
+                  </div>
+                )}
 
                 {!isAiPanelOpen && (
                   <button 
-                    onClick={() => fetchAiExplanation(questions[currentIndex].id)}
+                    onClick={() => fetchAiExplanation(currentQ.id)}
                     style={{
                       background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))',
                       border: '1px solid rgba(139, 92, 246, 0.3)',

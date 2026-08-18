@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { ArrowLeft, Target, TrendingUp, CheckCircle, BrainCircuit, Loader2, Clock, Activity } from 'lucide-react';
+import { ArrowLeft, Target, TrendingUp, CheckCircle, BrainCircuit, Loader2, Clock, Activity, Info } from 'lucide-react';
 import { getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simulationApi';
 
 interface TusSubjectStatsViewProps {
@@ -259,38 +259,49 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
             Yapay zeka asistanı ile bu dersten yepyeni, özgün ve ezber bozan klinik vakalar üretip hemen çözmeye başla.
           </p>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', width: '100%', background: 'rgba(0,0,0,0.03)', padding: '0.5rem 1rem', borderRadius: '16px' }}>
-            <label style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1rem' }}>Soru Sayısı:</label>
-            <input 
-              type="number" 
-              min={1} 
-              max={50} 
-              value={aiCount} 
-              onChange={e => {
-                let val = parseInt(e.target.value);
-                if (val > 50) val = 50;
-                if (val < 1) val = 1;
-                setAiCount(val || 10);
-              }}
-              style={{
-                flex: 1, padding: '0.6rem', borderRadius: '12px', border: '2px solid var(--primary)',
-                background: isLight ? 'white' : 'rgba(0,0,0,0.3)', color: 'var(--text-main)',
-                fontSize: '1.2rem', fontWeight: 800, textAlign: 'center', outline: 'none'
-              }}
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', background: 'rgba(0,0,0,0.03)', padding: '0.5rem 1rem', borderRadius: '16px' }}>
+              <label style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1rem' }}>Soru Sayısı:</label>
+              <input 
+                type="number" 
+                min={1} 
+                max={30} 
+                value={aiCount === 0 ? '' : aiCount} 
+                onChange={e => {
+                  if (e.target.value === '') {
+                    setAiCount(0 as any);
+                    return;
+                  }
+                  let val = parseInt(e.target.value);
+                  if (isNaN(val)) return;
+                  if (val > 30) val = 30;
+                  if (val < 1) val = 1;
+                  setAiCount(val);
+                }}
+                style={{
+                  flex: 1, padding: '0.6rem', borderRadius: '12px', border: '2px solid var(--primary)',
+                  background: isLight ? 'white' : 'rgba(0,0,0,0.3)', color: 'var(--text-main)',
+                  fontSize: '1.2rem', fontWeight: 800, textAlign: 'center', outline: 'none'
+                }}
+              />
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(245, 158, 11, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
+              <Info size={16} /> Lütfen 1 - 30 arası bir değer girin
+            </div>
           </div>
 
           <button 
-            onClick={() => onSolveQuestions(aiCount, 'ai')}
+            onClick={() => onSolveQuestions(aiCount || 1, 'ai')}
+            disabled={!aiCount || aiCount < 1}
             style={{ 
-              background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-              color: 'white', border: 'none', padding: '1.1rem 2rem', borderRadius: '16px',
-              fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer',
-              boxShadow: '0 8px 20px var(--primary-glow)',
+              background: (!aiCount || aiCount < 1) ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, var(--primary), var(--secondary))',
+              color: (!aiCount || aiCount < 1) ? 'var(--text-muted)' : 'white', border: 'none', padding: '1.1rem 2rem', borderRadius: '16px',
+              fontSize: '1.1rem', fontWeight: 800, cursor: (!aiCount || aiCount < 1) ? 'not-allowed' : 'pointer',
+              boxShadow: (!aiCount || aiCount < 1) ? 'none' : '0 8px 20px var(--primary-glow)',
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', gap: '0.8rem', width: '100%', justifyContent: 'center'
             }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+            onMouseEnter={e => { if (aiCount && aiCount >= 1) e.currentTarget.style.transform = 'scale(1.03)'; }}
             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >
             <BrainCircuit size={22} /> Üret ve Çöz
