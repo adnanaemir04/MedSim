@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Single source of truth for base URL
-const API_BASE = 'http://localhost:5211/api';
+// Single source of truth for base URL - reads from env for ngrok/production support
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5211/api';
 
 const apiClient = axios.create({
     baseURL: API_BASE,
