@@ -185,7 +185,7 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
       }}>
         
         {/* Back Button Row */}
-        <div style={{ position: 'absolute', left: '-8.1rem', top: '1.9rem' }}>
+        <div style={{ position: 'absolute', left: '-8.7rem', top: '1.9rem' }}>
           <button 
             onClick={onBack}
             style={{ 
@@ -264,7 +264,7 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
                 Soru {currentIndex + 1}
               </span>
             </div>
-            <p style={{ fontSize: '1.15rem', lineHeight: 1.7, fontWeight: 500, color: 'var(--text-main)', margin: 0 }}>
+            <p style={{ fontSize: '1.25rem', lineHeight: 1.7, fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
               {currentQ.questionText}
             </p>
 
@@ -314,7 +314,7 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
                     }}>
                       {opt.key}
                     </div>
-                    <span style={{ fontSize: '0.95rem', lineHeight: 1.5 }}>{opt.text}</span>
+                    <span style={{ fontSize: '1rem', lineHeight: 1.5, fontWeight: 650, color: 'var(--text-main)' }}>{opt.text}</span>
                     
                     {result && opt.key === result.correctOption && <CheckCircle color="var(--success)" size={20} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
                     {result && isSelected && !result.isCorrect && <XCircle color="var(--danger)" size={20} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
