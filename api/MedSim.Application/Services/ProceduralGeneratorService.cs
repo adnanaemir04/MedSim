@@ -338,10 +338,10 @@ ZORUNLU SORU KONSEPTİ:
 Lütfen tüm soruları ağırlıklı olarak '{randomFocus}' konseptine göre kurgula. Asla daha önce ürettiğin bilindik örnekleri veya standart TUS çıkmış sorularının aynısını tekrar etme.
 
 Kritik Kural (Çok Önemli):
-1. Doğru şık KESİNLİKLE en uzun, en detaylı veya en açıklayıcı şık olmamalıdır. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
-2. Şıklarda KESİNLİKLE parantez içinde ek bilgiler, açıklamalar veya ipuçları (örn. '... (en olası)', '... (altın standart)', '... (en sık)') yer almamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
-3. Tüm şıklar (A, B, C, D, E) kelime sayısı olarak neredeyse birebir aynı boyutta olmalıdır.
-4. ""explanation"" (açıklama) kısmı ÇOK DETAYLI ve ÖĞRETİCİ olmalıdır. Sadece doğru şıkkı değil, yanlış şıkların neden yanlış olduğunu ve temel fizyopatolojisini de detaylıca (en az 4-5 cümle) anlatarak kullanıcıya konuyu öğretmelidir.
+1. Soru metni (questionText) çok ÖZET ve KISA olmalıdır. Kesinlikle gereksiz detaylar ve laf kalabalığı yapılmamalı, okumayı zorlaştıracak uzunlukta olmamalıdır.
+2. Şıkların metinleri MÜMKÜN OLDUĞUNCA KISA tutulmalıdır (tercihen 2-5 kelime arası). Ayrıca tüm şıklar kelime/karakter uzunluğu olarak birbirine neredeyse eşit olmalıdır. Doğru şık kesinlikle diğerlerinden daha uzun olmamalıdır.
+3. Şıklarda KESİNLİKLE parantez içinde ek bilgiler, açıklamalar veya ipuçları (örn. '... (en olası)', '... (altın standart)') yer almamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
+4. ""explanation"" (açıklama) kısmı ÇOK DETAYLI ve ÖĞRETİCİ olmalıdır. Ancak okunmasını kolaylaştırmak için DÜZ YAZI YERİNE mutlaka HTML etiketleri (<b>, <br/><br/>, <ul><li> vb.) kullanılarak paragraflara ve maddelere bölünmelidir. Örneğin: '<b>Doğru Cevap:</b> ... <br/><br/> <b>Diğer Şıklar Neden Yanlış:</b><ul><li><b>A Şıkkı:</b> ...</li></ul>' şeklinde göze hitap eden bir format kullanılmalıdır.
 
 {difficultyRules}
 

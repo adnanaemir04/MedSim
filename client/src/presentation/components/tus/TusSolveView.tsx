@@ -426,7 +426,10 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
                   {currentResult.isCorrect ? <CheckCircle size={22} /> : <XCircle size={22} />}
                   {currentResult.isCorrect ? 'Tebrikler, Doğru Cevap!' : `Yanlış Cevap. Doğru Seçenek: ${currentResult.correctOption}`}
                 </h4>
-                <p style={{ color: 'var(--text-main)', lineHeight: 1.7, margin: 0, fontSize: '0.95rem' }}>{currentResult.explanation}</p>
+                <div 
+                  style={{ color: 'var(--text-main)', lineHeight: 1.7, margin: 0, fontSize: '0.95rem' }} 
+                  dangerouslySetInnerHTML={{ __html: currentResult.explanation }} 
+                />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
