@@ -136,6 +136,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
           </div>
           <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-main)', marginBottom: '0.2rem' }}>%{displayStats.successRate}</div>
           <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Başarı Oranı</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', marginTop: '0.5rem', opacity: 0.8, lineHeight: 1.3, maxWidth: '180px' }}>Klinik aşamalardaki genel performans ve puan kazanım yüzdesi</div>
         </div>
 
         {/* Accuracy Rate */}
@@ -154,6 +155,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
           </div>
           <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0284c7', marginBottom: '0.2rem' }}>%{displayStats.accuracy}</div>
           <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Doğruluk Payı</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', marginTop: '0.5rem', opacity: 0.8, lineHeight: 1.3, maxWidth: '180px' }}>Tüm sorularda ilk seferde doğru şıkkı bulma oranı</div>
         </div>
 
         {/* Avg Speed */}

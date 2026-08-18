@@ -185,7 +185,7 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
       }}>
         
         {/* Back Button Row */}
-        <div style={{ position: 'absolute', left: '-8.7rem', top: '1.9rem' }}>
+        <div style={{ position: 'absolute', left: '-9.6rem', top: '1.9rem' }}>
           <button 
             onClick={onBack}
             style={{ 
