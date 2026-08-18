@@ -85,7 +85,10 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
         title: matched.title,
         text: matched.initialText,
         stages: matched.stages,
-        patientInfo: matched.patientInfo
+        patientInfo: matched.patientInfo,
+        difficulty: matched.difficulty,
+        difficultyScore: matched.difficultyScore,
+        difficultyReason: matched.difficultyReason
       };
       onStartCase(subject, -1, mockData, givenAnswers);
     } else {

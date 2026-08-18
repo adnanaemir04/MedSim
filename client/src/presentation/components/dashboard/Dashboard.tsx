@@ -273,7 +273,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
 
         {dbCases.filter(c => !filterSubject || departments.find(d => d.id === c.departmentId)?.name === filterSubject).map((c, index) => {
           const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
-          const mockData = { id: c.id, title: c.title, text: c.initialText, stages: c.stages, patientInfo: c.patientInfo };
+          const mockData = { id: c.id, title: c.title, text: c.initialText, stages: c.stages, patientInfo: c.patientInfo, difficulty: c.difficulty, difficultyScore: c.difficultyScore, difficultyReason: c.difficultyReason };
           const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
           
           if (solved) return null; // Hide solved cases from Dashboard
