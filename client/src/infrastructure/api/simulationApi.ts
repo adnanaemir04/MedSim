@@ -229,8 +229,8 @@ export const addFriend = async (userEmail: string, friendNickname: string): Prom
     return response.data;
 };
 
-export const updateUserProfile = async (email: string, nickname: string, avatar: string): Promise<any> => {
-    const response = await apiClient.post('/Auth/updateProfile', { email, nickname, avatar });
+export const updateUserProfile = async (email: string, nickname: string, avatar: string, points?: number): Promise<any> => {
+    const response = await apiClient.put('/Auth/updateProfile', { email, nickname, avatar, points });
     return response.data;
 };
 

@@ -28,11 +28,10 @@ export default function Home() {
   const [selectedTusSolve, setSelectedTusSolve] = useState<{subject: string, count: number, mode: 'classic' | 'ai'} | null>(null);
   const [filterSubject, setFilterSubject] = useState<string | undefined>();
   
-  // Mock user for testing UI until we fully connect Redux/Context
-  const [user, setUser] = useState({
-    email: 'test@test.com',
-    nickname: 'Dr. John Doe',
-    points: 120,
+  const [user, setUser] = useState<any>({
+    email: '',
+    nickname: '',
+    points: 0,
     avatar: '👨‍⚕️',
     solvedCases: []
   });
@@ -40,6 +39,13 @@ export default function Home() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setIsLanding(true);
+    setUser({
+      email: '',
+      nickname: '',
+      points: 0,
+      avatar: '👨‍⚕️',
+      solvedCases: []
+    });
   };
 
   if (isLanding && !isAuthenticated) {
@@ -57,7 +63,10 @@ export default function Home() {
     return (
       <AuthForm 
         initialMode={authMode}
-        onLoginSuccess={() => setIsAuthenticated(true)} 
+        onLoginSuccess={(loggedInUser) => {
+          setUser(loggedInUser);
+          setIsAuthenticated(true);
+        }} 
         onBackToLanding={() => setIsLanding(true)}
       />
     );
@@ -77,7 +86,7 @@ export default function Home() {
             setUser({ ...user, points: newPoints, solvedCases: [...user.solvedCases, "case_completed"] as any });
             try {
               // Update points
-              await updateUserProfile(user.email, user.nickname, user.avatar || '👨‍⚕️');
+              await updateUserProfile(user.email, user.nickname, user.avatar || '👨‍⚕️', newPoints);
 
               // Save solved case
               if (selectedCase.data?.id) {
@@ -101,7 +110,7 @@ export default function Home() {
           userEmail={user.email}
           onBack={() => setCurrentView('tus')}
           onCorrectAnswer={(points) => {
-            setUser(prev => prev ? { ...prev, points: prev.points + points } : prev);
+            setUser((prev: any) => prev ? { ...prev, points: prev.points + points } : prev);
           }}
         />
       </div>

@@ -8,7 +8,7 @@ export default function AuthForm({
   onBackToLanding,
   initialMode = 'login'
 }: { 
-  onLoginSuccess: () => void,
+  onLoginSuccess: (user: any) => void,
   onBackToLanding: () => void,
   initialMode?: 'login' | 'register'
 }) {
@@ -25,12 +25,14 @@ export default function AuthForm({
     const repo = new ApiUserRepository();
 
     try {
+      let loggedInUser;
       if (isLoginMode) {
-        await repo.login(email, password);
+        loggedInUser = await repo.login(email, password);
       } else {
-        await repo.save({ email, nickname, password, points: 0, solvedCases: [] });
+        await repo.save({ email, nickname, password, points: 20, solvedCases: [] });
+        loggedInUser = await repo.login(email, password);
       }
-      onLoginSuccess();
+      onLoginSuccess(loggedInUser);
     } catch (err: any) {
       setError(err.message || 'Bir hata oluştu.');
     }
