@@ -1,0 +1,211 @@
+using MedSim.Application.Interfaces;
+using MedSim.Domain.Entities;
+using MedSim.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace MedSim.Infrastructure.Repositories;
+
+public class TusRepository : ITusRepository
+{
+    private readonly MedSimDbContext _context;
+
+    public TusRepository(MedSimDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<object>> GetSubjectsAsync()
+    {
+        return await _context.TusQuestions
+            .GroupBy(q => q.Subject)
+            .Select(g => new
+            {
+                Name = g.Key,
+                QuestionCount = g.Count()
+            })
+            .OrderBy(s => s.Name)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<object>> GetQuestionsAsync(int count, string? subject)
+    {
+        var query = _context.TusQuestions.AsQueryable();
+
+        if (!string.IsNullOrEmpty(subject))
+        {
+            query = query.Where(q => q.Subject == subject);
+        }
+
+        return await query
+            .OrderBy(q => EF.Functions.Random())
+            .Take(count)
+            .Select(q => new
+            {
+                q.Id,
+                q.QuestionText,
+                q.OptionA,
+                q.OptionB,
+                q.OptionC,
+                q.OptionD,
+                q.OptionE,
+                q.Category,
+                q.Subject
+            })
+            .ToListAsync();
+    }
+
+    public async Task<object> SubmitAnswerAsync(string email, Guid questionId, string selectedOption)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+
+        var question = await _context.TusQuestions.FindAsync(questionId);
+        if (question == null) throw new KeyNotFoundException("Soru bulunamadı.");
+
+        bool isCorrect = question.CorrectOption.Equals(selectedOption, StringComparison.OrdinalIgnoreCase);
+
+        var solved = new TusSolvedQuestion
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            TusQuestionId = question.Id,
+            IsCorrect = isCorrect,
+            SolvedAt = DateTime.UtcNow
+        };
+
+        _context.TusSolvedQuestions.Add(solved);
+        if (isCorrect)
+        {
+            user.Points += 10;
+        }
+        await _context.SaveChangesAsync();
+
+        return new
+        {
+            isCorrect = isCorrect,
+            correctOption = question.CorrectOption,
+            explanation = question.Explanation
+        };
+    }
+
+    public async Task<object> GetStatsAsync(string email, string? subject)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+
+        var query = _context.TusSolvedQuestions.Where(t => t.UserId == user.Id);
+        
+        if (!string.IsNullOrEmpty(subject))
+        {
+            query = query.Where(t => t.TusQuestion.Subject == subject);
+        }
+
+        var solvedCount = await query.CountAsync();
+        var correctCount = await query.CountAsync(t => t.IsCorrect);
+        
+        var wrongCount = solvedCount - correctCount;
+        var accuracy = solvedCount > 0 ? (int)Math.Round((double)correctCount / solvedCount * 100) : 0;
+
+        // Calculate Case Success Rate
+        var caseQuery = _context.SolvedCases
+            .Include(s => s.MedicalCase)
+            .ThenInclude(c => c.Stages)
+            .Where(s => s.UserId == user.Id);
+
+        if (!string.IsNullOrEmpty(subject))
+        {
+            caseQuery = caseQuery.Where(s => s.MedicalCase.Department.Name == subject);
+        }
+
+        var solvedCases = await caseQuery.ToListAsync();
+        double caseSuccessSum = 0;
+        int caseSuccessCount = 0;
+
+        foreach (var c in solvedCases)
+        {
+            int maxPoints = c.MedicalCase.Stages.Count * 10;
+            if (maxPoints > 0)
+            {
+                caseSuccessSum += (double)c.EarnedPoints / maxPoints * 100;
+                caseSuccessCount++;
+            }
+        }
+
+        double caseSuccessRate = caseSuccessCount > 0 ? caseSuccessSum / caseSuccessCount : accuracy;
+
+        int overallSuccessRate = (int)Math.Round((caseSuccessRate * 0.6) + (accuracy * 0.4));
+        if (caseSuccessCount == 0 && solvedCount == 0)
+        {
+            overallSuccessRate = 0;
+        }
+        else if (caseSuccessCount == 0)
+        {
+            overallSuccessRate = accuracy;
+        }
+        else if (solvedCount == 0)
+        {
+            overallSuccessRate = (int)Math.Round(caseSuccessRate);
+        }
+
+        return new
+        {
+            totalSolved = solvedCount,
+            correctCount,
+            wrongCount,
+            successRate = overallSuccessRate,
+            accuracy = accuracy
+        };
+    }
+
+    public async Task<IEnumerable<object>> GetSolvedQuestionsListAsync(string email, string? subject)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+
+        var query = _context.TusSolvedQuestions
+            .Include(t => t.TusQuestion)
+            .Where(t => t.UserId == user.Id)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(subject))
+        {
+            query = query.Where(t => t.TusQuestion.Subject == subject);
+        }
+
+        return await query
+            .OrderByDescending(t => t.SolvedAt)
+            .Select(t => new
+            {
+                t.Id,
+                t.IsCorrect,
+                t.SolvedAt,
+                QuestionText = t.TusQuestion.QuestionText,
+                Subject = t.TusQuestion.Subject,
+                Category = t.TusQuestion.Category,
+                CorrectOption = t.TusQuestion.CorrectOption,
+                Explanation = t.TusQuestion.Explanation
+            })
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<object>> GetLeaderboardAsync()
+    {
+        return await _context.Users
+            .Select(u => new
+            {
+                u.Id,
+                u.Nickname,
+                u.Avatar,
+                u.Points,
+                TusCorrects = u.TusSolvedQuestions.Count(t => t.IsCorrect)
+            })
+            .OrderByDescending(u => u.TusCorrects)
+            .Take(50)
+            .ToListAsync();
+    }
+
+    public async Task<TusQuestion?> GetQuestionByIdAsync(Guid id)
+    {
+        return await _context.TusQuestions.FindAsync(id);
+    }
+}
