@@ -162,33 +162,57 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
 
   return (
     <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1.5rem',
-      maxWidth: '1000px',
-      margin: '0 auto',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      width: '100%',
-      position: 'relative'
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      zIndex: 90,
+      background: isLight ? '#f1f5f9' : '#020617',
+      overflowY: 'auto',
+      padding: '2rem 1.5rem',
+      boxSizing: 'border-box'
     }}>
-      
-      {/* Back Button Row */}
-      <div style={{ position: 'absolute', left: '-7.5rem', top: '1.9rem' }}>
-        <button 
-          onClick={onBack}
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: '0.5rem', 
-            background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', 
-            color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.9rem', 
-            padding: '0.6rem 1.2rem', borderRadius: '30px', transition: 'all 0.2s', 
-            fontWeight: 600, backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateX(-3px)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.transform = 'translateX(0)'; }}
-        >
-          <ArrowLeft size={16} /> Geri Dön
-        </button>
-      </div>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.5rem',
+        maxWidth: '1000px',
+        margin: '0 auto',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        width: '100%',
+        position: 'relative'
+      }}>
+        
+        {/* Back Button Row */}
+        <div style={{ position: 'absolute', left: '-8.1rem', top: '1.9rem' }}>
+          <button 
+            onClick={onBack}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '0.6rem', 
+              background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(15,23,42,0.6)', 
+              border: isLight ? '1px solid rgba(79, 70, 229, 0.25)' : '1px solid rgba(99, 102, 241, 0.25)', 
+              color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.9rem', 
+              padding: '0.6rem 1.3rem', borderRadius: '30px', transition: 'all 0.3s', 
+              fontWeight: 700, backdropFilter: 'blur(12px)', 
+              boxShadow: isLight ? '0 4px 15px rgba(79,70,229,0.08)' : '0 4px 20px rgba(0,0,0,0.3)',
+            }}
+            onMouseEnter={e => { 
+              e.currentTarget.style.background = 'var(--primary)'; 
+              e.currentTarget.style.color = 'white'; 
+              e.currentTarget.style.transform = 'translateX(-5px)'; 
+              e.currentTarget.style.boxShadow = '0 5px 15px var(--primary-glow)';
+            }}
+            onMouseLeave={e => { 
+              e.currentTarget.style.background = isLight ? 'rgba(255,255,255,0.7)' : 'rgba(15,23,42,0.6)'; 
+              e.currentTarget.style.color = 'var(--text-main)'; 
+              e.currentTarget.style.transform = 'translateX(0)'; 
+              e.currentTarget.style.boxShadow = isLight ? '0 4px 15px rgba(79,70,229,0.08)' : '0 4px 20px rgba(0,0,0,0.3)';
+            }}
+          >
+            <ArrowLeft size={16} /> Geri Dön
+          </button>
+        </div>
 
       {/* Header */}
       <div className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.2rem 2rem', borderRadius: '20px', background: isLight ? 'var(--glass-bg)' : 'rgba(15, 23, 42, 0.85)', border: isLight ? '1px solid var(--glass-border)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
@@ -393,5 +417,6 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
         }
       `}</style>
     </div>
+  </div>
   );
 }

@@ -21,10 +21,10 @@
   --danger: #f43f5e;
 
   /* Light Mode Backgrounds */
-  --bg-color: #fafafa;
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --sidebar-bg: rgba(255, 255, 255, 0.6);
+  --bg-color: #f1f5f9;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --sidebar-bg: rgba(255, 255, 255, 0.55);
 
   --text-main: #0f172a;
   --text-muted: #64748b;

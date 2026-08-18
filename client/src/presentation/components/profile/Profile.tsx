@@ -289,22 +289,78 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
       </div>
       
       {/* ── Arkadaşlarım Section ── */}
-      <div style={{ marginTop: '4rem', paddingTop: '3rem', borderTop: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid var(--glass-border)' }}>
-        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem', color: isLight ? '#1e293b' : 'white' }}>
-          Arkadaşlarım
+      <div style={{ 
+        marginTop: '4rem', 
+        padding: '2.5rem', 
+        borderRadius: '24px',
+        background: isLight ? 'rgba(255, 255, 255, 0.45)' : 'rgba(15, 23, 42, 0.3)',
+        border: isLight ? '1px solid rgba(0, 0, 0, 0.05)' : '1px solid var(--glass-border)',
+        boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.02)' : 'none'
+      }}>
+        <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.5rem', color: isLight ? '#1e293b' : 'white', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          👥 Arkadaşlarım
         </h3>
         
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', maxWidth: '500px' }}>
+        <div style={{ 
+          display: 'flex', 
+          background: isLight ? 'rgba(255,255,255,0.8)' : 'rgba(255, 255, 255, 0.03)', 
+          padding: '0.4rem', 
+          borderRadius: '16px', 
+          border: isLight ? '1px solid rgba(79, 70, 229, 0.2)' : '1px solid rgba(255,255,255,0.08)',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
+          marginBottom: '2rem', 
+          maxWidth: '500px',
+          alignItems: 'center'
+        }}>
           <input 
             type="text" 
-            placeholder="Arkadaşının nickname'ini yaz..." 
+            placeholder="Arkadaşının kullanıcı adını (nickname) yaz..." 
             value={friendNickname}
             onChange={e => setFriendNickname(e.target.value)}
-            style={{ ...inputStyle, flex: 1 }}
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'var(--text-main)', 
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              outline: 'none', 
+              padding: '0.6rem 1rem',
+              flex: 1
+            }}
           />
-          <button className="btn-primary" onClick={handleAddFriend} style={{ padding: '0 1.5rem' }}>Ekle</button>
+          <button 
+            className="btn-primary" 
+            onClick={handleAddFriend} 
+            style={{ 
+              padding: '0.75rem 1.8rem', 
+              borderRadius: '12px',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+              border: 'none',
+              boxShadow: '0 4px 15px rgba(79, 70, 229, 0.3)',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            Ekle
+          </button>
         </div>
-        {friendMsg && <div style={{ marginBottom: '1.5rem', color: 'var(--primary)', fontWeight: 600 }}>{friendMsg}</div>}
+        {friendMsg && (
+          <div style={{ 
+            marginBottom: '1.5rem', 
+            color: friendMsg.includes('eklendi') ? 'var(--success)' : 'var(--danger)', 
+            fontWeight: 700,
+            background: friendMsg.includes('eklendi') ? 'rgba(16,185,129,0.08)' : 'rgba(244,63,94,0.08)',
+            padding: '0.6rem 1rem',
+            borderRadius: '10px',
+            width: 'fit-content'
+          }}>
+            {friendMsg}
+          </div>
+        )}
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {friends.length === 0 && (

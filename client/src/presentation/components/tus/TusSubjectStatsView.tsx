@@ -65,28 +65,77 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
 
       {/* Statistics Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-        <div className="glass-panel" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Target size={32} color="var(--primary)" style={{ marginBottom: '1rem' }} />
-          <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.5rem' }}>{displayStats.totalSolved}</div>
-          <div style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.05em' }}>Çözülen Soru</div>
+        
+        {/* Solved Questions */}
+        <div className="glass-panel" style={{ 
+          padding: '2rem 1.5rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
+          background: isLight ? 'linear-gradient(135deg, #ffffff, #f1f5f9)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(79,70,229,0.05))',
+          border: isLight ? '1px solid rgba(79, 70, 229, 0.2)' : '1px solid rgba(99, 102, 241, 0.2)',
+          boxShadow: isLight ? '0 10px 30px rgba(79, 70, 229, 0.05)' : '0 10px 30px rgba(99, 102, 241, 0.05)',
+          transition: 'transform 0.3s'
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={{ width: 48, height: 48, borderRadius: '14px', background: 'rgba(79, 70, 229, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', marginBottom: '1rem' }}>
+            <Target size={24} />
+          </div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-main)', marginBottom: '0.2rem' }}>{displayStats.totalSolved}</div>
+          <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Çözülen Soru</div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <CheckCircle size={32} color="var(--success)" style={{ marginBottom: '1rem' }} />
-          <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--success)', marginBottom: '0.5rem' }}>{displayStats.correctCount}</div>
-          <div style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.05em' }}>Doğru Sayısı</div>
+        {/* Correct Count */}
+        <div className="glass-panel" style={{ 
+          padding: '2rem 1.5rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
+          background: isLight ? 'linear-gradient(135deg, #ffffff, #f0fdf4)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(16,185,129,0.05))',
+          border: isLight ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(16, 185, 129, 0.2)',
+          boxShadow: isLight ? '0 10px 30px rgba(16, 185, 129, 0.05)' : '0 10px 30px rgba(16, 185, 129, 0.05)',
+          transition: 'transform 0.3s'
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={{ width: 48, height: 48, borderRadius: '14px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--success)', marginBottom: '1rem' }}>
+            <CheckCircle size={24} />
+          </div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--success)', marginBottom: '0.2rem' }}>{displayStats.correctCount}</div>
+          <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Doğru Sayısı</div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <ArrowLeft size={32} color="var(--danger)" style={{ marginBottom: '1rem', transform: 'rotate(-45deg)' }} />
-          <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--danger)', marginBottom: '0.5rem' }}>{displayStats.wrongCount}</div>
-          <div style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.05em' }}>Yanlış Sayısı</div>
+        {/* Wrong Count */}
+        <div className="glass-panel" style={{ 
+          padding: '2rem 1.5rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
+          background: isLight ? 'linear-gradient(135deg, #ffffff, #fdf2f8)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(244,63,94,0.05))',
+          border: isLight ? '1px solid rgba(244, 63, 94, 0.2)' : '1px solid rgba(244, 63, 94, 0.2)',
+          boxShadow: isLight ? '0 10px 30px rgba(244, 63, 94, 0.05)' : '0 10px 30px rgba(244, 63, 94, 0.05)',
+          transition: 'transform 0.3s'
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={{ width: 48, height: 48, borderRadius: '14px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)', marginBottom: '1rem' }}>
+            <ArrowLeft size={24} style={{ transform: 'rotate(-45deg)' }} />
+          </div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--danger)', marginBottom: '0.2rem' }}>{displayStats.wrongCount}</div>
+          <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Yanlış Sayısı</div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <TrendingUp size={32} color="var(--secondary)" style={{ marginBottom: '1rem' }} />
-          <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.5rem' }}>%{displayStats.successRate}</div>
-          <div style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.05em' }}>Başarı Oranı</div>
+        {/* Success Rate */}
+        <div className="glass-panel" style={{ 
+          padding: '2rem 1.5rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
+          background: isLight ? 'linear-gradient(135deg, #ffffff, #ecfeff)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(6,182,212,0.05))',
+          border: isLight ? '1px solid rgba(6, 182, 212, 0.2)' : '1px solid rgba(6, 182, 212, 0.2)',
+          boxShadow: isLight ? '0 10px 30px rgba(6, 182, 212, 0.05)' : '0 10px 30px rgba(6, 182, 212, 0.05)',
+          transition: 'transform 0.3s'
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={{ width: 48, height: 48, borderRadius: '14px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)', marginBottom: '1rem' }}>
+            <TrendingUp size={24} />
+          </div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-main)', marginBottom: '0.2rem' }}>%{displayStats.successRate}</div>
+          <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Başarı Oranı</div>
         </div>
       </div>
 
