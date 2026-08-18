@@ -111,6 +111,7 @@ export default function Home() {
         <TusSolveView 
           subject={selectedTusSolve.subject}
           count={selectedTusSolve.count}
+          mode={selectedTusSolve.mode}
           difficulty={selectedTusSolve.difficulty}
           userEmail={user.email}
           onBack={() => setCurrentView('tus')}

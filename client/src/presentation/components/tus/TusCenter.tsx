@@ -25,6 +25,8 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
   const [activeSubject, setActiveSubject] = useState<string | null>(null);
   const [viewState, setViewState] = useState<'list' | 'stats' | 'solve' | 'about'>('list');
   const [solveCount, setSolveCount] = useState<number>(5);
+  const [solveMode, setSolveMode] = useState<'classic' | 'ai'>('classic');
+  const [solveDifficulty, setSolveDifficulty] = useState<string | undefined>();
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [genericStats, setGenericStats] = useState<TusStatsDto | null>(null);
   
@@ -71,6 +73,8 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
         userEmail={userEmail} 
         onSolveQuestions={(count, mode, difficulty) => {
           setSolveCount(count);
+          setSolveMode(mode);
+          setSolveDifficulty(difficulty);
           if (onNavigateToSolve) {
             onNavigateToSolve(activeSubject as string, count, mode, difficulty);
           } else {
@@ -88,6 +92,8 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
         subject={activeSubject} 
         userEmail={userEmail} 
         count={solveCount}
+        mode={solveMode}
+        difficulty={solveDifficulty}
         onBack={() => { setViewState('stats'); fetchSubjects(); }} 
       />
     );

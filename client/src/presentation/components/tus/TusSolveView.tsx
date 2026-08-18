@@ -24,12 +24,13 @@ interface TusSolveViewProps {
   subject: string;
   userEmail: string;
   count: number;
+  mode?: 'classic' | 'ai';
   difficulty?: string;
   onBack: () => void;
   onCorrectAnswer?: (points: number) => void;
 }
 
-export default function TusSolveView({ subject, userEmail, count, difficulty, onBack, onCorrectAnswer }: TusSolveViewProps) {
+export default function TusSolveView({ subject, userEmail, count, mode = 'classic', difficulty, onBack, onCorrectAnswer }: TusSolveViewProps) {
   const [questions, setQuestions] = useState<TusQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -60,10 +61,10 @@ export default function TusSolveView({ subject, userEmail, count, difficulty, on
     setIsLoading(true);
     try {
       let data;
-      if (difficulty) {
-        data = await generateTusQuestions(subject, count, difficulty);
+      if (mode === 'ai') {
+        data = await generateTusQuestions(subject, count, difficulty || 'Orta');
       } else {
-        data = await getTusQuestions(count, subject);
+        data = await getTusQuestions(count, subject, difficulty);
       }
       if (data && data.length > 0) {
         setQuestions(data);
