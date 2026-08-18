@@ -88,6 +88,7 @@ Kurallar:
   1. Doğru şık KESİNLİKLE en uzun veya en açıklayıcı şık OLMAMALIDIR. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
   2. Şıklarda KESİNLİKLE parantez içinde ek açıklamalar, detaylar veya ipuçları (örn. '... (en sık)', '... (altın standart)', '... (tercih edilen)') bulunmamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
   3. Tüm şıklar kelime sayısı olarak neredeyse birebir aynı boyutta olmalıdır.
+- Şıkların ""feedback"" (açıklama) kısımları ÇOK DETAYLI ve ÖĞRETİCİ olmalıdır. Neden doğru veya neden yanlış olduğu, tıbbi fizyopatolojisi ve mantığıyla birlikte uzunca (3-4 cümle) anlatılmalıdır. Kısaca geçiştirilmemelidir.
 - Yanlış şıklar güçlü tıbbi çeldiriciler olsun
 - title kısa ve net olsun: örn 'Akut Apandisit', 'Tip 2 DM Krizi'
 - patientInfo: Türkçe isim, yaş, cinsiyet, şikayet, vitaller, fizik muayene, özgeçmiş
@@ -340,6 +341,7 @@ Kritik Kural (Çok Önemli):
 1. Doğru şık KESİNLİKLE en uzun, en detaylı veya en açıklayıcı şık olmamalıdır. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
 2. Şıklarda KESİNLİKLE parantez içinde ek bilgiler, açıklamalar veya ipuçları (örn. '... (en olası)', '... (altın standart)', '... (en sık)') yer almamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
 3. Tüm şıklar (A, B, C, D, E) kelime sayısı olarak neredeyse birebir aynı boyutta olmalıdır.
+4. ""explanation"" (açıklama) kısmı ÇOK DETAYLI, UZUN ve ÖĞRETİCİ olmalıdır. Sadece doğru şıkkı değil, yanlış şıkların neden yanlış olduğunu ve temel fizyopatolojisini de detaylıca (en az 4-5 cümle) anlatarak kullanıcıya konuyu öğretmelidir.
 
 {difficultyRules}
 
