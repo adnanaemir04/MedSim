@@ -9,6 +9,39 @@ interface DashboardProps {
   onStartCase: (subject: string, caseIndex: number, generatedCase?: any, initialAnswers?: number[]) => void;
 }
 
+const SUBJECT_DESCRIPTIONS: Record<string, string> = {
+  "Anatomi": "İnsan vücudunun yapısal ve mekansal ilişkilerini, kemik, kas ve organ sistemlerini inceleyen temel tıp bilimi.",
+  "Fizyoloji": "Hücrelerin, dokuların ve organların yaşam fonksiyonlarını ve biyolojik çalışma mekanizmalarını inceleyen bilim dalı.",
+  "Tıbbi Biyokimya": "Organizmadaki kimyasal reaksiyonları, moleküler yapıları ve metabolik döngüleri inceleyen laboratuvar bilimi.",
+  "Histoloji ve Embriyoloji": "Dokuların mikroskobik yapılarını ve anne karnındaki gelişim (embriyonik) süreçlerini inceleyen bilim dalı.",
+  "Tıbbi Biyoloji ve Genetik": "Hücresel süreçleri, DNA yapısını, kalıtım kurallarını ve genetik hastalıkların temelini inceleyen tıp alanı.",
+  "Tıbbi Mikrobiyoloji": "Bakteriler, virüsler, mantarlar ve parazitler gibi enfeksiyon yapıcı mikroorganizmaları inceleyen bilim dalı.",
+  "Nöroanatomi": "Merkezi ve periferik sinir sisteminin anatomik yapısını ve nöral yolları inceleyen uzmanlık alanı.",
+  "Biyofizik": "Biyolojik sistemlerin işleyişini fizik yasaları ve fiziksel yöntemlerle araştıran disiplinlerarası bilim.",
+  "İlk Yardım": "Kaza, zehirlenme veya ani hastalıklarda profesyonel tıbbi yardım ulaşana kadar yapılan hayat kurtarıcı müdahaleler.",
+  "Tıbbi Patoloji": "Hastalıkların hücre, doku ve organlarda yol açtığı yapısal ve fonksiyonel değişiklikleri inceleyen teşhis bilimi.",
+  "Tıbbi Farmakoloji": "İlaçların vücuda etkilerini (farmakodinami) ve vücudun ilaçlara tepkilerini (farmakokinetik) inceleyen bilim.",
+  "Klinik Bilimlere Giriş": "Temel tıp eğitiminden klinik stajlara geçişte hasta muayenesi ve anamnez alma gibi temel klinik beceriler.",
+  "Biyoistatistik": "Tıbbi araştırma verilerinin analizi, istatistiksel yöntemlerle yorumlanması ve hipotez testleri.",
+  "İç Hastalıkları (Dahiliye)": "Yetişkin hastaların cerrahi dışı organ sistem hastalıklarının tanı, tedavi ve takibini üstlenen ana klinik branş.",
+  "Çocuk Sağlığı ve Hastalıkları": "Yenidoğan döneminden ergenliğe kadar olan yaş grubundaki bireylerin büyüme, gelişme ve hastalıklarını izleyen branş.",
+  "Genel Cerrahi": "Sistemik veya lokal hastalıkların cerrahi girişimler veya ameliyatlarla tedavisini gerçekleştiren ana tıp dalı.",
+  "Kadın Hastalıkları ve Doğum": "Kadın üreme sistema sağlığı, gebelik takibi, doğum süreçleri ve jinekolojik patolojileri inceleyen klinik branş.",
+  "Nöroloji": "Beyin, omurilik, periferik sinirler ve kasların cerrahi dışı hastalıklarını inceleyen uzmanlık alanı.",
+  "Psikiyatri": "Zihinsel, duygusal ve davranışsal bozuklukların tanı, psikoterapi ve farmakolojik tedavilerini yürüten tıp dalı.",
+  "Ortopedi ve Travmatoloji": "Kas-iskelet sistemi hastalıkları, kırıklar, çıkıklar ve travmatik yaralanmaların cerrahi/medikal tedavisi.",
+  "Göz Hastalıkları": "Görme sistemi anatomisi, göz hastalıklarının tıbbi/cerrahi tedavisi ve görme kusurlarının düzeltilmesi.",
+  "KBB": "Kulak, burun, boğaz, baş ve boyun bölgesi hastalıklarının medikal ve cerrahi tedavisiyle ilgilenen klinik branş.",
+  "Üroloji": "Kadın ve erkek idrar yolları ile erkek üreme sistemi hastalıklarının tanı ve cerrahi tedavisini üstlenen branş.",
+  "Dermatoloji": "Deri, saç, tırnak ve zührevi (cinsel yolla bulaşan) hastalıkların tanı ve tedavisiyle ilgilenen uzmanlık dalı.",
+  "Enfeksiyon Hastalıkları": "Mikroorganizmaların vücutta yol açtığı bulaşıcı hastalıkların tanı, tedavi ve salgın kontrolünü yürüten klinik alan.",
+  "Kardiyoloji": "Kalp ve dolaşım sistemi hastalıklarının (hipertansiyon, koroner yetmezlik, ritim bozuklukları vb.) teşhis ve tedavisi.",
+  "Acil Tıp": "Akut gelişen hastalık ve yaralanmalarda hastane öncesi ve hastane acil servislerindeki acil müdahaleleri yöneten branş.",
+  "Aile Hekimliği": "Birey ve ailelere yaş, cinsiyet ve hastalık ayrımı yapmaksızın kapsamlı ve sürekli birinci basamak sağlık hizmeti sunan dal.",
+  "Halk Sağlığı": "Toplumun genel sağlık düzeyini yükseltmek, hastalıkları önlemek ve koruyucu sağlık politikaları geliştirmek.",
+  "Yoğun Bakım": "Hayati fonksiyonları tehlikede olan kritik hastaların yakın takibini ve organ destek tedavilerini üstlenen ileri uzmanlık."
+};
+
 export default function Dashboard({ userEmail, filterSubject, onStartCase }: DashboardProps) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -137,9 +170,16 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
   return (
     <main className="glass-panel" style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0 }}>
-          {filterSubject ? `${filterSubject} Vakaları` : 'Tüm Vakalarım'}
-        </h2>
+        <div>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0 }}>
+            {filterSubject ? `${filterSubject} Vakaları` : 'Tüm Vakalarım'}
+          </h2>
+          {filterSubject && SUBJECT_DESCRIPTIONS[filterSubject] && (
+            <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: '0.5rem', maxWidth: '800px', lineHeight: 1.5 }}>
+              {SUBJECT_DESCRIPTIONS[filterSubject]}
+            </p>
+          )}
+        </div>
         <button 
           style={{ 
             padding: '0.7rem 1.6rem', 
