@@ -188,8 +188,10 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
         >
           <div style={{ width: 56, height: 56, borderRadius: '16px', background: isLight ? 'linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.05))' : 'rgba(6, 182, 212, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)' }}><CheckCircle size={28} /></div>
           <div>
-            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>%{genericStats?.accuracy || 0}</div>
-            <div style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ort. Doğruluk</div>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>
+              {Math.max(0, (genericStats?.correctCount || 0) - ((genericStats?.wrongCount || 0) / 4)).toFixed(1)}
+            </div>
+            <div style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Toplam Net</div>
           </div>
         </div>
       </div>
