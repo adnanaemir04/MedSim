@@ -98,7 +98,12 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
           {finalPoints > 0 ? (
             <>Bu vakadan toplam <strong style={{ color: 'var(--primary)', fontSize: '1.5rem' }}>{finalPoints}</strong> puan kazandınız!</>
           ) : (
-            <span style={{ color: 'var(--danger)', fontWeight: 600 }}>En az bir soruyu yanlış cevapladığınız için bu vakadan puan kazanamadınız.</span>
+            <span style={{ color: 'var(--danger)', fontWeight: 600, display: 'block', lineHeight: 1.6 }}>
+              Bu vakada en az bir yanlış yaptınız veya bu vakayı daha önce çözdünüz.<br />
+              <small style={{ opacity: 0.8, fontSize: '0.85rem' }}>
+                *Vakalar yalnızca ilk denemede tamamen doğru (0 hata ile) çözüldüğünde puan kazandırır.
+              </small>
+            </span>
           )}
         </p>
         <button className="btn-primary" onClick={handleFinish} style={{ width: '100%', maxWidth: '300px' }}>

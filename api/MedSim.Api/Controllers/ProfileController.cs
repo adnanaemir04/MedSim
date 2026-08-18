@@ -108,7 +108,7 @@ public class ProfileController : ControllerBase
 
         if (existingSolve != null)
         {
-            pointsEarned = Math.Max(0, request.Points - existingSolve.EarnedPoints);
+            pointsEarned = 0;
             existingSolve.EarnedPoints = Math.Max(existingSolve.EarnedPoints, request.Points);
             existingSolve.GivenAnswers = string.Join(",", request.GivenAnswers);
             existingSolve.SolvedAt = DateTime.UtcNow;
