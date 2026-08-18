@@ -54,7 +54,7 @@ public class TusRepository : ITusRepository
             .ToListAsync();
     }
 
-    public async Task<object> SubmitAnswerAsync(string email, Guid questionId, string selectedOption)
+    public async Task<object> SubmitAnswerAsync(string email, Guid questionId, string selectedOption, int durationSeconds)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
@@ -73,6 +73,7 @@ public class TusRepository : ITusRepository
             UserId = user.Id,
             TusQuestionId = question.Id,
             IsCorrect = isCorrect,
+            DurationSeconds = durationSeconds,
             SolvedAt = DateTime.UtcNow
         };
 
@@ -151,13 +152,18 @@ public class TusRepository : ITusRepository
             overallSuccessRate = (int)Math.Round(caseSuccessRate);
         }
 
+        var averageTime = solvedCount > 0
+            ? (int)Math.Round(await query.Select(t => (double)t.DurationSeconds).AverageAsync())
+            : 0;
+
         return new
         {
             totalSolved = solvedCount,
             correctCount,
             wrongCount,
             successRate = overallSuccessRate,
-            accuracy = accuracy
+            accuracy = accuracy,
+            averageTime = averageTime
         };
     }
 

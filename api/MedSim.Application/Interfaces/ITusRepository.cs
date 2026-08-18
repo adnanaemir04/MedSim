@@ -6,7 +6,7 @@ public interface ITusRepository
 {
     Task<IEnumerable<object>> GetSubjectsAsync();
     Task<IEnumerable<object>> GetQuestionsAsync(int count, string? subject);
-    Task<object> SubmitAnswerAsync(string email, Guid questionId, string selectedOption);
+    Task<object> SubmitAnswerAsync(string email, Guid questionId, string selectedOption, int durationSeconds);
     Task<object> GetStatsAsync(string email, string? subject);
     Task<IEnumerable<object>> GetSolvedQuestionsListAsync(string email, string? subject);
     Task<IEnumerable<object>> GetLeaderboardAsync();

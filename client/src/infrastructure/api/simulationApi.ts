@@ -80,6 +80,7 @@ export interface TusStatsDto {
     wrongCount: number;
     successRate: number;
     accuracy: number;
+    averageTime: number;
 }
 
 export interface TusSubjectDto {
@@ -167,11 +168,12 @@ export const getTusQuestions = async (count: number, subject: string): Promise<T
     return response.data;
 };
 
-export const submitTusAnswer = async (email: string, questionId: string, selectedOption: string): Promise<{ isCorrect: boolean; correctOption: string; explanation: string; points: number }> => {
+export const submitTusAnswer = async (email: string, questionId: string, selectedOption: string, durationSeconds: number): Promise<{ isCorrect: boolean; correctOption: string; explanation: string; points: number }> => {
     const response = await apiClient.post('/tus/submit-answer', {
         email,
         questionId,
-        selectedOption
+        selectedOption,
+        durationSeconds
     });
     return response.data;
 };

@@ -36,7 +36,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
     );
   }
 
-  const displayStats = stats || { totalSolved: 0, successRate: 0, accuracy: 0, correctCount: 0, wrongCount: 0 };
+  const displayStats = stats || { totalSolved: 0, successRate: 0, accuracy: 0, correctCount: 0, wrongCount: 0, averageTime: 0 };
   const netScore = Math.max(0, displayStats.correctCount - (displayStats.wrongCount / 4)).toFixed(1);
 
   return (
@@ -154,7 +154,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
           <div style={{ width: 48, height: 48, borderRadius: '14px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7', marginBottom: '1rem' }}>
             <Clock size={24} />
           </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0284c7', marginBottom: '0.2rem' }}>28 sn</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0284c7', marginBottom: '0.2rem' }}>{displayStats.averageTime || 0} sn</div>
           <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Soru Başına Süre</div>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', marginTop: '0.5rem', opacity: 0.8, lineHeight: 1.3, maxWidth: '180px' }}>Soruları çözerken harcanan ortalama süre</div>
         </div>

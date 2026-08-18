@@ -60,6 +60,12 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
     }
   };
 
+  const startTimeRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+  }, [currentIndex]);
+
   const resetState = () => {
     setSelectedOption(null);
     setResult(null);
@@ -74,7 +80,8 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
     
     try {
       const currentQuestionId = questions[currentIndex].id;
-      const data = await submitTusAnswer(userEmail, currentQuestionId, optionKey);
+      const durationSeconds = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000));
+      const data = await submitTusAnswer(userEmail, currentQuestionId, optionKey, durationSeconds);
       
       setResult(data);
       if (onCorrectAnswer) {

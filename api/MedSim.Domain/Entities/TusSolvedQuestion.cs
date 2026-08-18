@@ -11,5 +11,6 @@ public class TusSolvedQuestion
     public TusQuestion TusQuestion { get; set; } = null!;
     
     public bool IsCorrect { get; set; }
+    public int DurationSeconds { get; set; }
     public DateTime SolvedAt { get; set; } = DateTime.UtcNow;
 }

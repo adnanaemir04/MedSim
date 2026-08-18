@@ -41,7 +41,7 @@ public class TusController : ControllerBase
     {
         try
         {
-            var result = await _tusRepository.SubmitAnswerAsync(request.Email, request.QuestionId, request.SelectedOption);
+            var result = await _tusRepository.SubmitAnswerAsync(request.Email, request.QuestionId, request.SelectedOption, request.DurationSeconds);
             return Ok(result);
         }
         catch (KeyNotFoundException ex)
@@ -482,6 +482,7 @@ public class TusAnswerRequest
     public string Email { get; set; } = string.Empty;
     public Guid QuestionId { get; set; }
     public string SelectedOption { get; set; } = string.Empty;
+    public int DurationSeconds { get; set; }
 }
 
 public class ExplainConceptRequest
