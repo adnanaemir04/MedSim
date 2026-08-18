@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { ArrowLeft, Target, TrendingUp, CheckCircle, BrainCircuit, Loader2, Clock } from 'lucide-react';
+import { ArrowLeft, Target, TrendingUp, CheckCircle, BrainCircuit, Loader2, Clock, Activity } from 'lucide-react';
 import { getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simulationApi';
 
 interface TusSubjectStatsViewProps {
@@ -37,6 +37,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
   }
 
   const displayStats = stats || { totalSolved: 0, successRate: 0, accuracy: 0, correctCount: 0, wrongCount: 0 };
+  const netScore = Math.max(0, displayStats.correctCount - (displayStats.wrongCount / 4)).toFixed(1);
 
   return (
     <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.3s ease-out' }}>
@@ -139,7 +140,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
           <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', marginTop: '0.5rem', opacity: 0.8, lineHeight: 1.3, maxWidth: '180px' }}>Klinik aşamalardaki genel performans ve puan kazanım yüzdesi</div>
         </div>
 
-        {/* Accuracy Rate */}
+        {/* Time Spent */}
         <div className="glass-panel" style={{ 
           padding: '2rem 1.5rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
           background: isLight ? 'linear-gradient(135deg, #ffffff, #e0f2fe)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(56,189,248,0.05))',
@@ -151,14 +152,14 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
         onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
         >
           <div style={{ width: 48, height: 48, borderRadius: '14px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7', marginBottom: '1rem' }}>
-            <CheckCircle size={24} />
+            <Clock size={24} />
           </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0284c7', marginBottom: '0.2rem' }}>%{displayStats.accuracy}</div>
-          <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Doğruluk Payı</div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', marginTop: '0.5rem', opacity: 0.8, lineHeight: 1.3, maxWidth: '180px' }}>Tüm sorularda ilk seferde doğru şıkkı bulma oranı</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0284c7', marginBottom: '0.2rem' }}>28 sn</div>
+          <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Soru Başına Süre</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', marginTop: '0.5rem', opacity: 0.8, lineHeight: 1.3, maxWidth: '180px' }}>Soruları çözerken harcanan ortalama süre</div>
         </div>
 
-        {/* Avg Speed */}
+        {/* Net Score */}
         <div className="glass-panel" style={{ 
           padding: '2rem 1.5rem', borderRadius: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
           background: isLight ? 'linear-gradient(135deg, #ffffff, #fef3c7)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(245,158,11,0.05))',
@@ -170,10 +171,11 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
         onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
         >
           <div style={{ width: 48, height: 48, borderRadius: '14px', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--warning)', marginBottom: '1rem' }}>
-            <Clock size={24} />
+            <Activity size={24} />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--warning)', marginBottom: '0.7rem', marginTop: '0.2rem' }}>42 sn</div>
-          <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Ortalama Hız</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--warning)', marginBottom: '0.2rem' }}>{netScore}</div>
+          <div style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Net Sayısı</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', marginTop: '0.5rem', opacity: 0.8, lineHeight: 1.3, maxWidth: '180px' }}>Toplam net sayısı (4 yanlış 1 doğruyu götürür)</div>
         </div>
       </div>
 
