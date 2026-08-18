@@ -446,6 +446,23 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                           <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.9rem' }}>
                             {c.departmentName}
                           </span>
+                          
+                          {c.difficulty && (
+                            <span 
+                              title={c.difficultyReason || "Zorluk seviyesi bilgisi"}
+                              style={{ 
+                                padding: '0.2rem 0.8rem', 
+                                borderRadius: '12px', 
+                                fontSize: '0.75rem', 
+                                fontWeight: 800,
+                                cursor: 'help',
+                                background: c.difficulty === 'Zor' ? 'rgba(244,63,94,0.1)' : (c.difficulty === 'Orta' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'),
+                                color: c.difficulty === 'Zor' ? '#f43f5e' : (c.difficulty === 'Orta' ? '#f59e0b' : '#10b981')
+                              }}
+                            >
+                              {c.difficulty} Seviye
+                            </span>
+                          )}
                         </div>
                         <h4 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
                           {c.caseTitle}

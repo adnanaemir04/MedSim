@@ -244,6 +244,18 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 <div style={subjectBadgeStyle}>
                   {c.subject}
                 </div>
+                {c.data?.difficulty && (
+                  <div 
+                    title={c.data.difficultyReason || "Zorluk seviyesi bilgisi"}
+                    style={{
+                      padding: '0.2rem 0.8rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, cursor: 'help',
+                      background: c.data.difficulty === 'Zor' ? 'rgba(244,63,94,0.1)' : (c.data.difficulty === 'Orta' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'),
+                      color: c.data.difficulty === 'Zor' ? '#f43f5e' : (c.data.difficulty === 'Orta' ? '#f59e0b' : '#10b981')
+                    }}
+                  >
+                    {c.data.difficulty} Seviye
+                  </div>
+                )}
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{c.title || c.data?.text?.split('.')[0] || 'Yeni Vaka'}</h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', flex: 1 }}>
@@ -290,6 +302,18 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 <div style={subjectBadgeStyle}>
                   {subjName}
                 </div>
+                {c.difficulty && (
+                  <div 
+                    title={c.difficultyReason || "Zorluk seviyesi bilgisi"}
+                    style={{
+                      padding: '0.2rem 0.8rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, cursor: 'help',
+                      background: c.difficulty === 'Zor' ? 'rgba(244,63,94,0.1)' : (c.difficulty === 'Orta' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'),
+                      color: c.difficulty === 'Zor' ? '#f43f5e' : (c.difficulty === 'Orta' ? '#f59e0b' : '#10b981')
+                    }}
+                  >
+                    {c.difficulty} Seviye
+                  </div>
+                )}
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{c.title}</h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', flex: 1 }}>

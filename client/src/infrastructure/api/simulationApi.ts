@@ -64,6 +64,9 @@ export interface SolvedCaseDto {
     earnedPoints: number;
     givenAnswers: number[];
     solvedAt: string;
+    difficulty?: string;
+    difficultyScore?: number;
+    difficultyReason?: string;
 }
 
 export interface PagedResult<T> {

@@ -11,6 +11,9 @@ public class SolvedCaseDto
     public int EarnedPoints { get; set; }
     public List<int> GivenAnswers { get; set; } = new();
     public DateTime SolvedAt { get; set; }
+    public string? Difficulty { get; set; }
+    public int? DifficultyScore { get; set; }
+    public string? DifficultyReason { get; set; }
 }
 
 public class PagedResult<T>

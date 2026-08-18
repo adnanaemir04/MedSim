@@ -63,7 +63,10 @@ public class ProfileController : ControllerBase
                 sc.IsSolved,
                 sc.EarnedPoints,
                 sc.GivenAnswers,
-                sc.SolvedAt
+                sc.SolvedAt,
+                sc.MedicalCase.Difficulty,
+                sc.MedicalCase.DifficultyScore,
+                sc.MedicalCase.DifficultyReason
             })
             .ToListAsync();
 
@@ -77,7 +80,10 @@ public class ProfileController : ControllerBase
             IsSolved = sc.IsSolved,
             EarnedPoints = sc.EarnedPoints,
             GivenAnswers = string.IsNullOrEmpty(sc.GivenAnswers) ? new List<int>() : sc.GivenAnswers.Split(',').Select(int.Parse).ToList(),
-            SolvedAt = sc.SolvedAt
+            SolvedAt = sc.SolvedAt,
+            Difficulty = sc.Difficulty,
+            DifficultyScore = sc.DifficultyScore,
+            DifficultyReason = sc.DifficultyReason
         }).ToList();
 
         var result = new PagedResult<SolvedCaseDto>

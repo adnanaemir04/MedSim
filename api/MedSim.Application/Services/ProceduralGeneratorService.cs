@@ -56,7 +56,11 @@ public class ProceduralGeneratorService : IProceduralGeneratorService
         var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={apiKey}";
 
         var difficultyRules = GetDifficultyPromptForCase(difficulty);
+        var randomVariationSeed = Guid.NewGuid().ToString().Substring(0, 8);
         var prompt = $@"Sen bir tıp eğitmenisin. {departmentName} branşı için özgün bir klinik simülasyon vakası oluştur. SADECE JSON döndür, başka hiçbir şey yazma.
+        
+Vaka Benzersizlik Kodu (Seed): {randomVariationSeed} 
+Her yeni benzersizlik kodunda tamamen farklı yaş, cinsiyet, meslek ve farklı bir semptomla (ancak {departmentName} ile alakalı) gelen yeni bir hasta kurgula.
 
 Kurallar:
 - 2-4 aşama (orderIndex 1'den başlar)
@@ -295,8 +299,12 @@ Lütfen yukarıdaki bilgiler ışığında, sadece sorunun doğru çözümünü 
         var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={apiKey}";
 
         var difficultyRules = GetDifficultyPromptForTus(difficulty);
+        var randomVariationSeed = Guid.NewGuid().ToString().Substring(0, 8);
         var prompt = $@"
 Sen uzman bir tıp akademisyenisin. TUS (Tıpta Uzmanlık Sınavı) standartlarında '{subject}' dersi ile ilgili {difficulty} seviyesinde, ayırt edici ve öğretici tam {count} adet soru hazırla.
+
+Benzersizlik Kodu (Seed): {randomVariationSeed}
+Lütfen her yeni üretimde daha önceki klişelerden farklı, tamamen yeni senaryolar/olgular düşün.
 
 Kritik Kural (Çok Önemli):
 1. Doğru şık KESİNLİKLE en uzun, en detaylı veya en açıklayıcı şık olmamalıdır. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
