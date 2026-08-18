@@ -358,7 +358,7 @@ export default function TusSolveView({ subject, userEmail, count, difficulty, on
               )}
             </div>
             <p style={{ fontSize: '1.25rem', lineHeight: 1.7, fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
-              {currentQ.questionText}
+              {currentQ.questionText.replace(/^(?:Soru\s*\d+|\d+\.?\s*Soru|\d+[\.\-\)])\s*[:\-\.]?\s*/i, '').trim()}
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
