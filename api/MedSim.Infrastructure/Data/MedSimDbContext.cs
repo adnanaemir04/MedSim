@@ -37,7 +37,8 @@ public class MedSimDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasOne(e => e.User)
                   .WithMany(u => u.SolvedCases)
-                  .HasForeignKey(e => e.UserId);
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
                   
             entity.HasOne(e => e.MedicalCase)
                   .WithMany()
