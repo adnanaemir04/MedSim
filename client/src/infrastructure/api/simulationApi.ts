@@ -204,9 +204,9 @@ export const getTusConceptExplanation = async (questionId: string): Promise<stri
     return response.data.explanation;
 };
 
-export const generateTusQuestions = async (subject: string, count: number = 5, difficulty: string = "Orta"): Promise<any> => {
+export const generateTusQuestions = async (subject: string, count: number = 5, difficulty: string = "Orta"): Promise<TusQuestionDto[]> => {
     const response = await apiClient.post('/tus/generate-questions', { subject, count, difficulty });
-    return response.data;
+    return response.data?.questions || response.data;
 };
 
 export const getSolvedTusQuestions = async (
