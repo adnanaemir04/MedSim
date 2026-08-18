@@ -1,3 +1,4 @@
+using MedSim.Application.Interfaces;
 using MedSim.Application.Services;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
@@ -10,182 +11,84 @@ namespace MedSim.Api.Controllers;
 [Route("api/[controller]")]
 public class TusController : ControllerBase
 {
-    private readonly MedSimDbContext _context;
+    private readonly ITusRepository _tusRepository;
     private readonly IProceduralGeneratorService _proceduralGeneratorService;
+    private readonly MedSimDbContext _context;
 
-    public TusController(MedSimDbContext context, IProceduralGeneratorService proceduralGeneratorService)
+    public TusController(ITusRepository tusRepository, IProceduralGeneratorService proceduralGeneratorService, MedSimDbContext context)
     {
-        _context = context;
+        _tusRepository = tusRepository;
         _proceduralGeneratorService = proceduralGeneratorService;
+        _context = context;
     }
 
     [HttpGet("subjects")]
     public async Task<IActionResult> GetSubjects()
     {
-        var subjects = await _context.TusQuestions
-            .GroupBy(q => q.Subject)
-            .Select(g => new
-            {
-                Name = g.Key,
-                QuestionCount = g.Count()
-            })
-            .OrderBy(s => s.Name)
-            .ToListAsync();
-
+        var subjects = await _tusRepository.GetSubjectsAsync();
         return Ok(subjects);
     }
 
     [HttpGet("questions")]
     public async Task<IActionResult> GetQuestions([FromQuery] int count = 5, [FromQuery] string? subject = null)
     {
-        var query = _context.TusQuestions.AsQueryable();
-
-        if (!string.IsNullOrEmpty(subject))
-        {
-            query = query.Where(q => q.Subject == subject);
-        }
-
-        var questions = await query
-            .OrderBy(q => EF.Functions.Random())
-            .Take(count)
-            .Select(q => new
-            {
-                q.Id,
-                q.QuestionText,
-                q.OptionA,
-                q.OptionB,
-                q.OptionC,
-                q.OptionD,
-                q.OptionE,
-                q.Category,
-                q.Subject
-            })
-            .ToListAsync();
-
+        var questions = await _tusRepository.GetQuestionsAsync(count, subject);
         return Ok(questions);
     }
 
     [HttpPost("submit-answer")]
     public async Task<IActionResult> SubmitAnswer([FromBody] TusAnswerRequest request)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-        if (user == null) return NotFound("Kullanıcı bulunamadı.");
-
-        var question = await _context.TusQuestions.FindAsync(request.QuestionId);
-        if (question == null) return NotFound("Soru bulunamadı.");
-
-        bool isCorrect = question.CorrectOption.Equals(request.SelectedOption, StringComparison.OrdinalIgnoreCase);
-
-        var solved = new TusSolvedQuestion
+        try
         {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            TusQuestionId = question.Id,
-            IsCorrect = isCorrect,
-            SolvedAt = DateTime.UtcNow
-        };
-
-        _context.TusSolvedQuestions.Add(solved);
-        if (isCorrect)
-        {
-            user.Points += 10;
+            var result = await _tusRepository.SubmitAnswerAsync(request.Email, request.QuestionId, request.SelectedOption);
+            return Ok(result);
         }
-        await _context.SaveChangesAsync();
-
-        return Ok(new
+        catch (KeyNotFoundException ex)
         {
-            isCorrect = isCorrect,
-            correctOption = question.CorrectOption,
-            explanation = question.Explanation
-        });
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats([FromQuery] string email, [FromQuery] string? subject = null)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        if (user == null) return NotFound();
-
-        var query = _context.TusSolvedQuestions.Where(t => t.UserId == user.Id);
-        
-        if (!string.IsNullOrEmpty(subject))
+        try
         {
-            query = query.Where(t => t.TusQuestion.Subject == subject);
+            var stats = await _tusRepository.GetStatsAsync(email, subject);
+            return Ok(stats);
         }
-
-        var solvedCount = await query.CountAsync();
-        var correctCount = await query.CountAsync(t => t.IsCorrect);
-        
-        var wrongCount = solvedCount - correctCount;
-        var percentage = solvedCount > 0 ? (int)Math.Round((double)correctCount / solvedCount * 100) : 0;
-
-        return Ok(new
+        catch (KeyNotFoundException)
         {
-            totalSolved = solvedCount,
-            correctCount,
-            wrongCount,
-            successRate = percentage,
-            accuracy = percentage // Adding accuracy for the UI
-        });
+            return NotFound();
+        }
     }
 
     [HttpGet("solved-list")]
     public async Task<IActionResult> GetSolvedQuestionsList([FromQuery] string email, [FromQuery] string? subject = null)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        if (user == null) return NotFound("Kullanıcı bulunamadı.");
-
-        var query = _context.TusSolvedQuestions
-            .Include(t => t.TusQuestion)
-            .Where(t => t.UserId == user.Id)
-            .AsQueryable();
-
-        if (!string.IsNullOrEmpty(subject))
+        try
         {
-            query = query.Where(t => t.TusQuestion.Subject == subject);
+            var list = await _tusRepository.GetSolvedQuestionsListAsync(email, subject);
+            return Ok(list);
         }
-
-        var list = await query
-            .OrderByDescending(t => t.SolvedAt)
-            .Select(t => new
-            {
-                t.Id,
-                t.IsCorrect,
-                t.SolvedAt,
-                QuestionText = t.TusQuestion.QuestionText,
-                Subject = t.TusQuestion.Subject,
-                Category = t.TusQuestion.Category,
-                CorrectOption = t.TusQuestion.CorrectOption,
-                Explanation = t.TusQuestion.Explanation
-            })
-            .ToListAsync();
-
-        return Ok(list);
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpGet("leaderboard")]
     public async Task<IActionResult> GetLeaderboard()
     {
-        var leaderboard = await _context.Users
-            .Select(u => new
-            {
-                u.Id,
-                u.Nickname,
-                u.Avatar,
-                u.Points,
-                TusCorrects = u.TusSolvedQuestions.Count(t => t.IsCorrect)
-            })
-            .OrderByDescending(u => u.TusCorrects)
-            .Take(50)
-            .ToListAsync();
-
+        var leaderboard = await _tusRepository.GetLeaderboardAsync();
         return Ok(leaderboard);
     }
 
     [HttpPost("explain-concepts")]
     public async Task<IActionResult> ExplainConcepts([FromBody] ExplainConceptRequest request)
     {
-        var question = await _context.TusQuestions.FindAsync(request.QuestionId);
+        var question = await _tusRepository.GetQuestionByIdAsync(request.QuestionId);
         if (question == null) return NotFound("Soru bulunamadı.");
 
         try

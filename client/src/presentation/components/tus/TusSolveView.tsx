@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { ArrowRight, ArrowLeft, CheckCircle, XCircle, BrainCircuit, RefreshCw, LogOut, Loader2 } from 'lucide-react';
-import { getTusConceptExplanation } from '../../../infrastructure/api/simulationApi';
+import { getTusConceptExplanation, getTusQuestions, submitTusAnswer } from '../../../infrastructure/api/simulationApi';
 
 interface TusQuestion {
   id: string;
@@ -45,18 +45,13 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
   const fetchQuestions = async () => {
     setIsLoading(true);
     try {
-      // Fetch batch of questions for this subject using the requested count
-      const res = await fetch(`http://localhost:5211/api/Tus/questions?count=${count}&subject=${encodeURIComponent(subject)}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.length > 0) {
-          setQuestions(data);
-          setCurrentIndex(0);
-          resetState();
-        } else {
-          // If no questions found
-          setQuestions([]);
-        }
+      const data = await getTusQuestions(count, subject);
+      if (data && data.length > 0) {
+        setQuestions(data);
+        setCurrentIndex(0);
+        resetState();
+      } else {
+        setQuestions([]);
       }
     } catch (e) {
       console.error(e);
@@ -79,23 +74,11 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
     
     try {
       const currentQuestionId = questions[currentIndex].id;
-      const res = await fetch('http://localhost:5211/api/Tus/submit-answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userEmail,
-          questionId: currentQuestionId,
-          selectedOption: optionKey
-        })
-      });
+      const data = await submitTusAnswer(userEmail, currentQuestionId, optionKey);
       
-      if (res.ok) {
-        const data = await res.json();
-        setResult(data);
-        
-        if (data.isCorrect && onCorrectAnswer) {
-          onCorrectAnswer(10);
-        }
+      setResult(data);
+      if (data.isCorrect && onCorrectAnswer) {
+        onCorrectAnswer(10);
       }
     } catch (e) {
       console.error(e);

@@ -19,6 +19,7 @@ builder.Services.AddDbContext<MedSimDbContext>(options =>
 
 // Dependency Injection for Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITusRepository, TusRepository>();
 builder.Services.AddHttpClient<IProceduralGeneratorService, ProceduralGeneratorService>();
 
 var app = builder.Build();

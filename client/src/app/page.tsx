@@ -15,6 +15,7 @@ import TusCenter from '../presentation/components/tus/TusCenter';
 import TusAboutView from '../presentation/components/tus/TusAboutView';
 import TusSolveView from '../presentation/components/tus/TusSolveView';
 import { ArrowLeft } from 'lucide-react';
+import { updateUserProfile, solveCase } from '../infrastructure/api/simulationApi';
 
 type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_about' | 'tus_solve';
 
@@ -76,24 +77,11 @@ export default function Home() {
             setUser({ ...user, points: newPoints, solvedCases: [...user.solvedCases, "case_completed"] as any });
             try {
               // Update points
-              await fetch('http://localhost:5211/api/Auth/updateProfile', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: user.email, nickname: user.nickname, avatar: user.avatar, points: newPoints })
-              });
+              await updateUserProfile(user.email, user.nickname, user.avatar || '👨‍⚕️');
 
               // Save solved case
               if (selectedCase.data?.id) {
-                await fetch('http://localhost:5211/api/Profile/solve-case', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
-                    email: user.email, 
-                    medicalCaseId: selectedCase.data.id,
-                    points: points,
-                    givenAnswers: givenAnswers
-                  })
-                });
+                await solveCase(user.email, selectedCase.data.id, points, givenAnswers);
               }
             } catch (e) {
               console.error("Failed to save points or solved case", e);

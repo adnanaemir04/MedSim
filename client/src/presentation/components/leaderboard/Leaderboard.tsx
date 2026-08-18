@@ -6,6 +6,8 @@ import { Trophy, Medal, Award } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';
 
+import { getGeneralLeaderboard, getTusLeaderboard } from '../../../infrastructure/api/simulationApi';
+
 export default function Leaderboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,12 +17,9 @@ export default function Leaderboard() {
 
   useEffect(() => {
     setLoading(true);
-    const url = boardType === 'general' 
-      ? 'http://localhost:5211/api/Auth/leaderboard'
-      : 'http://localhost:5211/api/Tus/leaderboard';
+    const fetchLeaderboard = boardType === 'general' ? getGeneralLeaderboard : getTusLeaderboard;
       
-    fetch(url)
-      .then(res => res.json())
+    fetchLeaderboard()
       .then(data => {
         setUsers(data);
         setLoading(false);

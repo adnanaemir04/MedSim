@@ -5,6 +5,7 @@ import { User } from '../../../../domain/entities/User';
 import { Camera } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';
+import { getFriendsList, getTusUserStats, addFriend, updateUserProfile, deleteUserAccount } from '../../../infrastructure/api/simulationApi';
 
 interface ProfileProps {
   user: User;
@@ -32,11 +33,8 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
 
   const fetchFriends = async () => {
     try {
-      const res = await fetch(`http://localhost:5211/api/Profile/friends?email=${user.email}`);
-      if (res.ok) {
-        const data = await res.json();
-        setFriends(data);
-      }
+      const data = await getFriendsList(user.email);
+      setFriends(data);
     } catch (err) {
       console.error("Friends fetch error:", err);
     }
@@ -44,10 +42,8 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
 
   const fetchTusStats = async () => {
     try {
-      const res = await fetch(`http://localhost:5211/api/Tus/stats?email=${user.email}`);
-      if (res.ok) {
-        setTusStats(await res.json());
-      }
+      const data = await getTusUserStats(user.email);
+      setTusStats(data);
     } catch (err) {
       console.error("TUS stats fetch error:", err);
     }
@@ -61,21 +57,13 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
   const handleAddFriend = async () => {
     if (!friendNickname.trim()) return;
     try {
-      const res = await fetch('http://localhost:5211/api/Profile/add-friend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userEmail: user.email, friendNickname })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setFriendMsg("Arkadaş eklendi!");
-        setFriendNickname('');
-        fetchFriends();
-      } else {
-        setFriendMsg(data.message || "Hata oluştu.");
-      }
-    } catch (err) {
-      setFriendMsg("Hata oluştu.");
+      const data = await addFriend(user.email, friendNickname);
+      setFriendMsg("Arkadaş eklendi!");
+      setFriendNickname('');
+      fetchFriends();
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Hata oluştu.";
+      setFriendMsg(message);
     }
     setTimeout(() => setFriendMsg(''), 3000);
   };
@@ -85,21 +73,12 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
     setMessage('');
     
     try {
-      const res = await fetch('http://localhost:5211/api/Auth/updateProfile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, nickname, avatar })
-      });
-      
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-      
-      const updatedUser = await res.json();
+      const updatedUser = await updateUserProfile(user.email, nickname, avatar);
       onUpdate(updatedUser);
       setMessage('Profil başarıyla güncellendi!');
     } catch (err: any) {
-      setMessage('Hata: ' + err.message);
+      const errorMsg = err.response?.data || err.message;
+      setMessage('Hata: ' + errorMsg);
     } finally {
       setIsSaving(false);
     }
@@ -121,12 +100,8 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
     if (!confirm('Hesabınızı kalıcı olarak silmek istediğinize emin misiniz?')) return;
     
     try {
-      const res = await fetch(`http://localhost:5211/api/Auth/deleteAccount/${user.email}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        onLogout();
-      }
+      await deleteUserAccount(user.email);
+      onLogout();
     } catch (err) {
       alert('Hesap silinirken hata oluştu.');
     }
