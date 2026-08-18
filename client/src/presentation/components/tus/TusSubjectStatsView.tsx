@@ -18,7 +18,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
 
   const [stats, setStats] = useState<TusStatsDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [aiCount, setAiCount] = useState<number>(10);
+  const [aiCount, setAiCount] = useState<number | string>(10);
 
   useEffect(() => {
     getTusUserStats(userEmail, subject)
@@ -38,6 +38,9 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
 
   const displayStats = stats || { totalSolved: 0, successRate: 0, accuracy: 0, correctCount: 0, wrongCount: 0, averageTime: 0 };
   const netScore = Math.max(0, displayStats.correctCount - (displayStats.wrongCount / 4)).toFixed(1);
+
+  const parsedAiCount = typeof aiCount === 'string' ? parseInt(aiCount, 10) : aiCount;
+  const isAiCountInvalid = isNaN(parsedAiCount) || parsedAiCount < 1 || parsedAiCount > 30;
 
   return (
     <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.3s ease-out' }}>
@@ -264,20 +267,8 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
               <label style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1rem' }}>Soru Sayısı:</label>
               <input 
                 type="number" 
-                min={1} 
-                max={30} 
-                value={aiCount === 0 ? '' : aiCount} 
-                onChange={e => {
-                  if (e.target.value === '') {
-                    setAiCount(0 as any);
-                    return;
-                  }
-                  let val = parseInt(e.target.value);
-                  if (isNaN(val)) return;
-                  if (val > 30) val = 30;
-                  if (val < 1) val = 1;
-                  setAiCount(val);
-                }}
+                value={aiCount} 
+                onChange={e => setAiCount(e.target.value)}
                 style={{
                   flex: 1, padding: '0.6rem', borderRadius: '12px', border: '2px solid var(--primary)',
                   background: isLight ? 'white' : 'rgba(0,0,0,0.3)', color: 'var(--text-main)',
@@ -285,23 +276,29 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
                 }}
               />
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(245, 158, 11, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
-              <Info size={16} /> Lütfen 1 - 30 arası bir değer girin
-            </div>
+            {isAiCountInvalid ? (
+              <div style={{ fontSize: '0.85rem', color: 'var(--danger)', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(244, 63, 94, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
+                <Info size={16} /> Sadece 1 ile 30 arasında bir değer girebilirsiniz!
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(245, 158, 11, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
+                <Info size={16} /> Lütfen 1 - 30 arası bir değer girin
+              </div>
+            )}
           </div>
 
           <button 
-            onClick={() => onSolveQuestions(aiCount || 1, 'ai')}
-            disabled={!aiCount || aiCount < 1}
+            onClick={() => { if (!isAiCountInvalid) onSolveQuestions(parsedAiCount, 'ai') }}
+            disabled={isAiCountInvalid}
             style={{ 
-              background: (!aiCount || aiCount < 1) ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, var(--primary), var(--secondary))',
-              color: (!aiCount || aiCount < 1) ? 'var(--text-muted)' : 'white', border: 'none', padding: '1.1rem 2rem', borderRadius: '16px',
-              fontSize: '1.1rem', fontWeight: 800, cursor: (!aiCount || aiCount < 1) ? 'not-allowed' : 'pointer',
-              boxShadow: (!aiCount || aiCount < 1) ? 'none' : '0 8px 20px var(--primary-glow)',
+              background: isAiCountInvalid ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, var(--primary), var(--secondary))',
+              color: isAiCountInvalid ? 'var(--text-muted)' : 'white', border: 'none', padding: '1.1rem 2rem', borderRadius: '16px',
+              fontSize: '1.1rem', fontWeight: 800, cursor: isAiCountInvalid ? 'not-allowed' : 'pointer',
+              boxShadow: isAiCountInvalid ? 'none' : '0 8px 20px var(--primary-glow)',
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', gap: '0.8rem', width: '100%', justifyContent: 'center'
             }}
-            onMouseEnter={e => { if (aiCount && aiCount >= 1) e.currentTarget.style.transform = 'scale(1.03)'; }}
+            onMouseEnter={e => { if (!isAiCountInvalid) e.currentTarget.style.transform = 'scale(1.03)'; }}
             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >
             <BrainCircuit size={22} /> Üret ve Çöz

@@ -457,6 +457,11 @@ public class TusController : ControllerBase
     [HttpPost("generate-questions")]
     public async Task<IActionResult> GenerateQuestions([FromBody] GenerateTusQuestionsRequest request)
     {
+        if (request.Count < 1 || request.Count > 30)
+        {
+            return BadRequest(new { message = "Soru sayısı sadece 1 ile 30 arasında olabilir." });
+        }
+
         try
         {
             var questions = await _proceduralGeneratorService.GenerateTusQuestionsAsync(request.Subject, request.Count);

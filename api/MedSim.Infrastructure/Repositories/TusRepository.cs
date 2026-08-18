@@ -152,8 +152,11 @@ public class TusRepository : ITusRepository
             overallSuccessRate = (int)Math.Round(caseSuccessRate);
         }
 
-        var averageTime = solvedCount > 0
-            ? (int)Math.Round(await query.Select(t => (double)t.DurationSeconds).AverageAsync())
+        var queryWithDuration = query.Where(t => t.DurationSeconds > 0);
+        var hasDuration = await queryWithDuration.AnyAsync();
+        
+        var averageTime = hasDuration
+            ? (int)Math.Round(await queryWithDuration.Select(t => (double)t.DurationSeconds).AverageAsync())
             : 0;
 
         return new
