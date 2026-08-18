@@ -347,8 +347,9 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
             <BookOpen size={16} /> Çözülen TUS Soruları
           </button>
         </div>
+      </div>
 
-        {activeTab === 'cases' ? (
+      {activeTab === 'cases' ? (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
