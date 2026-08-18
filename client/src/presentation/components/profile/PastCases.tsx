@@ -316,6 +316,8 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
             <span>Geçmiş <span style={{ color: 'var(--primary)' }}>Vakalarım</span></span>
           </h2>
           <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '1.1rem' }}>
+            Çözdüğünüz vakaların ve soruların detaylı geçmişi.
+          </p>
         </div>
 
         {/* Tab Selection */}
