@@ -40,7 +40,10 @@ public class ProceduralGeneratorService : IProceduralGeneratorService
 Kurallar:
 - 2-4 aşama (orderIndex 1'den başlar)
 - Her aşamada tam 4 şık: 1 doğru (isCorrect:true), 3 yanlış (isCorrect:false)
-- CRITICAL RULE (ÇOK ÖNEMLİ): Doğru şık KESİNLİKLE en uzun veya en açıklayıcı şık OLMAMALIDIR. Tüm şıkların kelime ve karakter uzunlukları neredeyse eşit (birebir aynı) olmalıdır. Doğru şık tahmin edilmesin diye bazı çeldirici (yanlış) şıkları doğru şıktan daha uzun veya daha detaylı yaz.
+- CRITICAL RULE (ÇOK ÖNEMLİ):
+  1. Doğru şık KESİNLİKLE en uzun veya en açıklayıcı şık OLMAMALIDIR. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
+  2. Şıklarda KESİNLİKLE parantez içinde ek açıklamalar, detaylar veya ipuçları (örn. '... (en sık)', '... (altın standart)', '... (tercih edilen)') bulunmamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
+  3. Tüm şıklar kelime sayısı olarak neredeyse birebir aynı boyutta olmalıdır.
 - Yanlış şıklar güçlü tıbbi çeldiriciler olsun
 - title kısa ve net olsun: örn 'Akut Apandisit', 'Tip 2 DM Krizi'
 - patientInfo: Türkçe isim, yaş, cinsiyet, şikayet, vitaller, fizik muayene, özgeçmiş
@@ -266,7 +269,10 @@ Lütfen yukarıdaki bilgiler ışığında, sadece sorunun doğru çözümünü 
         var prompt = $@"
 Sen uzman bir tıp akademisyenisin. TUS (Tıpta Uzmanlık Sınavı) standartlarında '{subject}' dersi ile ilgili zor, ayırt edici ve öğretici tam {count} adet soru hazırla.
 
-Kritik Kural (Çok Önemli): Doğru şık KESİNLİKLE en uzun, en detaylı veya en açıklayıcı şık olmamalıdır. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (çok yakın) olmalıdır. Doğru şıkkın kolayca tahmin edilmesini önlemek amacıyla, bazı yanlış çeldirici şıkları doğru şıktan daha uzun veya daha detaylı yaz.
+Kritik Kural (Çok Önemli):
+1. Doğru şık KESİNLİKLE en uzun, en detaylı veya en açıklayıcı şık olmamalıdır. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
+2. Şıklarda KESİNLİKLE parantez içinde ek bilgiler, açıklamalar veya ipuçları (örn. '... (en olası)', '... (altın standart)', '... (en sık)') yer almamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
+3. Tüm şıklar (A, B, C, D, E) kelime sayısı olarak neredeyse birebir aynı boyutta olmalıdır.
 
 Çıktıyı KESİNLİKLE JSON formatında ver. Format aşağıdaki gibi bir liste (array) olmalı:
 

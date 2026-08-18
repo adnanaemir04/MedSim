@@ -211,6 +211,9 @@ namespace MedSim.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("DurationSeconds")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("boolean");
 

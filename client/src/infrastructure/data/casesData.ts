@@ -66,15 +66,15 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hasta efor sırasında aşırı yorgunluk ve kas güçsüzlüğü yaşıyor. Egzersiz sonrasında gücü geri geliyor. Nöromüsküler kavşak hastalığı şüphesi var. Hangi test istenmeli?",
         options: [
-          { text: "Asetilkolin Reseptör Antikoru (AChR-Ab) testi", isCorrect: true, feedback: "Doğru. Myastenia Gravis şüphesinde ilk istenmesi gereken antikor testidir." },
-          { text: "Kas Biyopsisi", isCorrect: false, feedback: "Hata: İlk aşamada çok invaziv ve spesifik olmayan bir yöntem." }
+          { text: "Asetilkolin Reseptör Antikoru testi", isCorrect: true, feedback: "Doğru. Myastenia Gravis şüphesinde ilk istenmesi gereken antikor testidir." },
+          { text: "İleri düzey Kas Biyopsisi analizi", isCorrect: false, feedback: "Hata: İlk aşamada çok invaziv ve spesifik olmayan bir yöntem." }
         ]
       },
       {
         text: "Test sonucu AChR antikoru pozitif geldi. Hastanın kas kasılmasını iyileştirmek için ne verirsiniz?",
         options: [
-          { text: "Asetilkolinesteraz İnhibitörü (Neostigmin)", isCorrect: true, feedback: "Tebrikler. Kavşakta asetilkolin miktarını artırarak kasılmayı düzeltirsiniz." },
-          { text: "Botulinum Toksini", isCorrect: false, feedback: "Hata: Kas felcine yol açarak hastanın ölümüne sebep olabilirsiniz." }
+          { text: "Asetilkolinesteraz İnhibitörü ilacı", isCorrect: true, feedback: "Tebrikler. Kavşakta asetilkolin miktarını artırarak kasılmayı düzeltirsiniz." },
+          { text: "Botulinum Toksini enjeksiyonu uygulaması", isCorrect: false, feedback: "Hata: Kas felcine yol açarak hastanın ölümüne sebep olabilirsiniz." }
         ]
       }
     ]
@@ -86,15 +86,15 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hastanın kan kültüründe Stafilokokus Aureus üredi. Hastanın ateşi var. İlk antibiyotik tercihiniz nedir?",
         options: [
-          { text: "Ampirik Vankomisin başlarım", isCorrect: true, feedback: "Doğru. MRSA (Metisiline Dirençli S. Aureus) ihtimaline karşı Vankomisin iyi bir başlangıçtır." },
-          { text: "Sadece Parasetamol verir izlerim", isCorrect: false, feedback: "Hata: Bakteriyemisi olan hasta sepsise gidebilir." }
+          { text: "Ampirik Vankomisin tedavisi başlarım", isCorrect: true, feedback: "Doğru. MRSA (Metisiline Dirençli S. Aureus) ihtimaline karşı Vankomisin iyi bir başlangıçtır." },
+          { text: "Sadece Parasetamol verip takip ederim", isCorrect: false, feedback: "Hata: Bakteriyemisi olan hasta sepsise gidebilir." }
         ]
       },
       {
         text: "Antibiyogram sonucu geldi. Bakteri metisiline duyarlı (MSSA) çıktı. Tedaviyi nasıl değiştirirsiniz?",
         options: [
-          { text: "Sefazolin veya Nafsilin'e geçerim", isCorrect: true, feedback: "Mükemmel. MSSA enfeksiyonlarında Vankomisine göre çok daha etkilidir." },
-          { text: "Vankomisin'e aynen devam ederim", isCorrect: false, feedback: "Kısmi Hata: Gerekli değildir, nefrotoksisite riski artar." }
+          { text: "Sefazolin veya Nafsilin tedavisine geçerim", isCorrect: true, feedback: "Mükemmel. MSSA enfeksiyonlarında Vankomisine göre çok daha etkilidir." },
+          { text: "Vankomisin tedavisine aynen devam ederim", isCorrect: false, feedback: "Kısmi Hata: Gerekli değildir, nefrotoksisite riski artar." }
         ]
       }
     ]
@@ -108,8 +108,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Özkıyım amaçlı yüksek doz parasetamol alan hasta acile geldi. Spesifik antidotu nedir?",
         options: [
-          { text: "N-Asetilsistein (NAC) infüzyonu", isCorrect: true, feedback: "Doğru. Glutatyon depolarını yenileyerek karaciğeri korur." },
-          { text: "Flumazenil", isCorrect: false, feedback: "Hata: Flumazenil benzodiazepin antidotudur." }
+          { text: "N-Asetilsistein infüzyonu tedavisi", isCorrect: true, feedback: "Doğru. Glutatyon depolarını yenileyerek karaciğeri korur." },
+          { text: "Flumazenil infüzyonu tedavisi başlarım", isCorrect: false, feedback: "Hata: Flumazenil benzodiazepin antidotudur." }
         ]
       }
     ]
@@ -119,10 +119,10 @@ export const medCasesData: Record<string, any> = {
     tests: "Biyopsi Raporu: İnvaziv Duktal Karsinom. Desmoplastik stroma reaksiyonu (+).",
     stages: [
       {
-        text: "Memedeki kitleden yapılan biyopside İnvaziv Duktal Karsinom (Meme Kanseri) saptandı. Tümörün reseptör durumunu bilmek neden önemlidir?",
+        text: "Memedeki kitleden yapılan biyopside İnvaziv Duktal Karsinom saptandı. Tümörün reseptör durumunu bilmek neden önemlidir?",
         options: [
-          { text: "Hedefe yönelik (Hormon/Akıllı ilaç) tedaviyi planlamak için.", isCorrect: true, feedback: "Doğru. ER, PR ve HER2 durumuna göre tedavi belirlenir." },
-          { text: "Sadece hastanın yaşını tahmin etmek için.", isCorrect: false, feedback: "Hata: Patolojide reseptörler tedaviyi belirler." }
+          { text: "Hedefe yönelik akıllı tedaviyi planlamak için", isCorrect: true, feedback: "Doğru. ER, PR ve HER2 durumuna göre tedavi belirlenir." },
+          { text: "Sadece hastanın yaşını doğru tahmin etmek için", isCorrect: false, feedback: "Hata: Patolojide reseptörler tedaviyi belirler." }
         ]
       }
     ]
@@ -134,17 +134,17 @@ export const medCasesData: Record<string, any> = {
     tests: "Kan Gazı: pH 7.15, HCO3 10. Biyokimya: Kan şekeri 450 mg/dL. İdrar: Keton (+++).",
     stages: [
       {
-        text: "Hasta bilinç bulanıklığı ve Kussmaul (derin/hızlı) solunumu ile acile getirildi. Ağzında aseton kokusu var. İlk adımınız nedir?",
+        text: "Hasta bilinç bulanıklığı ve Kussmaul solunumu ile acile getirildi. Ağzında aseton kokusu var. İlk adımınız nedir?",
         options: [
-          { text: "Hızlıca İV Serum Fizyolojik (Sıvı) başlarım.", isCorrect: true, feedback: "Çok doğru. DKA hastaları şiddetli dehidratedir, ilk iş sıvı vermektir." },
-          { text: "Anında yüksek doz İnsülin yaparım.", isCorrect: false, feedback: "Hata: Yeterli sıvı vermeden insülin yaparsanız hasta hipovolemik şoka girer." }
+          { text: "Hızlıca damardan sıvı tedavisi başlarım", isCorrect: true, feedback: "Çok doğru. DKA hastaları şiddetli dehidratedir, ilk iş sıvı vermektir." },
+          { text: "Anında yüksek doz insülin tedavisi yaparım", isCorrect: false, feedback: "Hata: Yeterli sıvı vermeden insülin yaparsanız hasta hipovolemik şoka girer." }
         ]
       },
       {
-        text: "Sıvı resüsitasyonu sonrası hastanın kan şekeri düşmeye başladı ancak Potasyum (K) değeri 3.2 mEq/L'ye geriledi. Ne yaparsınız?",
+        text: "Sıvı resüsitasyonu sonrası hastanın kan şekeri düşmeye başladı ancak Potasyum değeri 3.2 mEq/L'ye geriledi. Ne yaparsınız?",
         options: [
-          { text: "İnsüline devam ederken sıvıya Potasyum (KCL) eklerim.", isCorrect: true, feedback: "Harika yönetim! İnsülin potasyumu hücre içine sokar, düşüşü engellemelisiniz." },
-          { text: "İnsülini tamamen kapatırım.", isCorrect: false, feedback: "Hata: İnsülini kapatırsanız ketoasidoz tablosu tekrar derinleşir." }
+          { text: "İnsüline devam edip sıvıya potasyum eklerim", isCorrect: true, feedback: "Harika yönetim! İnsülin potasyumu hücre içine sokar, düşüşü engellemelisiniz." },
+          { text: "İnsülin infüzyonunu tamamen durdururum", isCorrect: false, feedback: "Hata: İnsülini kapatırsanız ketoasidoz tablosu tekrar derinleşir." }
         ]
       }
     ]
@@ -156,8 +156,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "6 aylık bebek, öksürük ve hırıltılı solunum ile getirildi. Beslenmesi bozulmuş, SpO2 %89. Solunum sıkıntısı var. İlk müdahale?",
         options: [
-          { text: "Nemlendirilmiş Oksijen desteği başlarım ve burun aspirasyonu yaparım.", isCorrect: true, feedback: "Doğru. Bronşiolitte en önemli tedavi oksijenizasyon ve hidrasyondur." },
-          { text: "Damardan geniş spektrumlu antibiyotik başlarım.", isCorrect: false, feedback: "Hata: Bronşiolit %90 viraldir (RSV), antibiyotik faydasızdır." }
+          { text: "Nemli oksijen desteği ve burun aspirasyonu yaparım", isCorrect: true, feedback: "Doğru. Bronşiolitte en önemli tedavi oksijenizasyon ve hidrasyondur." },
+          { text: "Geniş spektrumlu damardan antibiyotik tedavisi başlarım", isCorrect: false, feedback: "Hata: Bronşiolit %90 viraldir (RSV), antibiyotik faydasızdır." }
         ]
       }
     ]
@@ -171,8 +171,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "75 yaşındaki hasta düşme sonrası kalça ağrısıyla geldi. Röntgen femur boyun kırığını doğruladı. Ne önerirsiniz?",
         options: [
-          { text: "Ameliyat planlarım (Hemiartroplasti veya Vida).", isCorrect: true, feedback: "Doğru. Yaşlı hastalarda deplase femur boyun kırığı cerrahi gerektirir." },
-          { text: "Ağrı kesici verip eve gönderir, alçı yaparım.", isCorrect: false, feedback: "Hata: Femur boynu alçıyla iyileşmez, hasta yatağa bağımlı kalıp emboliden ölür." }
+          { text: "Cerrahi tedaviyle düzeltme planı yaparım", isCorrect: true, feedback: "Doğru. Yaşlı hastalarda deplase femur boyun kırığı cerrahi gerektirir." },
+          { text: "Ağrı kesici verip evde alçı takibi öneririm", isCorrect: false, feedback: "Hata: Femur boynu alçıyla iyileşmez, hasta yatağa bağımlı kalıp emboliden ölür." }
         ]
       }
     ]
@@ -184,15 +184,15 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hasta son 1 aydır hayattan zevk alamadığını, uyuyamadığını ve ölmek istediğini söylüyor. İlk adımınız nedir?",
         options: [
-          { text: "İntihar riskini detaylı sorgular ve hastaneye yatış/yakın gözetim kararı alırım.", isCorrect: true, feedback: "Kritik Karar! Suisidal düşüncesi olan hasta acil psikiyatrik müdahale gerektirir." },
-          { text: "Tatile çıkmasını tavsiye ederim.", isCorrect: false, feedback: "Hata: Depresyon tıbbi bir hastalıktır, tavsiye ile geçmez." }
+          { text: "İntihar riskini sorgulayıp yatış kararı alırım", isCorrect: true, feedback: "Kritik Karar! Suisidal düşüncesi olan hasta acil psikiyatrik müdahale gerektirir." },
+          { text: "Hastayı tatile çıkması için taburcu ederim", isCorrect: false, feedback: "Hata: Depresyon tıbbi bir hastalıktır, tavsiye ile geçmez." }
         ]
       },
       {
         text: "Hasta güvende. İlaç tedavisi başlanacak. Hangi grup ilacı ilk seçenek olarak düşünürsünüz?",
         options: [
-          { text: "SSRI (Seçici Serotonin Gerialım İnhibitörü)", isCorrect: true, feedback: "Doğru. Yan etki profili düşük ve etkilidir (Örn: Sertralin, Essitalopram)." },
-          { text: "Eski nesil yüksek doz Antipsikotikler", isCorrect: false, feedback: "Hata: Psikozu olmayan hastaya gereksiz yan etki yüklemiş olursunuz." }
+          { text: "Seçici serotonin geri alım inhibitörü başlarım", isCorrect: true, feedback: "Doğru. Yan etki profili düşük ve etkilidir (Örn: Sertralin, Essitalopram)." },
+          { text: "Eski nesil yüksek doz antipsikotik tedavisi başlarım", isCorrect: false, feedback: "Hata: Psikozu olmayan hastaya gereksiz yan etki yüklemiş olursunuz." }
         ]
       }
     ]
@@ -204,8 +204,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hastanın sırtında giderek büyüyen ve rengi koyulaşan asimetrik bir ben var. Dermatoskopi melanom şüphesi uyandırdı. Yaklaşımınız?",
         options: [
-          { text: "Lezyonu tamamen çıkararak (Eksizyonel Biyopsi) patolojiye gönderirim.", isCorrect: true, feedback: "Doğru. Melanom şüphesinde lezyon bütünüyle çıkarılıp incelenmelidir." },
-          { text: "Krem verip 6 ay sonra kontrole çağırırım.", isCorrect: false, feedback: "Hata: Malign Melanom çok agresif bir kanserdir, hasta kaybedilebilir." }
+          { text: "Eksizyonel biyopsi ile lezyonu çıkarıp gönderirim", isCorrect: true, feedback: "Doğru. Melanom şüphesinde lezyon bütünüyle çıkarılıp incelenmelidir." },
+          { text: "Nemlendirici krem verip evine gönderir takip ederim", isCorrect: false, feedback: "Hata: Malign Melanom çok agresif bir kanserdir, hasta kaybedilebilir." }
         ]
       }
     ]
@@ -217,17 +217,17 @@ export const medCasesData: Record<string, any> = {
     tests: "EKG: V1-V4 derivasyonlarında belirgin ST segment elevasyonu. Troponin: Yükseliyor.",
     stages: [
       {
-        text: "60 yaşında göğsünde baskı hisseden hasta terleyerek acile girdi. EKG'de Anteriyor STEMI (Kalp Krizi) gördünüz. İlk yapılması gereken medikal müdahale?",
+        text: "60 yaşında göğsünde baskı hisseden hasta terleyerek acile girdi. EKG'de Anteriyor STEMI gördünüz. İlk yapılması gereken medikal müdahale?",
         options: [
-          { text: "Aspirin çiğnetir, Nitrat ve oksijen (gerekirse) veririm.", isCorrect: true, feedback: "Çok doğru! MONA-B (Morfin, Oksijen, Nitrat, Aspirin) yaklaşımı." },
-          { text: "Sırtına masaj yaptırıp ağrı kesici (İbuprofen) veririm.", isCorrect: false, feedback: "Ölümcül Hata: NSAID'ler kriz anında kontrendikedir." }
+          { text: "Aspirin, nitrat ve oksijen tedavisi başlarım", isCorrect: true, feedback: "Çok doğru! MONA-B (Morfin, Oksijen, Nitrat, Aspirin) yaklaşımı." },
+          { text: "Sırtına masaj yapıp ağrı kesici reçete ederim", isCorrect: false, feedback: "Ölümcül Hata: NSAID'ler kriz anında kontrendikedir." }
         ]
       },
       {
-        text: "Acil medikal tedaviyi başlattınız. Hastanın tıkanan kalp damarını açmak için kesin (definitive) tedavisi nedir?",
+        text: "Acil medikal tedaviyi başlattınız. Hastanın tıkanan kalp damarını açmak için kesin tedavisi nedir?",
         options: [
-          { text: "Acil Koroner Anjiyografi (Primer PCI) laboratuvarına almak.", isCorrect: true, feedback: "Harika! Altın standart tedavi, tıkalı damarı stent ile açmaktır." },
-          { text: "Yatış verip 1 ay sonrasına poliklinik randevusu vermek.", isCorrect: false, feedback: "Hata: Dakikalar içinde kalp kası ölür (Time is muscle)." }
+          { text: "Acil koroner anjiyografi laboratuvarına almak", isCorrect: true, feedback: "Harika! Altın standart tedavi, tıkalı damarı stent ile açmaktır." },
+          { text: "Kardiyoloji servisine yatırıp kontrol planlarım", isCorrect: false, feedback: "Hata: Dakikalar içinde kalp kası ölür (Time is muscle)." }
         ]
       }
     ]
