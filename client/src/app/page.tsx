@@ -82,16 +82,15 @@ export default function Home() {
           initialAnswers={selectedCase.initialAnswers}
           onBack={() => setCurrentView('dashboard')} 
           onCaseComplete={async (points, givenAnswers) => {
-            const newPoints = user.points + points;
-            setUser({ ...user, points: newPoints, solvedCases: [...user.solvedCases, "case_completed"] as any });
             try {
-              // Update points
-              await updateUserProfile(user.email, user.nickname, user.avatar || '👨‍⚕️', newPoints);
-
-              // Save solved case
+              let updatedPoints = user.points;
               if (selectedCase.data?.id) {
-                await solveCase(user.email, selectedCase.data.id, points, givenAnswers);
+                const res = await solveCase(user.email, selectedCase.data.id, points, givenAnswers);
+                if (res && res.points !== undefined) {
+                  updatedPoints = res.points;
+                }
               }
+              setUser({ ...user, points: updatedPoints, solvedCases: [...user.solvedCases, "case_completed"] as any });
             } catch (e) {
               console.error("Failed to save points or solved case", e);
             }
@@ -109,8 +108,8 @@ export default function Home() {
           count={selectedTusSolve.count}
           userEmail={user.email}
           onBack={() => setCurrentView('tus')}
-          onCorrectAnswer={(points) => {
-            setUser((prev: any) => prev ? { ...prev, points: prev.points + points } : prev);
+          onCorrectAnswer={(newPoints) => {
+            setUser((prev: any) => prev ? { ...prev, points: newPoints } : prev);
           }}
         />
       </div>

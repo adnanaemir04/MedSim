@@ -64,6 +64,9 @@ public class TusRepository : ITusRepository
 
         bool isCorrect = question.CorrectOption.Equals(selectedOption, StringComparison.OrdinalIgnoreCase);
 
+        var alreadySolved = await _context.TusSolvedQuestions
+            .AnyAsync(t => t.UserId == user.Id && t.TusQuestionId == question.Id && t.IsCorrect);
+
         var solved = new TusSolvedQuestion
         {
             Id = Guid.NewGuid(),
@@ -74,7 +77,7 @@ public class TusRepository : ITusRepository
         };
 
         _context.TusSolvedQuestions.Add(solved);
-        if (isCorrect)
+        if (isCorrect && !alreadySolved)
         {
             user.Points += 10;
         }
@@ -84,7 +87,8 @@ public class TusRepository : ITusRepository
         {
             isCorrect = isCorrect,
             correctOption = question.CorrectOption,
-            explanation = question.Explanation
+            explanation = question.Explanation,
+            points = user.Points
         };
     }
 
@@ -197,7 +201,7 @@ public class TusRepository : ITusRepository
                 u.Nickname,
                 u.Avatar,
                 u.Points,
-                TusCorrects = u.TusSolvedQuestions.Count(t => t.IsCorrect)
+                TusCorrects = u.TusSolvedQuestions.Where(t => t.IsCorrect).Select(t => t.TusQuestionId).Distinct().Count()
             })
             .OrderByDescending(u => u.TusCorrects)
             .Take(50)

@@ -104,7 +104,7 @@ public class TusController : ControllerBase
                 question.Explanation
             );
 
-            return Ok(new { explanation = "Bu sorunun detayı yapay zeka tarafından oluşturulacaktır. (Mock Explanation)" });
+            return Ok(new { explanation = explanation });
         }
         catch (Exception ex)
         {

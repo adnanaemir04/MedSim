@@ -104,31 +104,36 @@ public class ProfileController : ControllerBase
         var existingSolve = await _context.SolvedCases
             .FirstOrDefaultAsync(sc => sc.UserId == user.Id && sc.MedicalCaseId == request.MedicalCaseId);
 
+        int pointsEarned = 0;
+
         if (existingSolve != null)
         {
-            existingSolve.EarnedPoints = request.Points;
+            pointsEarned = Math.Max(0, request.Points - existingSolve.EarnedPoints);
+            existingSolve.EarnedPoints = Math.Max(existingSolve.EarnedPoints, request.Points);
             existingSolve.GivenAnswers = string.Join(",", request.GivenAnswers);
             existingSolve.SolvedAt = DateTime.UtcNow;
             _context.SolvedCases.Update(existingSolve);
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Vaka başarıyla güncellendi." });
+        }
+        else
+        {
+            pointsEarned = request.Points;
+            var solvedCase = new MedSim.Domain.Entities.SolvedCase
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                MedicalCaseId = request.MedicalCaseId,
+                EarnedPoints = request.Points,
+                IsSolved = true,
+                GivenAnswers = string.Join(",", request.GivenAnswers),
+                SolvedAt = DateTime.UtcNow
+            };
+            _context.SolvedCases.Add(solvedCase);
         }
 
-        var solvedCase = new MedSim.Domain.Entities.SolvedCase
-        {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            MedicalCaseId = request.MedicalCaseId,
-            EarnedPoints = request.Points,
-            IsSolved = true,
-            GivenAnswers = string.Join(",", request.GivenAnswers),
-            SolvedAt = DateTime.UtcNow
-        };
-
-        _context.SolvedCases.Add(solvedCase);
+        user.Points += pointsEarned;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Vaka başarıyla kaydedildi." });
+        return Ok(new { message = "Vaka başarıyla kaydedildi.", points = user.Points });
     }
     [HttpPost("add-friend")]
     public async Task<IActionResult> AddFriend([FromBody] FriendRequest request)

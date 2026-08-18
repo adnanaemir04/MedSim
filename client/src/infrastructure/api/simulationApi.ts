@@ -167,7 +167,7 @@ export const getTusQuestions = async (count: number, subject: string): Promise<T
     return response.data;
 };
 
-export const submitTusAnswer = async (email: string, questionId: string, selectedOption: string): Promise<{ isCorrect: boolean; correctOption: string; explanation: string }> => {
+export const submitTusAnswer = async (email: string, questionId: string, selectedOption: string): Promise<{ isCorrect: boolean; correctOption: string; explanation: string; points: number }> => {
     const response = await apiClient.post('/tus/submit-answer', {
         email,
         questionId,

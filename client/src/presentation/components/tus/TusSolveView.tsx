@@ -77,8 +77,8 @@ export default function TusSolveView({ subject, userEmail, count, onBack, onCorr
       const data = await submitTusAnswer(userEmail, currentQuestionId, optionKey);
       
       setResult(data);
-      if (data.isCorrect && onCorrectAnswer) {
-        onCorrectAnswer(10);
+      if (onCorrectAnswer) {
+        onCorrectAnswer(data.points);
       }
     } catch (e) {
       console.error(e);
