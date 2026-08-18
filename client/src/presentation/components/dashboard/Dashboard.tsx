@@ -224,7 +224,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
         
         {generatedCases.filter(c => !filterSubject || c.subject === filterSubject).map((c, index) => {
           const solved = c.data?.id ? solvedCases.find(sc => sc.medicalCaseId === c.data.id) : undefined;
-          if (solved) return null; // Hide solved cases from Dashboard
+          if (solved && !filterSubject) return null; // Hide solved cases from general Dashboard, show if filtered by subject
           return (
             <div 
               key={`gen-${index}`} 
@@ -279,7 +279,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
           const mockData = { id: c.id, title: c.title, text: c.initialText, stages: c.stages, patientInfo: c.patientInfo, difficulty: c.difficulty, difficultyScore: c.difficultyScore, difficultyReason: c.difficultyReason };
           const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
           
-          if (solved) return null; // Hide solved cases from Dashboard
+          if (solved && !filterSubject) return null; // Hide solved cases from general Dashboard, show if filtered by subject
 
           return (
             <div 
