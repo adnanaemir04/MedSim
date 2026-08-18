@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { BookOpen, Stethoscope, ChevronRight, Loader2, Sparkles, Target, TrendingUp, CheckCircle, BrainCircuit } from 'lucide-react';
+import { Activity, Target, TrendingUp, Trophy, ArrowRight, BookOpen, Stethoscope, Loader2, Info, CheckCircle, ChevronRight, Sparkles, BrainCircuit } from 'lucide-react';
 import { getTusSubjects, TusSubjectDto, generateTusQuestions, getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simulationApi';
 import TusSolveView from './TusSolveView';
 import TusSubjectStatsView from './TusSubjectStatsView';
+import TusAboutView from './TusAboutView';
 
 interface TusCenterProps {
   userEmail: string;
+  onNavigateToAbout?: () => void;
+  onNavigateToSolve?: (subject: string, count: number, mode: 'classic' | 'ai') => void;
 }
 
 const STANDARD_TUS_SUBJECTS = [
@@ -16,11 +19,12 @@ const STANDARD_TUS_SUBJECTS = [
   "Dahiliye", "Pediatri", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum", "Küçük Stajlar"
 ];
 
-export default function TusCenter({ userEmail }: TusCenterProps) {
+export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSolve }: TusCenterProps) {
   const [subjects, setSubjects] = useState<TusSubjectDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeSubject, setActiveSubject] = useState<string | null>(null);
-  const [viewState, setViewState] = useState<'list' | 'stats' | 'solve'>('list');
+  const [viewState, setViewState] = useState<'list' | 'stats' | 'solve' | 'about'>('list');
+  const [solveCount, setSolveCount] = useState<number>(5);
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [genericStats, setGenericStats] = useState<TusStatsDto | null>(null);
   
@@ -65,7 +69,14 @@ export default function TusCenter({ userEmail }: TusCenterProps) {
       <TusSubjectStatsView 
         subject={activeSubject} 
         userEmail={userEmail} 
-        onSolveQuestions={() => setViewState('solve')} 
+        onSolveQuestions={(count, mode) => {
+          setSolveCount(count);
+          if (onNavigateToSolve) {
+            onNavigateToSolve(activeSubject as string, count, mode);
+          } else {
+            setViewState('solve');
+          }
+        }} 
         onBack={() => { setActiveSubject(null); setViewState('list'); }} 
       />
     );
@@ -76,24 +87,56 @@ export default function TusCenter({ userEmail }: TusCenterProps) {
       <TusSolveView 
         subject={activeSubject} 
         userEmail={userEmail} 
+        count={solveCount}
         onBack={() => { setViewState('stats'); fetchSubjects(); }} 
       />
     );
   }
 
 
+  if (viewState === 'about') {
+    // Fallback if prop not provided
+    return (
+      <TusAboutView onBack={() => setViewState('list')} />
+    );
+  }
+
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', animation: 'fadeIn 0.3s ease-out' }}>
       
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-          <Stethoscope size={24} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+            <Stethoscope size={24} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>TUS Merkezi</h2>
+            <p style={{ color: 'var(--text-muted)', margin: 0 }}>Tüm dersler için kişiselleştirilmiş istatistikler ve yapay zeka destekli soru çözümü</p>
+          </div>
         </div>
-        <div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>TUS Merkezi</h2>
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Tüm dersler için kişiselleştirilmiş istatistikler ve yapay zeka destekli soru çözümü</p>
-        </div>
+        
+        <button
+          onClick={() => {
+            if (onNavigateToAbout) {
+              onNavigateToAbout();
+            } else {
+              setViewState('about');
+            }
+          }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1))',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            color: '#10b981', padding: '0.75rem 1.25rem', borderRadius: '16px',
+            fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <Info size={18} /> TUS Hakkında
+        </button>
       </div>
 
       {/* Global TUS Statistics */}

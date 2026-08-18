@@ -43,6 +43,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
   const [activePanelTab, setActivePanelTab] = useState<'anamnez' | 'ozgecmis' | 'vitals' | 'muayene' | null>(null);
   const [hasAnswered, setHasAnswered] = useState(isReviewMode);
   const [earnedPoints, setEarnedPoints] = useState(0);
+  const [hasWrongAnswer, setHasWrongAnswer] = useState(false);
   const [givenAnswers, setGivenAnswers] = useState<number[]>([]);
   const [isFinished, setIsFinished] = useState(false);
 
@@ -55,7 +56,13 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
     setSelectedOption(optIndex);
     setHasAnswered(true);
     setGivenAnswers(prev => [...prev, optIndex]);
-    if (stage.options[optIndex].isCorrect) setEarnedPoints(prev => prev + 10);
+    
+    const isCorrect = stage.options[optIndex].isCorrect;
+    if (isCorrect) {
+      setEarnedPoints(prev => prev + 10);
+    } else {
+      setHasWrongAnswer(true);
+    }
   };
 
   const handleNextStage = () => {
@@ -73,9 +80,11 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
     }
   };
 
+  const finalPoints = hasWrongAnswer ? 0 : stages.length * 10;
+
   const handleFinish = () => {
     if (!isReviewMode) {
-      onCaseComplete(earnedPoints, givenAnswers);
+      onCaseComplete(finalPoints, givenAnswers);
     }
     onBack();
   };
@@ -83,10 +92,14 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
   if (isFinished) {
     return (
       <div className="glass-panel" style={{ maxWidth: '600px', margin: '2rem auto', textAlign: 'center', padding: '4rem 2rem' }}>
-        <HeartPulse size={64} color="var(--success)" style={{ margin: '0 auto 1.5rem auto' }} />
-        <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Vaka Tamamlandı!</h2>
+        <HeartPulse size={64} color={finalPoints > 0 ? "var(--success)" : "var(--danger)"} style={{ margin: '0 auto 1.5rem auto' }} />
+        <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{finalPoints > 0 ? 'Vaka Tamamlandı!' : 'Vaka Sonuçlandı'}</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginBottom: '2rem' }}>
-          Bu vakadan toplam <strong style={{ color: 'var(--primary)', fontSize: '1.5rem' }}>{earnedPoints}</strong> puan kazandınız.
+          {finalPoints > 0 ? (
+            <>Bu vakadan toplam <strong style={{ color: 'var(--primary)', fontSize: '1.5rem' }}>{finalPoints}</strong> puan kazandınız!</>
+          ) : (
+            <span style={{ color: 'var(--danger)', fontWeight: 600 }}>En az bir soruyu yanlış cevapladığınız için bu vakadan puan kazanamadınız.</span>
+          )}
         </p>
         <button className="btn-primary" onClick={handleFinish} style={{ width: '100%', maxWidth: '300px' }}>
           Dashboard'a Dön

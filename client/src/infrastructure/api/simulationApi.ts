@@ -136,3 +136,24 @@ export const generateTusQuestions = async (subject: string, count: number = 5): 
     const response = await axios.post('http://localhost:5211/api/tus/generate-questions', { subject, count });
     return response.data;
 };
+
+export interface SolvedTusQuestionDto {
+    id: string;
+    isCorrect: boolean;
+    solvedAt: string;
+    questionText: string;
+    subject: string;
+    category: string;
+    correctOption: string;
+    explanation: string;
+}
+
+export const getSolvedTusQuestions = async (
+    email: string,
+    subject?: string
+): Promise<SolvedTusQuestionDto[]> => {
+    let url = `http://localhost:5211/api/tus/solved-list?email=${encodeURIComponent(email)}`;
+    if (subject) url += `&subject=${encodeURIComponent(subject)}`;
+    const response = await axios.get<SolvedTusQuestionDto[]>(url);
+    return response.data;
+};
