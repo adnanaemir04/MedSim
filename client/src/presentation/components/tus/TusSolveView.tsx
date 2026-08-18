@@ -363,7 +363,7 @@ export default function TusSolveView({ subject, userEmail, count, difficulty, on
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {optionsList.map(opt => {
-                const isSelected = (reviewMode && currentResult) ? currentResult.selectedOption === opt.key : selectedOption === opt.key;
+                const isSelected = (reviewMode && sessionResults[activeIndex]) ? sessionResults[activeIndex].selectedOption === opt.key : selectedOption === opt.key;
                 let bgColor = 'rgba(255,255,255,0.03)';
                 let borderColor = 'rgba(255,255,255,0.1)';
                 
