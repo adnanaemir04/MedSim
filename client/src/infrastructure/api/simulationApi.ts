@@ -50,6 +50,9 @@ export interface MedicalCaseDto {
     title: string;
     initialText: string;
     isProcedural: boolean;
+    difficulty?: string;
+    difficultyScore?: number;
+    difficultyReason?: string;
     patientInfo?: PatientInfoDto;
     stages: CaseStageDto[];
 }

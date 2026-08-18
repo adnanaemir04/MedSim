@@ -119,6 +119,9 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
           text: c.initialText,
           stages: c.stages,
           patientInfo: c.patientInfo,
+          difficulty: c.difficulty,
+          difficultyScore: c.difficultyScore,
+          difficultyReason: c.difficultyReason,
         }
       }));
       setGeneratedCases(prev => [...prev, ...mappedNewCases]);
