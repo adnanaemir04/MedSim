@@ -27,13 +27,18 @@ public class TusRepository : ITusRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<object>> GetQuestionsAsync(int count, string? subject)
+    public async Task<IEnumerable<object>> GetQuestionsAsync(int count, string? subject, string? difficulty)
     {
         var query = _context.TusQuestions.AsQueryable();
 
         if (!string.IsNullOrEmpty(subject))
         {
             query = query.Where(q => q.Subject == subject);
+        }
+
+        if (!string.IsNullOrEmpty(difficulty) && difficulty != "Tümü")
+        {
+            query = query.Where(q => q.Difficulty == difficulty);
         }
 
         return await query
@@ -49,7 +54,9 @@ public class TusRepository : ITusRepository
                 q.OptionD,
                 q.OptionE,
                 q.Category,
-                q.Subject
+                q.Subject,
+                q.Difficulty
+
             })
             .ToListAsync();
     }

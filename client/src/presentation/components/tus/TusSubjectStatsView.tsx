@@ -20,6 +20,8 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
   const [isLoading, setIsLoading] = useState(true);
   const [aiCount, setAiCount] = useState<number | string>(10);
   const [aiDifficulty, setAiDifficulty] = useState('Orta');
+  const [classicCount, setClassicCount] = useState<number | string>(10);
+  const [classicDifficulty, setClassicDifficulty] = useState('Tümü');
 
   useEffect(() => {
     getTusUserStats(userEmail, subject)
@@ -42,6 +44,9 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
 
   const parsedAiCount = typeof aiCount === 'string' ? parseInt(aiCount, 10) : aiCount;
   const isAiCountInvalid = isNaN(parsedAiCount) || parsedAiCount < 1 || parsedAiCount > 30;
+
+  const parsedClassicCount = typeof classicCount === 'string' ? parseInt(classicCount, 10) : classicCount;
+  const isClassicCountInvalid = isNaN(parsedClassicCount) || parsedClassicCount < 1 || parsedClassicCount > 50;
 
   return (
     <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.3s ease-out' }}>
@@ -213,20 +218,74 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
             <Target size={32} />
           </div>
           <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-main)' }}>Klasikleşmiş Sorular</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', lineHeight: 1.7, fontSize: '1.05rem', flex: 1 }}>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: 1.7, fontSize: '1.05rem', flex: 1 }}>
             Veritabanındaki on binlerce geçmiş TUS sorusuna benzer kaliteli ve zorlu sorulardan rastgele seçerek klasik formatta çöz.
           </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', background: 'rgba(0,0,0,0.03)', padding: '0.5rem 1rem', borderRadius: '16px' }}>
+              <label style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1rem' }}>Soru Sayısı:</label>
+              <input 
+                type="number" 
+                value={classicCount} 
+                onChange={e => setClassicCount(e.target.value)}
+                style={{
+                  flex: 1, padding: '0.6rem', borderRadius: '12px', border: '2px solid #10b981',
+                  background: isLight ? 'white' : 'rgba(0,0,0,0.3)', color: 'var(--text-main)',
+                  fontSize: '1.2rem', fontWeight: 800, textAlign: 'center', outline: 'none'
+                }}
+              />
+            </div>
+            {isClassicCountInvalid ? (
+              <div style={{ fontSize: '0.85rem', color: 'var(--danger)', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(244, 63, 94, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
+                <Info size={16} /> Sadece 1 ile 50 arasında bir değer girebilirsiniz!
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.4rem', borderRadius: '10px' }}>
+                <Info size={16} /> Lütfen 1 - 50 arası bir değer girin
+              </div>
+            )}
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', background: 'rgba(0,0,0,0.03)', padding: '0.5rem 1rem', borderRadius: '16px' }}>
+              <label style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1rem' }}>Zorluk:</label>
+              <div style={{ display: 'flex', gap: '0.5rem', flex: 1, flexWrap: 'wrap' }}>
+                {['Tümü', 'Kolay', 'Orta', 'Zor'].map((lvl) => (
+                  <button
+                    key={lvl}
+                    onClick={() => setClassicDifficulty(lvl)}
+                    style={{
+                      flex: '1 1 40%', padding: '0.4rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.85rem',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      background: classicDifficulty === lvl 
+                        ? (lvl === 'Zor' ? 'rgba(244,63,94,0.15)' : lvl === 'Orta' ? 'rgba(245,158,11,0.15)' : lvl === 'Kolay' ? 'rgba(16,185,129,0.15)' : 'rgba(99,102,241,0.15)')
+                        : (isLight ? 'white' : 'rgba(0,0,0,0.3)'),
+                      color: classicDifficulty === lvl 
+                        ? (lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : lvl === 'Kolay' ? '#10b981' : '#6366f1')
+                        : 'var(--text-main)',
+                      border: classicDifficulty === lvl 
+                        ? `2px solid ${lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : lvl === 'Kolay' ? '#10b981' : '#6366f1'}`
+                        : (isLight ? '2px solid transparent' : '2px solid rgba(255,255,255,0.1)')
+                    }}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <button 
-            onClick={() => onSolveQuestions(10, 'classic')}
+            onClick={() => onSolveQuestions(parsedClassicCount, 'classic', classicDifficulty)}
+            disabled={isClassicCountInvalid}
             style={{ 
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              color: 'white', border: 'none', padding: '1.1rem 2rem', borderRadius: '16px',
-              fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer',
-              boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
+              background: isClassicCountInvalid ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, #10b981, #059669)',
+              color: isClassicCountInvalid ? 'var(--text-muted)' : 'white', border: 'none', padding: '1.1rem 2rem', borderRadius: '16px',
+              fontSize: '1.1rem', fontWeight: 800, cursor: isClassicCountInvalid ? 'not-allowed' : 'pointer',
+              boxShadow: isClassicCountInvalid ? 'none' : '0 8px 20px rgba(16, 185, 129, 0.3)',
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', gap: '0.8rem', width: '100%', justifyContent: 'center'
             }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+            onMouseEnter={e => { if (!isClassicCountInvalid) e.currentTarget.style.transform = 'scale(1.03)'; }}
             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >
             <CheckCircle size={22} /> Çözmeye Başla

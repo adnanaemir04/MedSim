@@ -115,6 +115,7 @@ export interface TusQuestionDto {
     optionE: string;
     category: string;
     subject: string;
+    difficulty?: string;
 }
 
 // ── SIMULATION & CASES APIs ──
@@ -170,8 +171,12 @@ export const getTusSubjects = async (): Promise<TusSubjectDto[]> => {
     return response.data;
 };
 
-export const getTusQuestions = async (count: number, subject: string): Promise<TusQuestionDto[]> => {
-    const response = await apiClient.get<TusQuestionDto[]>(`/tus/questions?count=${count}&subject=${encodeURIComponent(subject)}`);
+export const getTusQuestions = async (count: number, subject: string, difficulty?: string): Promise<TusQuestionDto[]> => {
+    let url = `/tus/questions?count=${count}&subject=${encodeURIComponent(subject)}`;
+    if (difficulty && difficulty !== 'Tümü') {
+        url += `&difficulty=${encodeURIComponent(difficulty)}`;
+    }
+    const response = await apiClient.get<TusQuestionDto[]>(url);
     return response.data;
 };
 

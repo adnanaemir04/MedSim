@@ -30,9 +30,9 @@ public class TusController : ControllerBase
     }
 
     [HttpGet("questions")]
-    public async Task<IActionResult> GetQuestions([FromQuery] int count = 5, [FromQuery] string? subject = null)
+    public async Task<IActionResult> GetQuestions([FromQuery] int count = 5, [FromQuery] string? subject = null, [FromQuery] string? difficulty = null)
     {
-        var questions = await _tusRepository.GetQuestionsAsync(count, subject);
+        var questions = await _tusRepository.GetQuestionsAsync(count, subject, difficulty);
         return Ok(questions);
     }
 
@@ -205,6 +205,10 @@ public class TusController : ControllerBase
                 int correctIndex = shuffled.IndexOf(correctOptionText);
                 string correctLetter = ((char)('A' + correctIndex)).ToString();
 
+                var diffs = new[] { "Kolay", "Orta", "Zor" };
+                string randomDiff = diffs[random.Next(diffs.Length)];
+                int randomScore = randomDiff == "Kolay" ? random.Next(1, 4) : randomDiff == "Orta" ? random.Next(4, 8) : random.Next(8, 11);
+
                 var q = new TusQuestion
                 {
                     Id = Guid.NewGuid(),
@@ -217,7 +221,9 @@ public class TusController : ControllerBase
                     OptionD = shuffled[3],
                     OptionE = shuffled[4],
                     CorrectOption = correctLetter,
-                    Explanation = explanationText
+                    Explanation = explanationText,
+                    Difficulty = randomDiff,
+                    DifficultyScore = randomScore
                 };
                 questionsToAdd.Add(q);
             }
