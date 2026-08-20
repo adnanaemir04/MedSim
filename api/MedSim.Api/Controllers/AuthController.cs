@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using BCrypt.Net;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MedSim.Api.Controllers;
 
@@ -104,9 +105,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpPut("updateProfile")]
+    [Authorize]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
     {
-        var user = await _userRepository.GetByEmailAsync(dto.Email);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrEmpty(userEmail)) return Unauthorized("Oturum süresi dolmuş veya geçersiz.");
+
+        var user = await _userRepository.GetByEmailAsync(userEmail);
         if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
         // Check if nickname is taken by someone else
@@ -120,10 +125,6 @@ public class AuthController : ControllerBase
         if (!string.IsNullOrEmpty(dto.Avatar))
         {
             user.Avatar = dto.Avatar;
-        }
-        if (dto.Points.HasValue)
-        {
-            user.Points = dto.Points.Value;
         }
 
         await _userRepository.UpdateAsync(user);

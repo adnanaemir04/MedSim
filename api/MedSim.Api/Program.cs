@@ -25,7 +25,7 @@ builder.Services.AddSignalR();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["Secret"];
+var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret is missing in appsettings.json");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -69,8 +69,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Use CORS to allow frontend connections
+var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:3000";
 app.UseCors(policy => policy
-    .WithOrigins("http://localhost:3000") // Replace with actual frontend URL
+    .WithOrigins(frontendUrl)
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials());

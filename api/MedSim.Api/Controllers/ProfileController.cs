@@ -26,20 +26,19 @@ public class ProfileController : ControllerBase
 
     [HttpGet("solved-cases")]
     public async Task<IActionResult> GetSolvedCases(
-        [FromQuery] string email, 
-        [FromQuery] int page = 1, 
-        [FromQuery] int pageSize = 10,
-        [FromQuery] string? subject = null,
-        [FromQuery] int? year = null,
-        [FromQuery] string? difficulty = null,
-        [FromQuery] string? sortOrder = "desc")
+        [FromQuery] string? subject, 
+        [FromQuery] int? year, 
+        [FromQuery] string? difficulty,
+        [FromQuery] string? sortOrder,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrEmpty(email))
+            return Unauthorized("Oturum süresi dolmuş veya geçersiz.");
+
         page = Math.Max(1, page);
         pageSize = Math.Min(pageSize, 50);
-
-        email = User.FindFirstValue(ClaimTypes.Email) ?? email;
-        if (string.IsNullOrEmpty(email))
-            return BadRequest("Email parametresi zorunludur.");
 
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
@@ -128,12 +127,40 @@ public class ProfileController : ControllerBase
     [HttpPost("solve-case")]
     public async Task<IActionResult> SolveCase([FromBody] SolveCaseRequest request)
     {
-        request.Email = User.FindFirstValue(ClaimTypes.Email) ?? request.Email;
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrEmpty(userEmail)) return Unauthorized("Yetkisiz erişim.");
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
         if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
-        var medicalCase = await _context.MedicalCases.FindAsync(request.MedicalCaseId);
+        var medicalCase = await _context.MedicalCases
+            .Include(c => c.Stages)
+            .ThenInclude(s => s.Options)
+            .FirstOrDefaultAsync(c => c.Id == request.MedicalCaseId);
+            
         if (medicalCase == null) return NotFound("Vaka bulunamadı.");
+
+        // Calculate points based on correct answers
+        int calculatedPoints = 0;
+        var givenAnswersArray = request.GivenAnswers ?? new List<int>();
+        var sortedStages = medicalCase.Stages.OrderBy(s => s.OrderIndex).ToList();
+        
+        for (int i = 0; i < sortedStages.Count && i < givenAnswersArray.Count; i++)
+        {
+            var stage = sortedStages[i];
+            var givenOptionIndex = givenAnswersArray[i];
+            
+            // Assume IsCorrect is a boolean in Option
+            var correctOption = stage.Options.FirstOrDefault(o => o.IsCorrect);
+            if (correctOption != null)
+            {
+                var correctOptionIndex = stage.Options.ToList().IndexOf(correctOption);
+                if (givenOptionIndex == correctOptionIndex)
+                {
+                    calculatedPoints += 10;
+                }
+            }
+        }
 
         // Check if already solved
         var existingSolve = await _context.SolvedCases
@@ -143,29 +170,35 @@ public class ProfileController : ControllerBase
 
         if (existingSolve != null)
         {
-            pointsEarned = 0;
-            existingSolve.EarnedPoints = Math.Max(existingSolve.EarnedPoints, request.Points);
-            existingSolve.GivenAnswers = string.Join(",", request.GivenAnswers);
+            if (calculatedPoints > existingSolve.EarnedPoints)
+            {
+                pointsEarned = calculatedPoints - existingSolve.EarnedPoints;
+                existingSolve.EarnedPoints = calculatedPoints;
+            }
+            existingSolve.GivenAnswers = string.Join(",", givenAnswersArray);
             existingSolve.SolvedAt = DateTime.UtcNow;
             _context.SolvedCases.Update(existingSolve);
         }
         else
         {
-            pointsEarned = request.Points;
+            pointsEarned = calculatedPoints;
             var solvedCase = new MedSim.Domain.Entities.SolvedCase
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 MedicalCaseId = request.MedicalCaseId,
-                EarnedPoints = request.Points,
+                EarnedPoints = calculatedPoints,
                 IsSolved = true,
-                GivenAnswers = string.Join(",", request.GivenAnswers),
+                GivenAnswers = string.Join(",", givenAnswersArray),
                 SolvedAt = DateTime.UtcNow
             };
             _context.SolvedCases.Add(solvedCase);
         }
 
-        user.Points += pointsEarned;
+        if (pointsEarned > 0)
+        {
+            user.Points += pointsEarned;
+        }
         
         var auditLog = new AuditLog
         {

@@ -16,14 +16,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }));
 
   useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5211";
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5211/hub/medsim") // Adjust URL to match your backend port
+      .withUrl(`${apiUrl}/hub/medsim`)
       .withAutomaticReconnect()
       .build();
 
     connection.on("LeaderboardUpdated", () => {
       console.log("Leaderboard update received via SignalR. Invalidating cache...");
-      queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'leaderboard' });
     });
 
     connection.start()
