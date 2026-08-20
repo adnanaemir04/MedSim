@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User } from '../../../../domain/entities/User';
+import { User } from '../../../domain/entities/User';
 import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {

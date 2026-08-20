@@ -245,12 +245,12 @@ function generateRandomCase(yearParam: string | number | null = null, deptParam:
 
   let department = deptParam;
   if (!department) {
-    const depts = departmentsByYear[year];
+    const depts = departmentsByYear[year as keyof typeof departmentsByYear];
     department = depts[Math.floor(Math.random() * depts.length)];
   }
   
   // Fallback to "Dahiliye" if data doesn't exist yet
-  const deptData = medCasesData[department] || medCasesData["Dahiliye"];
+  const deptData = medCasesData[department as keyof typeof medCasesData] || medCasesData["Dahiliye"];
 
   const names = ["Ahmet", "Ayşe", "Mehmet", "Fatma", "Ali", "Zeynep", "Hasan", "Elif"];
   const lastNames = ["Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Öztürk", "Kılıç"];
@@ -294,7 +294,7 @@ function generateRandomCase(yearParam: string | number | null = null, deptParam:
     id: newId,
     title: title, 
     department: department,
-    year: parseInt(year),
+    year: Number(year),
     patient: { 
       name: `${name} ${lastName}`, 
       age: age, 

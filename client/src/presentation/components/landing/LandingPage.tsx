@@ -12,8 +12,13 @@ import * as THREE from 'three';
 
 // --- DARK MODE: 3D Particle Background ---
 function ParticleBackground(props: any) {
-  const ref = useRef<any>();
-  const [sphere] = useState(() => random.inSphere(new Float32Array(5001), { radius: 1.5 }));
+  const ref = useRef<any>(null);
+  const [sphere] = useState(() => {
+    const array = new Float32Array(5001);
+    // @ts-ignore
+    random.inSphere(array, { radius: 1.5 });
+    return array;
+  });
 
   useFrame((state, delta) => {
     if (ref.current) {

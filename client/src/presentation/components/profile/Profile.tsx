@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User } from '../../../../domain/entities/User';
+import { User } from '../../../domain/entities/User';
 import { Camera } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';

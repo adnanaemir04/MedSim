@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { User } from '../../../../domain/entities/User';
+import { User } from '../../../domain/entities/User';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';

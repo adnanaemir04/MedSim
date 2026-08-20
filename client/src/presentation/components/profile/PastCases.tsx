@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { getSolvedCases, getDepartments, getCases, getSolvedTusQuestions, SolvedCaseDto, DepartmentDto, MedicalCaseDto, SolvedTusQuestionDto } from '../../../infrastructure/api/simulationApi';
-import { ChevronLeft, ChevronRight, Filter, Activity, Trophy, Clock, CheckCircle2, HeartPulse, Stethoscope, User, ArrowLeft, Brain, Search, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, Activity, Trophy, Clock, CheckCircle2, HeartPulse, Stethoscope, User, ArrowLeft, Brain, Search, BookOpen, XCircle } from 'lucide-react';
 
 interface PastCasesProps {
   userEmail: string;
@@ -89,17 +89,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
   const handleReviewCase = (medicalCaseId: string, subject: string, givenAnswers: number[]) => {
     const matched = allCases.find(c => c.id === medicalCaseId);
     if (matched) {
-      const mockData = {
-        id: matched.id,
-        title: matched.title,
-        text: matched.initialText,
-        stages: matched.stages,
-        patientInfo: matched.patientInfo,
-        difficulty: matched.difficulty,
-        difficultyScore: matched.difficultyScore,
-        difficultyReason: matched.difficultyReason
-      };
-      onStartCase(subject, -1, mockData, givenAnswers);
+      setSelectedReviewCase(matched);
     } else {
       alert("Vaka detayları yüklenemedi. Lütfen daha sonra tekrar deneyin.");
     }
@@ -445,13 +435,19 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
             ) : (
               <>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.2rem', marginBottom: '2.5rem' }}>
-                  {cases.map((c, index) => (
+                  {cases.map((c, index) => {
+                    const maxPoints = (c.givenAnswers?.length || 0) * 10;
+                    const isSuccess = c.isSolved && (maxPoints > 0 ? c.earnedPoints >= maxPoints / 2 : c.earnedPoints > 0);
+                    const statusText = c.isSolved ? (isSuccess ? 'Başarılı' : 'Başarısız') : 'Yarıda Bırakıldı';
+                    const statusColor = c.isSolved ? (isSuccess ? 'var(--success, #10b981)' : 'var(--danger, #f43f5e)') : 'var(--warning, #f59e0b)';
+                    
+                    return (
                     <div 
                       key={c.id} 
                       style={{ 
                         background: 'var(--glass-bg)', 
                         border: '1px solid var(--glass-border)',
-                        borderLeft: c.isSolved ? '4px solid var(--success, #10b981)' : '4px solid var(--warning, #f59e0b)',
+                        borderLeft: `4px solid ${statusColor}`,
                         borderRadius: '16px', 
                         padding: '1.5rem',
                         display: 'flex', 
@@ -515,9 +511,9 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end', color: c.isSolved ? 'var(--success, #10b981)' : 'var(--warning, #f59e0b)', fontWeight: 800, fontSize: '1.1rem' }}>
-                            {c.isSolved ? <CheckCircle2 size={20} /> : <Activity size={20} />}
-                            <span>{c.isSolved ? 'Başarılı' : 'Yarıda Bırakıldı'}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end', color: statusColor, fontWeight: 800, fontSize: '1.1rem' }}>
+                            {c.isSolved ? (isSuccess ? <CheckCircle2 size={20} /> : <XCircle size={20} />) : <Activity size={20} />}
+                            <span>{statusText}</span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', justifyContent: 'flex-end', color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.2rem' }}>
                             <Trophy size={14} color="var(--primary)" />
@@ -543,7 +539,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ); })}
                 </div>
 
                 {/* Pagination Controls */}

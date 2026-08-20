@@ -162,8 +162,8 @@ export const getSolvedCases = async (
 export const solveCase = async (email: string, caseId: string, earnedPoints: number, answers: number[]): Promise<any> => {
     const response = await apiClient.post('/profile/solve-case', {
         email,
-        caseId,
-        earnedPoints,
+        medicalCaseId: caseId,
+        points: earnedPoints,
         givenAnswers: answers
     });
     return response.data;
