@@ -191,11 +191,11 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
             fontSize: '0.95rem', 
             fontWeight: 800, 
             borderRadius: '50px', 
-            background: 'linear-gradient(135deg, #4f46e5, #06b6d4, #3b82f6)',
+            background: 'linear-gradient(135deg, #e11d48, #be123c, #f43f5e)',
             backgroundSize: '200% auto',
             color: 'white',
             border: 'none',
-            boxShadow: '0 8px 20px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)',
+            boxShadow: '0 8px 20px rgba(225, 29, 72, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)',
             letterSpacing: '0.5px',
             transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             cursor: 'pointer',
@@ -206,12 +206,12 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
           }} 
           onMouseEnter={e => { 
             e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)'; 
-            e.currentTarget.style.boxShadow = '0 12px 25px rgba(6, 182, 212, 0.5), inset 0 1px 0 rgba(255,255,255,0.5)'; 
+            e.currentTarget.style.boxShadow = '0 12px 25px rgba(225, 29, 72, 0.5), inset 0 1px 0 rgba(255,255,255,0.5)'; 
             e.currentTarget.style.backgroundPosition = 'right center';
           }}
           onMouseLeave={e => { 
             e.currentTarget.style.transform = 'translateY(0) scale(1)'; 
-            e.currentTarget.style.boxShadow = '0 8px 20px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)'; 
+            e.currentTarget.style.boxShadow = '0 8px 20px rgba(225, 29, 72, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)'; 
             e.currentTarget.style.backgroundPosition = 'left center';
           }}
           onClick={() => { soundManager.playClick(); setShowGenerateModal(true); }}

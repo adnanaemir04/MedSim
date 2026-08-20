@@ -8,20 +8,20 @@
 */
 
 :root {
-  /* Vibrant, rich colors */
-  --primary: #4f46e5;
-  /* Indigo */
-  --primary-glow: rgba(79, 70, 229, 0.4);
-  --secondary: #06b6d4;
-  /* Cyan */
-  --accent: #ec4899;
-  /* Pink */
+  /* Medical Vein Aesthetic (Arterial & Venous Reds) */
+  --primary: #e11d48;
+  /* Rose / Arterial Red */
+  --primary-glow: rgba(225, 29, 72, 0.4);
+  --secondary: #9f1239;
+  /* Deep Burgundy / Venous Red */
+  --accent: #f43f5e;
+  /* Bright Rose */
 
   --success: #10b981;
-  --danger: #f43f5e;
+  --danger: #be123c;
 
   /* Light Mode Backgrounds */
-  --bg-color: #f1f5f9;
+  --bg-color: #fff1f2; /* Soft warm pinkish-white */
   --glass-bg: rgba(255, 255, 255, 0.75);
   --glass-border: rgba(255, 255, 255, 1);
   --sidebar-bg: rgba(255, 255, 255, 0.65);
