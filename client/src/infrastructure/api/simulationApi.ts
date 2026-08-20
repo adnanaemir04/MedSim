@@ -104,6 +104,12 @@ export interface SolvedTusQuestionDto {
     correctOption: string;
     explanation: string;
     difficulty?: string;
+    selectedOption?: string;
+    optionA?: string;
+    optionB?: string;
+    optionC?: string;
+    optionD?: string;
+    optionE?: string;
 }
 
 export interface TusQuestionDto {

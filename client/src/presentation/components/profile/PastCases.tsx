@@ -36,8 +36,15 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
   const [tusPage, setTusPage] = useState(1);
   const [tusTotalPages, setTusTotalPages] = useState(1);
   const [loadingTus, setLoadingTus] = useState<boolean>(false);
+  const [expandedTusIds, setExpandedTusIds] = useState<string[]>([]);
 
   const [selectedReviewCase, setSelectedReviewCase] = useState<MedicalCaseDto | null>(null);
+  const [selectedReviewTusQuestion, setSelectedReviewTusQuestion] = useState<SolvedTusQuestionDto | null>(null);
+
+  const toggleTusQuestion = (id: string) => {
+    soundManager.playClick();
+    setExpandedTusIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
 
   useEffect(() => {
     if (activeTab === 'tus') {
@@ -323,6 +330,135 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
     );
   }
 
+  if (selectedReviewTusQuestion) {
+    const q = selectedReviewTusQuestion;
+    const isSuccess = q.isCorrect;
+    
+    const optionsList = [
+      { key: 'A', text: q.optionA },
+      { key: 'B', text: q.optionB },
+      { key: 'C', text: q.optionC },
+      { key: 'D', text: q.optionD },
+      { key: 'E', text: q.optionE }
+    ].filter(o => o.text);
+    
+    return (
+      <div style={{
+        position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 100,
+        background: isLight ? '#f8fafc' : '#020617', display: 'flex', flexDirection: 'column'
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '1.2rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          background: isLight ? 'var(--glass-bg)' : 'rgba(15, 23, 42, 0.8)',
+          borderBottom: isLight ? '1px solid var(--glass-border)' : '1px solid rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(12px)', boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
+        }}>
+          <button 
+            onClick={() => { soundManager.playClick(); setSelectedReviewTusQuestion(null); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent',
+              border: 'none', color: 'var(--text-main)', fontWeight: 700, cursor: 'pointer', fontSize: '1rem',
+              transition: 'transform 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateX(-3px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
+          >
+            <ArrowLeft size={18} /> Geri Dön
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ padding: '0.4rem 1rem', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--primary)', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 800 }}>{q.category}</span>
+            <span style={{ color: 'var(--text-main)', fontWeight: 800, fontSize: '0.9rem' }}>{q.subject}</span>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '1400px', width: '100%', display: 'flex', flexDirection: 'column' }}>
+            
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem', background: isSuccess ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)', color: isSuccess ? 'var(--success, #10b981)' : 'var(--danger, #f43f5e)', borderRadius: '20px', fontWeight: 800, fontSize: '1.1rem' }}>
+                 {isSuccess ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
+                 {isSuccess ? 'Soru Doğru Yanıtlandı' : 'Soru Yanlış Yanıtlandı'}
+               </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: '2rem', alignItems: 'start' }}>
+              
+              {/* Sol Taraf: Soru ve Şıklar */}
+              <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: '20px', fontSize: '1.15rem', lineHeight: 1.7, color: 'var(--text-main)', border: isLight ? '1px solid var(--glass-border)' : '1px solid rgba(255,255,255,0.1)' }}>
+                <span dangerouslySetInnerHTML={{ __html: q.questionText }}></span>
+                
+                {optionsList.length > 0 && (
+                  <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                    {optionsList.map(opt => {
+                      const isCorrectOption = opt.key === q.correctOption;
+                      const isSelectedWrongOption = opt.key === q.selectedOption && opt.key !== q.correctOption;
+                      const isSelectedCorrectOption = opt.key === q.selectedOption && opt.key === q.correctOption;
+                      
+                      return (
+                        <div 
+                          key={opt.key}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '1rem',
+                            padding: '1rem 1.5rem', borderRadius: '14px',
+                            background: isCorrectOption ? 'rgba(16, 185, 129, 0.1)' : (isSelectedWrongOption ? 'rgba(244, 63, 94, 0.1)' : 'rgba(255,255,255,0.03)'),
+                            border: isCorrectOption ? '2px solid var(--success)' : (isSelectedWrongOption ? '2px solid var(--danger)' : (isLight ? '1px solid var(--glass-border)' : '1px solid rgba(255,255,255,0.1)')),
+                            color: (isCorrectOption || isSelectedWrongOption) ? 'var(--text-main)' : 'var(--text-muted)'
+                          }}
+                        >
+                          <div style={{
+                            width: '32px', height: '32px', borderRadius: '8px',
+                            background: isCorrectOption ? 'var(--success)' : (isSelectedWrongOption ? 'var(--danger)' : (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)')),
+                            color: (isCorrectOption || isSelectedWrongOption) ? '#fff' : 'var(--text-main)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontWeight: 800, fontSize: '1rem'
+                          }}>
+                            {opt.key}
+                          </div>
+                          <span style={{ fontSize: '1.05rem', fontWeight: (isCorrectOption || isSelectedWrongOption) ? 700 : 500, flex: 1 }}>{opt.text}</span>
+                          
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            {isCorrectOption && (
+                              <div style={{ padding: '0.3rem 0.8rem', background: 'var(--success)', color: '#fff', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800 }}>
+                                Doğru Cevap
+                              </div>
+                            )}
+                            {isSelectedWrongOption && (
+                              <div style={{ padding: '0.3rem 0.8rem', background: 'var(--danger)', color: '#fff', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800 }}>
+                                Senin Cevabın
+                              </div>
+                            )}
+                            {isSelectedCorrectOption && (
+                              <div style={{ padding: '0.3rem 0.8rem', background: 'var(--primary)', color: '#fff', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800 }}>
+                                Senin Cevabın
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Sağ Taraf: Çözüm ve Açıklama */}
+              <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: '20px', borderLeft: '4px solid var(--primary)', background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.02)', position: 'sticky', top: '0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', color: 'var(--primary)', fontWeight: 900, fontSize: '1.2rem' }}>
+                  <Activity size={22} /> Çözüm ve Detaylı Açıklama
+                </div>
+                <div style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--text-muted)' }}>
+                  <span dangerouslySetInnerHTML={{ __html: q.explanation }}></span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: '0.5rem 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -381,37 +517,37 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
         {activeTab === 'cases' ? (
           <motion.div key="cases" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-              <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>
-                Toplam <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{totalCount}</span> vaka
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: isLight ? 'rgba(255,255,255,0.8)' : 'var(--glass-bg)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
+                <Activity size={18} color="var(--primary)" />
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                  Toplam <span style={{ fontWeight: 900, color: 'var(--text-main)', fontSize: '1.1rem' }}>{totalCount}</span> Vaka Çözüldü
+                </span>
+              </div>
 
               {/* Filters */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', background: 'var(--glass-bg)', padding: '0.5rem', borderRadius: '14px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', paddingLeft: '0.4rem' }}>
-                  <Filter size={14} />
-                </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', alignItems: 'center' }}>
                 <select 
                   value={filterYear} onChange={handleYearChange}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.3rem', fontSize: '0.85rem' }}
+                  style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}
                 >
                   <option value="" style={{ color: 'black' }}>Tüm Dönemler</option>
                   {uniqueYears.map(y => ( <option key={y} value={y} style={{ color: 'black' }}>Dönem {y}</option> ))}
                 </select>
-                <div style={{ width: '1px', background: 'var(--glass-border)' }}></div>
+                
                 <select 
                   value={filterSubject} onChange={handleSubjectChange}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.3rem', maxWidth: '120px', fontSize: '0.85rem' }}
+                  style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s', maxWidth: '160px' }}
                 >
-                  <option value="" style={{ color: 'black' }}>Dersler</option>
+                  <option value="" style={{ color: 'black' }}>Tüm Dersler</option>
                   {filteredSubjects.map(d => ( <option key={d.id} value={d.name} style={{ color: 'black' }}>{d.name}</option> ))}
                 </select>
-                <div style={{ width: '1px', background: 'var(--glass-border)' }}></div>
+                
                 <select 
                   value={filterDifficulty} 
                   onChange={(e) => { soundManager.playClick(); setFilterDifficulty(e.target.value); setPage(1); }}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.3rem', fontSize: '0.85rem' }}
+                  style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}
                 >
-                  <option value="" style={{ color: 'black' }}>Zorluklar</option>
+                  <option value="" style={{ color: 'black' }}>Zorluk</option>
                   <option value="Kolay" style={{ color: 'black' }}>Kolay</option>
                   <option value="Orta" style={{ color: 'black' }}>Orta</option>
                   <option value="Zor" style={{ color: 'black' }}>Zor</option>
@@ -502,19 +638,21 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
         ) : (
           <motion.div key="tus" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-              <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>TUS soru geçmişi</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: isLight ? 'rgba(255,255,255,0.8)' : 'var(--glass-bg)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
+                <BookOpen size={18} color="var(--primary)" />
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                  Toplam <span style={{ fontWeight: 900, color: 'var(--text-main)', fontSize: '1.1rem' }}>{tusQuestions.length}</span> TUS Sorusu Çözüldü
+                </span>
+              </div>
               
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', background: 'var(--glass-bg)', padding: '0.5rem', borderRadius: '14px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', paddingLeft: '0.4rem' }}>
-                  <Filter size={14} />
-                </div>
-                <select value={filterTusSubject} onChange={(e) => { soundManager.playClick(); setFilterTusSubject(e.target.value); setTusPage(1); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.3rem', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', alignItems: 'center' }}>
+                <select value={filterTusSubject} onChange={(e) => { soundManager.playClick(); setFilterTusSubject(e.target.value); setTusPage(1); }} style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s', maxWidth: '180px' }}>
                   <option value="" style={{ color: 'black' }}>Tüm TUS Dersleri</option>
                   {["Anatomi", "Fizyoloji", "Biyokimya", "Patoloji", "Farmakoloji", "Dahiliye", "Pediatri", "Genel Cerrahi", "Kadın Hastalıkları", "Küçük Stajlar"].map(subj => ( <option key={subj} value={subj} style={{ color: 'black' }}>{subj}</option> ))}
                 </select>
-                <div style={{ width: '1px', background: 'var(--glass-border)' }}></div>
-                <select value={filterTusDifficulty} onChange={(e) => { soundManager.playClick(); setFilterTusDifficulty(e.target.value); setTusPage(1); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.3rem', fontSize: '0.85rem' }}>
-                  <option value="" style={{ color: 'black' }}>Zorluklar</option>
+                
+                <select value={filterTusDifficulty} onChange={(e) => { soundManager.playClick(); setFilterTusDifficulty(e.target.value); setTusPage(1); }} style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}>
+                  <option value="" style={{ color: 'black' }}>Zorluk</option>
                   <option value="Kolay" style={{ color: 'black' }}>Kolay</option>
                   <option value="Orta" style={{ color: 'black' }}>Orta</option>
                   <option value="Zor" style={{ color: 'black' }}>Zor</option>
@@ -534,7 +672,9 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
             ) : (
               <>
                 <motion.div variants={containerVariants} initial="hidden" animate="show" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.8rem', marginBottom: '1.5rem' }}>
-                  {tusQuestions.map((q, index) => (
+                  {tusQuestions.map((q, index) => {
+                    const isExpanded = expandedTusIds.includes(q.id);
+                    return (
                     <motion.div 
                       key={q.id} 
                       variants={itemVariants}
@@ -546,24 +686,48 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                         borderRadius: '14px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.8rem'
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-                          <span style={{ padding: '0.1rem 0.6rem', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--primary)', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 800 }}>{q.category}</span>
-                          <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.75rem' }}>{q.subject}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', flex: 1, minWidth: '200px' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span style={{ padding: '0.2rem 0.6rem', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--primary)', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800 }}>{q.category}</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>•</span>
+                            <span style={{ padding: '0.2rem 0.6rem', background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800 }}>{q.subject}</span>
+                            {q.difficulty && (
+                              <>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>•</span>
+                                <span style={{ 
+                                  padding: '0.2rem 0.5rem', 
+                                  background: q.difficulty === 'Zor' ? 'rgba(244, 63, 94, 0.1)' : q.difficulty === 'Orta' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)', 
+                                  color: q.difficulty === 'Zor' ? '#f43f5e' : q.difficulty === 'Orta' ? '#f59e0b' : '#10b981', 
+                                  borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800 
+                                }}>
+                                  {q.difficulty}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          
+                          <div style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600, marginTop: '0.2rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            <span dangerouslySetInnerHTML={{ __html: q.questionText }}></span>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: q.isCorrect ? 'var(--success, #10b981)' : 'var(--danger, #f43f5e)', fontWeight: 800, fontSize: '0.85rem' }}>
-                          {q.isCorrect ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                          <span>{q.isCorrect ? 'Doğru' : 'Yanlış'}</span>
+                        
+                        <div style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: q.isCorrect ? 'var(--success, #10b981)' : 'var(--danger, #f43f5e)', fontWeight: 800, fontSize: '0.8rem' }}>
+                            {q.isCorrect ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                            <span>{q.isCorrect ? 'Doğru Yanıtlandı' : 'Yanlış Yanıtlandı'}</span>
+                          </div>
+                          <motion.button 
+                            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} 
+                            onClick={() => { soundManager.playClick(); setSelectedReviewTusQuestion(q); }} 
+                            style={{ padding: '0.6rem 1rem', borderRadius: '10px', background: 'rgba(79,70,229,0.1)', color: 'var(--primary)', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                          >
+                            <Search size={16} /> İncele
+                          </motion.button>
                         </div>
-                      </div>
-                      <div style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>
-                        <span dangerouslySetInnerHTML={{ __html: q.questionText }}></span>
-                      </div>
-                      <div style={{ padding: '0.6rem 0.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', borderLeft: '2px solid var(--primary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        <strong>Açıklama:</strong> <span dangerouslySetInnerHTML={{ __html: q.explanation }}></span>
                       </div>
                     </motion.div>
-                  ))}
+                  )})}
                 </motion.div>
 
                 {/* TUS Pagination */}

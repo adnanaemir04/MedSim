@@ -80,6 +80,7 @@ public class TusRepository : ITusRepository
             UserId = user.Id,
             TusQuestionId = question.Id,
             IsCorrect = isCorrect,
+            SelectedOption = selectedOption,
             DurationSeconds = durationSeconds,
             SolvedAt = DateTime.UtcNow
         };
@@ -221,7 +222,13 @@ public class TusRepository : ITusRepository
                 Category = t.TusQuestion.Category,
                 CorrectOption = t.TusQuestion.CorrectOption,
                 Explanation = t.TusQuestion.Explanation,
-                Difficulty = t.TusQuestion.Difficulty
+                Difficulty = t.TusQuestion.Difficulty,
+                SelectedOption = t.SelectedOption,
+                OptionA = t.TusQuestion.OptionA,
+                OptionB = t.TusQuestion.OptionB,
+                OptionC = t.TusQuestion.OptionC,
+                OptionD = t.TusQuestion.OptionD,
+                OptionE = t.TusQuestion.OptionE
             })
             .ToListAsync();
 
