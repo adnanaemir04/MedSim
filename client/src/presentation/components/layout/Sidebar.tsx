@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User } from '../../../domain/entities/User';
-import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen } from 'lucide-react';
+import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX } from 'lucide-react';
+import { soundManager } from '../../../utils/soundManager';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Anatomi': <UserIcon size={14} />,
@@ -45,6 +46,22 @@ interface SidebarProps {
 export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
   const [isClassExpanded, setIsClassExpanded] = useState(false);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+
+  useEffect(() => {
+    setIsMuted(soundManager.getIsMuted());
+  }, []);
+
+  const handleToggleMute = () => {
+    const muted = soundManager.toggleMute();
+    setIsMuted(muted);
+    if (!muted) soundManager.playHover();
+  };
+
+  const nav = (view: any, filter?: string) => {
+    soundManager.playClick();
+    onNavigate(view, filter);
+  };
 
   if (!user) return null;
 
@@ -61,7 +78,8 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
     <aside className="sidebar">
       <div className="topbar-logo" style={{ padding: '0 0.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div 
-          onClick={() => onNavigate('dashboard')}
+          onClick={() => nav('dashboard')}
+          onMouseEnter={() => soundManager.playHover()}
           style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
           className="logo-wrapper"
         >
@@ -72,7 +90,11 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
         </div>
       </div>
 
-      <div className="user-profile-sidebar" onClick={() => onNavigate('profile')}>
+      <div 
+        className="user-profile-sidebar" 
+        onClick={() => nav('profile')}
+        onMouseEnter={() => soundManager.playHover()}
+      >
         <div className="user-avatar" style={{
           background: user.avatar?.startsWith('data:image') ? `url(${user.avatar}) center/cover` : 'var(--bg-main)',
           fontSize: user.avatar?.startsWith('data:image') ? '0' : '2rem'
@@ -86,15 +108,24 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
       </div>
 
       <nav className="nav-menu">
-        <button className="nav-item active" onClick={() => onNavigate('dashboard')}>
+        <button 
+          className="nav-item" 
+          onClick={() => nav('dashboard')}
+          onMouseEnter={() => soundManager.playHover()}
+        >
           <Folder size={18} />
           <span>Tüm Vakalarım</span>
         </button>
 
-        <button className="nav-item" onClick={() => onNavigate('tus')} style={{
-          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1))',
-          borderLeft: '4px solid #ef4444'
-        }}>
+        <button 
+          className="nav-item" 
+          onClick={() => nav('tus')} 
+          onMouseEnter={() => soundManager.playHover()}
+          style={{
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1))',
+            borderLeft: '4px solid #ef4444'
+          }}
+        >
           <BookOpen size={18} color="#ef4444" />
           <span style={{ fontWeight: 800, color: '#ef4444' }}>TUS Merkezi</span>
         </button>
@@ -102,7 +133,8 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
         <div className="nav-accordion">
           <button 
             className={`nav-item ${isClassExpanded ? 'expanded' : ''}`} 
-            onClick={() => setIsClassExpanded(!isClassExpanded)}
+            onClick={() => { soundManager.playClick(); setIsClassExpanded(!isClassExpanded); }}
+            onMouseEnter={() => soundManager.playHover()}
           >
             <GraduationCap size={18} />
             <span style={{ flex: 1, textAlign: 'left' }}>Sınıflar</span>
@@ -113,10 +145,9 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
             <div className="accordion-content" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {[1, 2, 3, 4, 5, 6].map(num => (
                 <div key={num} style={{ position: 'relative' }}>
-                  
-                  {/* Neon Cyberpunk Style Class Button */}
                   <button 
-                    onClick={() => setSelectedClass(selectedClass === num ? null : num)}
+                    onClick={() => { soundManager.playClick(); setSelectedClass(selectedClass === num ? null : num); }}
+                    onMouseEnter={() => soundManager.playHover()}
                     style={{ 
                       width: '100%', 
                       display: 'flex', 
@@ -151,7 +182,6 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
                     </div>
                   </button>
 
-                  {/* Floating Medical Nodes Grid */}
                   {selectedClass === num && (
                     <div style={{ 
                       marginTop: '0.5rem', 
@@ -162,13 +192,12 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
                       position: 'relative',
                       animation: 'slideDown 0.3s ease-out'
                     }}>
-                      {/* Connecting Line from Top */}
                       <div style={{ position: 'absolute', top: 0, left: '50%', width: '2px', height: '1rem', background: 'var(--secondary)', opacity: 0.5 }} />
 
                       {deptsByYear[num].map(dept => (
                         <button 
                           key={dept} 
-                          onClick={(e) => { e.stopPropagation(); onNavigate('dashboard', dept); }} 
+                          onClick={(e) => { e.stopPropagation(); nav('dashboard', dept); }} 
                           style={{ 
                             fontSize: '0.75rem', 
                             fontWeight: 700, 
@@ -189,6 +218,7 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
                             backdropFilter: 'blur(10px)'
                           }} 
                           onMouseEnter={e => {
+                            soundManager.playHover();
                             e.currentTarget.style.background = 'linear-gradient(135deg, var(--primary), var(--secondary))';
                             e.currentTarget.style.color = 'white';
                             e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
@@ -217,19 +247,41 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
           )}
         </div>
 
-        <button className="nav-item" onClick={() => onNavigate('past_cases')}>
+        <button 
+          className="nav-item" 
+          onClick={() => nav('past_cases')}
+          onMouseEnter={() => soundManager.playHover()}
+        >
           <Activity size={18} />
           <span>Geçmiş Vakalar</span>
         </button>
 
-        <button className="nav-item" onClick={() => onNavigate('leaderboard')}>
+        <button 
+          className="nav-item" 
+          onClick={() => nav('leaderboard')}
+          onMouseEnter={() => soundManager.playHover()}
+        >
           <Trophy size={18} />
           <span>Liderlik Tablosu</span>
         </button>
       </nav>
 
-      <div className="sidebar-bottom-actions">
-        <button className="btn-logout" onClick={onLogout}>
+      <div className="sidebar-bottom-actions" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <button 
+          className="nav-item" 
+          onClick={handleToggleMute}
+          onMouseEnter={() => soundManager.playHover()}
+          style={{ background: 'transparent', color: 'var(--text-muted)' }}
+        >
+          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          <span>{isMuted ? 'Sesi Aç' : 'Sesi Kapat'}</span>
+        </button>
+
+        <button 
+          className="btn-logout" 
+          onClick={() => { soundManager.playClick(); onLogout(); }}
+          onMouseEnter={() => soundManager.playHover()}
+        >
           <LogOut size={18} />
           <span>Çıkış Yap</span>
         </button>

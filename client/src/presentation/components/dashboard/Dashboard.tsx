@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { getDepartments, getCases, generateCases, getSolvedCases, DepartmentDto, MedicalCaseDto, SolvedCaseDto } from '../../../infrastructure/api/simulationApi';
 import { Sparkles, Stethoscope, Activity, Syringe, BrainCircuit, Search, Play } from 'lucide-react';
+import { soundManager } from '../../../utils/soundManager';
 
 interface DashboardProps {
   userEmail: string;
@@ -213,7 +214,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
             e.currentTarget.style.boxShadow = '0 8px 20px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)'; 
             e.currentTarget.style.backgroundPosition = 'left center';
           }}
-          onClick={() => setShowGenerateModal(true)}
+          onClick={() => { soundManager.playClick(); setShowGenerateModal(true); }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           YENİ VAKA SİMÜLASYONU OLUŞTUR
@@ -238,7 +239,8 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 transition: 'var(--transition)',
                 cursor: 'pointer'
               }}
-              onClick={() => onStartCase(c.subject, -1, c.data, undefined)}
+              onMouseEnter={() => soundManager.playHover()}
+              onClick={() => { soundManager.playClick(); onStartCase(c.subject, -1, c.data, undefined); }}
             >
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                 <div style={yearBadgeStyle}>
@@ -265,7 +267,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 Yapay zeka tarafından üretilmiş benzersiz vaka. {c.data?.stages?.length || 0} aşamadan oluşmaktadır.
               </p>
               <button 
-                onClick={(e) => { e.stopPropagation(); onStartCase(c.subject, -1, c.data, undefined); }}
+                onClick={(e) => { e.stopPropagation(); soundManager.playClick(); onStartCase(c.subject, -1, c.data, undefined); }}
                 className={solved ? "btn-review-case btn-full" : "btn-solve-case btn-full"}
               >
                 {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} /> Vakayı Çöz</>}
@@ -294,9 +296,9 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 transition: 'var(--transition)',
                 cursor: 'pointer'
               }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+              onMouseEnter={e => { soundManager.playHover(); e.currentTarget.style.transform = 'translateY(-5px)'; }}
               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-              onClick={() => onStartCase(subjName, index, mockData, undefined)}
+              onClick={() => { soundManager.playClick(); onStartCase(subjName, index, mockData, undefined); }}
             >
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                 <div style={yearBadgeStyle}>
@@ -323,7 +325,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 Bu vaka {c.stages.length} aşamadan oluşmaktadır. Doğru kararlar vererek hastayı kurtarın.
               </p>
               <button 
-                onClick={(e) => { e.stopPropagation(); onStartCase(subjName, index, mockData, undefined); }}
+                onClick={(e) => { e.stopPropagation(); soundManager.playClick(); onStartCase(subjName, index, mockData, undefined); }}
                 className={solved ? "btn-review-case btn-full" : "btn-solve-case btn-full"}
               >
                 {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} /> Vakayı Çöz</>}
@@ -529,7 +531,8 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                   {['Kolay', 'Orta', 'Zor'].map((lvl) => (
                     <button
                       key={lvl}
-                      onClick={() => setGenDifficulty(lvl)}
+                      onClick={() => { soundManager.playClick(); setGenDifficulty(lvl); }}
+                      onMouseEnter={() => soundManager.playHover()}
                       style={{
                         flex: 1,
                         padding: '0.75rem',
@@ -604,7 +607,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
 
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button 
-                  onClick={() => { setShowGenerateModal(false); setGenerateError(null); }}
+                  onClick={() => { soundManager.playClick(); setShowGenerateModal(false); setGenerateError(null); }}
                   disabled={isGenerating}
                   style={{ 
                     flex: 1, padding: '0.85rem', background: 'transparent', 
@@ -620,7 +623,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                   İptal
                 </button>
                 <button 
-                  onClick={handleGenerate}
+                  onClick={() => { soundManager.playClick(); handleGenerate(); }}
                   disabled={isGenerating}
                   style={{ 
                     flex: 1.5, padding: '0.85rem', 

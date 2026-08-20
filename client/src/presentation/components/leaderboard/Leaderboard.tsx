@@ -9,6 +9,7 @@ import { getUserRank } from '../../../utils/rankSystem';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { getGeneralLeaderboard, getTusLeaderboard } from '../../../infrastructure/api/simulationApi';
+import { soundManager } from '../../../utils/soundManager';
 
 export default function Leaderboard() {
   const [users, setUsers] = useState<any[]>([]);
@@ -34,7 +35,7 @@ export default function Leaderboard() {
   }, [boardType]);
 
   const containerStyle = {
-    padding: '3rem', maxWidth: '900px', margin: '2rem auto',
+    padding: '3rem', maxWidth: '1100px', margin: '0.5rem auto 2rem auto',
     background: isLight 
       ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1))'
       : 'linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.3))',
@@ -68,7 +69,7 @@ export default function Leaderboard() {
 
     return {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '1.2rem 1.8rem', 
+      padding: '0.9rem 1.5rem', 
       background: colors.bg,
       backdropFilter: 'blur(20px)',
       borderRadius: '20px', 
@@ -138,7 +139,8 @@ export default function Leaderboard() {
         <motion.button 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setBoardType('general')}
+          onMouseEnter={() => soundManager.playHover()}
+          onClick={() => { soundManager.playClick(); setBoardType('general'); }}
           style={{
             padding: '0.8rem 1.5rem',
             borderRadius: '12px',
@@ -157,7 +159,8 @@ export default function Leaderboard() {
         <motion.button 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setBoardType('tus')}
+          onMouseEnter={() => soundManager.playHover()}
+          onClick={() => { soundManager.playClick(); setBoardType('tus'); }}
           style={{
             padding: '0.8rem 1.5rem',
             borderRadius: '12px',
@@ -179,7 +182,8 @@ export default function Leaderboard() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setShowInfoModal(true)}
+          onMouseEnter={() => soundManager.playHover()}
+          onClick={() => { soundManager.playClick(); setShowInfoModal(true); }}
           style={{
             padding: '0.8rem 1.2rem',
             borderRadius: '12px',
@@ -222,12 +226,12 @@ export default function Leaderboard() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                   <div style={{ 
-                    fontSize: '2rem', 
+                    fontSize: '1.5rem', 
                     fontWeight: 900, 
                     color: isLight 
                       ? (index === 0 ? '#d97706' : index === 1 ? '#475569' : index === 2 ? '#9a3412' : '#94a3b8') 
                       : (index === 0 ? '#fcd34d' : index === 1 ? '#cbd5e1' : index === 2 ? '#fb923c' : '#475569'),
-                    width: '35px', textAlign: 'center',
+                    width: '30px', textAlign: 'center',
                     textShadow: index < 3 ? (isLight ? '0 2px 8px rgba(0,0,0,0.1)' : '0 2px 10px rgba(255,255,255,0.1)') : 'none',
                     fontStyle: 'italic'
                   }}>
@@ -238,8 +242,8 @@ export default function Leaderboard() {
                     whileHover={{ rotate: 5, scale: 1.1 }}
                     style={{
                       background: user.avatar?.startsWith('data:image') ? `url(${user.avatar}) center/cover` : (isLight ? '#ffffff' : 'rgba(255,255,255,0.05)'),
-                      fontSize: user.avatar?.startsWith('data:image') ? '0' : '1.8rem',
-                      width: '56px', height: '56px', 
+                      fontSize: user.avatar?.startsWith('data:image') ? '0' : '1.4rem',
+                      width: '46px', height: '46px', 
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       borderRadius: '50%', 
                       border: isLight ? '2px solid white' : '2px solid rgba(255,255,255,0.1)',
@@ -251,7 +255,7 @@ export default function Leaderboard() {
                   
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ 
-                      fontWeight: 800, fontSize: '1.15rem', 
+                      fontWeight: 800, fontSize: '1.05rem', 
                       color: isLight ? '#1e293b' : 'white',
                       textShadow: !isLight && index === 0 ? '0 0 10px rgba(255,255,255,0.3)' : 'none',
                       letterSpacing: '-0.3px'
@@ -281,8 +285,8 @@ export default function Leaderboard() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.3)', padding: '0.6rem 1.2rem', borderRadius: '16px', boxShadow: isLight ? 'inset 0 2px 4px rgba(0,0,0,0.02)' : 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
-                  <span style={{ fontSize: '1.4rem', fontWeight: 900, color: isLight ? (boardType === 'tus' ? '#ef4444' : '#0ea5e9') : (boardType === 'tus' ? '#f87171' : '#38bdf8'), letterSpacing: '-1px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: '16px', boxShadow: isLight ? 'inset 0 2px 4px rgba(0,0,0,0.02)' : 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 900, color: isLight ? (boardType === 'tus' ? '#ef4444' : '#0ea5e9') : (boardType === 'tus' ? '#f87171' : '#38bdf8'), letterSpacing: '-1px' }}>
                     {boardType === 'general' ? user.points?.toLocaleString() : user.tusCorrects}
                   </span>
                   <span style={{ fontSize: '0.9rem', color: isLight ? '#64748b' : '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -322,7 +326,8 @@ export default function Leaderboard() {
             flexDirection: 'column'
           }}>
             <button 
-              onClick={() => setShowInfoModal(false)}
+              onClick={() => { soundManager.playClick(); setShowInfoModal(false); }}
+              onMouseEnter={() => soundManager.playHover()}
               style={{ position: 'absolute', top: '2rem', right: '2rem', background: isLight ? '#f1f5f9' : '#0f172a', padding: '0.8rem', borderRadius: '50%', border: 'none', cursor: 'pointer', color: isLight ? '#64748b' : '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
             >
               <X size={24} />

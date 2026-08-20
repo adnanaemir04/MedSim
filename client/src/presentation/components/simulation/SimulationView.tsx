@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { medCasesData } from '../../../infrastructure/data/casesData';
 import { CheckCircle, XCircle, ArrowRight, HeartPulse, Activity, User, FileText, Stethoscope } from 'lucide-react';
+import { soundManager } from '../../../utils/soundManager';
 
 interface SimulationViewProps {
   subject: string;
@@ -59,8 +60,10 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
     
     const isCorrect = stage.options[optIndex].isCorrect;
     if (isCorrect) {
+      soundManager.playSuccess();
       setEarnedPoints(prev => prev + 10);
     } else {
+      soundManager.playError();
       setHasWrongAnswer(true);
     }
   };
@@ -106,7 +109,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
             </span>
           )}
         </p>
-        <button className="btn-primary" onClick={handleFinish} style={{ width: '100%', maxWidth: '300px' }}>
+        <button className="btn-primary" onMouseEnter={() => soundManager.playHover()} onClick={() => { soundManager.playClick(); handleFinish(); }} style={{ width: '100%', maxWidth: '300px' }}>
           Dashboard'a Dön
         </button>
       </div>
@@ -191,7 +194,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
             }}>
               {/* Tab: Anamnez */}
               <div
-                onClick={() => setActivePanelTab(prev => prev === 'anamnez' ? null : 'anamnez')}
+                onClick={() => { soundManager.playClick(); setActivePanelTab(prev => prev === 'anamnez' ? null : 'anamnez'); }}
                 title="Hasta Bilgileri & Anamnez"
                 style={{
                   width: '64px', height: '64px',
@@ -204,7 +207,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                   border: '1px solid var(--glass-border)', borderLeft: 'none',
                   transform: activePanelTab === 'anamnez' ? 'translateX(8px)' : 'translateX(0)'
                 }}
-                onMouseEnter={e => { if (activePanelTab !== 'anamnez') e.currentTarget.style.transform = 'translateX(4px)'; }}
+                onMouseEnter={e => { soundManager.playHover(); if (activePanelTab !== 'anamnez') e.currentTarget.style.transform = 'translateX(4px)'; }}
                 onMouseLeave={e => { if (activePanelTab !== 'anamnez') e.currentTarget.style.transform = 'translateX(0)'; }}
               >
                 <User size={20} />
@@ -214,7 +217,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
               {/* Tab: Özgeçmiş */}
               {patientInfo.medicalHistory && (
                 <div
-                  onClick={() => setActivePanelTab(prev => prev === 'ozgecmis' ? null : 'ozgecmis')}
+                  onClick={() => { soundManager.playClick(); setActivePanelTab(prev => prev === 'ozgecmis' ? null : 'ozgecmis'); }}
                   title="Özgeçmiş / Öykü"
                   style={{
                     width: '64px', height: '64px',
@@ -227,7 +230,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                     border: '1px solid var(--glass-border)', borderLeft: 'none',
                     transform: activePanelTab === 'ozgecmis' ? 'translateX(8px)' : 'translateX(0)'
                   }}
-                  onMouseEnter={e => { if (activePanelTab !== 'ozgecmis') e.currentTarget.style.transform = 'translateX(4px)'; }}
+                  onMouseEnter={e => { soundManager.playHover(); if (activePanelTab !== 'ozgecmis') e.currentTarget.style.transform = 'translateX(4px)'; }}
                   onMouseLeave={e => { if (activePanelTab !== 'ozgecmis') e.currentTarget.style.transform = 'translateX(0)'; }}
                 >
                   <FileText size={20} />
@@ -238,7 +241,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
               {/* Tab: Vitals */}
               {vitalItems.length > 0 && (
                 <div
-                  onClick={() => setActivePanelTab(prev => prev === 'vitals' ? null : 'vitals')}
+                  onClick={() => { soundManager.playClick(); setActivePanelTab(prev => prev === 'vitals' ? null : 'vitals'); }}
                   title="Yaşamsal Bulgular"
                   style={{
                     width: '64px', height: '64px',
@@ -251,7 +254,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                     border: '1px solid var(--glass-border)', borderLeft: 'none',
                     transform: activePanelTab === 'vitals' ? 'translateX(8px)' : 'translateX(0)'
                   }}
-                  onMouseEnter={e => { if (activePanelTab !== 'vitals') e.currentTarget.style.transform = 'translateX(4px)'; }}
+                  onMouseEnter={e => { soundManager.playHover(); if (activePanelTab !== 'vitals') e.currentTarget.style.transform = 'translateX(4px)'; }}
                   onMouseLeave={e => { if (activePanelTab !== 'vitals') e.currentTarget.style.transform = 'translateX(0)'; }}
                 >
                   <Activity size={20} />
@@ -262,7 +265,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
               {/* Tab: Fizik Muayene */}
               {patientInfo.physicalExam && (
                 <div
-                  onClick={() => setActivePanelTab(prev => prev === 'muayene' ? null : 'muayene')}
+                  onClick={() => { soundManager.playClick(); setActivePanelTab(prev => prev === 'muayene' ? null : 'muayene'); }}
                   title="Fizik Muayene"
                   style={{
                     width: '64px', height: '64px',
@@ -275,7 +278,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                     border: '1px solid var(--glass-border)', borderLeft: 'none',
                     transform: activePanelTab === 'muayene' ? 'translateX(8px)' : 'translateX(0)'
                   }}
-                  onMouseEnter={e => { if (activePanelTab !== 'muayene') e.currentTarget.style.transform = 'translateX(4px)'; }}
+                  onMouseEnter={e => { soundManager.playHover(); if (activePanelTab !== 'muayene') e.currentTarget.style.transform = 'translateX(4px)'; }}
                   onMouseLeave={e => { if (activePanelTab !== 'muayene') e.currentTarget.style.transform = 'translateX(0)'; }}
                 >
                   <Stethoscope size={20} />
@@ -285,7 +288,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
 
               {/* Tab: Vakadan Çık */}
               <div
-                onClick={onBack}
+                onClick={() => { soundManager.playClick(); onBack(); }}
                 title="Vakadan Çık / İptal Et"
                 style={{
                   width: '64px', height: '64px',
@@ -298,7 +301,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                   marginTop: '4rem', // Space it out from the other tabs significantly
                   border: '1px solid rgba(255,255,255,0.2)', borderLeft: 'none',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateX(6px)'; }}
+                onMouseEnter={e => { soundManager.playHover(); e.currentTarget.style.transform = 'translateX(6px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateX(0)'; }}
               >
                 <XCircle size={22} />
@@ -315,7 +318,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                   {activePanelTab === 'vitals' && 'Yaşamsal Bulgular'}
                   {activePanelTab === 'muayene' && 'Fizik Muayene'}
                 </h3>
-                <button onClick={() => setActivePanelTab(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <button onMouseEnter={() => soundManager.playHover()} onClick={() => { soundManager.playClick(); setActivePanelTab(null); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                   <XCircle size={24} />
                 </button>
               </div>
@@ -469,7 +472,8 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
               return (
                 <button
                   key={index}
-                  onClick={() => handleOptionSelect(index)}
+                  onMouseEnter={() => soundManager.playHover()}
+                  onClick={() => { soundManager.playClick(); handleOptionSelect(index); }}
                   style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     width: '100%', padding: '1rem 1.2rem', textAlign: 'left',
@@ -504,9 +508,11 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                     className="btn-secondary"
                     style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--glass-bg)', color: 'var(--text-main)', border: '1px solid var(--glass-border)' }}
                     onClick={() => {
+                      soundManager.playClick();
                       setCurrentStage(prev => prev - 1);
                       setSelectedOption(initialAnswers![currentStage - 1]);
                     }}
+                    onMouseEnter={() => soundManager.playHover()}
                   >
                     ← Önceki Aşama
                   </button>
@@ -514,7 +520,8 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                 <button
                   className="btn-primary"
                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                  onClick={handleNextStage}
+                  onClick={() => { soundManager.playClick(); handleNextStage(); }}
+                  onMouseEnter={() => soundManager.playHover()}
                 >
                   {currentStage < stages.length - 1 ? 'Sonraki Aşama' : (isReviewMode ? 'İncelemeyi Bitir' : 'Vakayı Bitir')}
                   <ArrowRight size={18} />

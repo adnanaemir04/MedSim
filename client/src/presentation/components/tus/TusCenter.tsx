@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { Activity, Target, TrendingUp, Trophy, ArrowRight, BookOpen, Stethoscope, Loader2, Info, CheckCircle, ChevronRight, Sparkles, BrainCircuit } from 'lucide-react';
 import { getTusSubjects, TusSubjectDto, generateTusQuestions, getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simulationApi';
+import { soundManager } from '../../../utils/soundManager';
 import TusSolveView from './TusSolveView';
 import TusSubjectStatsView from './TusSubjectStatsView';
 import TusAboutView from './TusAboutView';
@@ -124,6 +125,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
         
         <button
           onClick={() => {
+            soundManager.playClick();
             if (onNavigateToAbout) {
               onNavigateToAbout();
             } else {
@@ -138,7 +140,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
             fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer',
             transition: 'all 0.2s',
           }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseEnter={e => { soundManager.playHover(); e.currentTarget.style.transform = 'translateY(-2px)'}}
           onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
         >
           <Info size={18} /> TUS Hakkında
@@ -220,6 +222,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
                 border: isLight ? '1px solid rgba(0, 0, 0, 0.05)' : '1px solid var(--glass-border)'
               }}
               onMouseEnter={e => {
+                soundManager.playHover();
                 if (isLight) {
                   e.currentTarget.style.boxShadow = '0 15px 35px rgba(79, 70, 229, 0.1), inset 0 2px 0 rgba(255,255,255,1)';
                   e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.2)';
@@ -231,7 +234,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
                   e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.05)';
                 }
               }}
-              onClick={() => handleSubjectClick(subject.name)}
+              onClick={() => { soundManager.playClick(); handleSubjectClick(subject.name); }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ width: 40, height: 40, borderRadius: '10px', background: 'rgba(79, 70, 229, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>

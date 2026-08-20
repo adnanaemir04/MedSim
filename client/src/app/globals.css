@@ -155,8 +155,8 @@ body {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 1rem 2rem;
-  margin: 1rem 2rem 0 2rem;
+  padding: 0.5rem 2rem;
+  margin: 0.5rem 2rem 0 2rem;
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -358,19 +358,19 @@ body {
 .app-layout {
   display: flex;
   flex: 1;
-  padding: 1.5rem 2rem;
+  padding: 0.5rem 2rem 1.5rem 2rem;
   gap: 1.5rem;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 60px);
 }
 
 /* FLOATING SIDEBAR */
 .sidebar {
-  width: 280px;
+  width: 240px;
   background: var(--sidebar-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-radius: var(--radius-xl);
-  padding: 2rem 1.5rem;
+  padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { ArrowLeft, Target, TrendingUp, CheckCircle, BrainCircuit, Loader2, Clock, Activity, Info } from 'lucide-react';
 import { getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simulationApi';
+import { soundManager } from '../../../utils/soundManager';
 
 interface TusSubjectStatsViewProps {
   subject: string;
@@ -53,7 +54,8 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
       
       {/* Header and Back Button */}
       <button 
-        onClick={onBack} 
+        onClick={() => { soundManager.playClick(); onBack(); }} 
+        onMouseEnter={() => soundManager.playHover()}
         style={{ 
           background: 'transparent', border: 'none', color: 'var(--text-muted)', 
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', 
@@ -252,7 +254,8 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
                 {['Tümü', 'Kolay', 'Orta', 'Zor'].map((lvl) => (
                   <button
                     key={lvl}
-                    onClick={() => setClassicDifficulty(lvl)}
+                    onMouseEnter={() => soundManager.playHover()}
+                    onClick={() => { soundManager.playClick(); setClassicDifficulty(lvl); }}
                     style={{
                       flex: '1 1 40%', padding: '0.4rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.85rem',
                       cursor: 'pointer', transition: 'all 0.2s',
@@ -275,7 +278,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
           </div>
 
           <button 
-            onClick={() => onSolveQuestions(parsedClassicCount, 'classic', classicDifficulty)}
+            onClick={() => { soundManager.playClick(); onSolveQuestions(parsedClassicCount, 'classic', classicDifficulty); }}
             disabled={isClassicCountInvalid}
             style={{ 
               background: isClassicCountInvalid ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, #10b981, #059669)',
@@ -285,7 +288,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', gap: '0.8rem', width: '100%', justifyContent: 'center'
             }}
-            onMouseEnter={e => { if (!isClassicCountInvalid) e.currentTarget.style.transform = 'scale(1.03)'; }}
+            onMouseEnter={e => { soundManager.playHover(); if (!isClassicCountInvalid) e.currentTarget.style.transform = 'scale(1.03)'; }}
             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >
             <CheckCircle size={22} /> Çözmeye Başla
@@ -352,7 +355,8 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
                 {['Kolay', 'Orta', 'Zor'].map((lvl) => (
                   <button
                     key={lvl}
-                    onClick={() => setAiDifficulty(lvl)}
+                    onMouseEnter={() => soundManager.playHover()}
+                    onClick={() => { soundManager.playClick(); setAiDifficulty(lvl); }}
                     style={{
                       flex: 1, padding: '0.6rem', borderRadius: '12px', fontWeight: 800, fontSize: '0.9rem',
                       cursor: 'pointer', transition: 'all 0.2s',
@@ -375,7 +379,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
           </div>
 
           <button 
-            onClick={() => onSolveQuestions(parsedAiCount, 'ai', aiDifficulty)}
+            onClick={() => { soundManager.playClick(); onSolveQuestions(parsedAiCount, 'ai', aiDifficulty); }}
             disabled={isAiCountInvalid}
             style={{ 
               background: isAiCountInvalid ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, var(--primary), var(--secondary))',
@@ -385,7 +389,7 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', gap: '0.8rem', width: '100%', justifyContent: 'center'
             }}
-            onMouseEnter={e => { if (!isAiCountInvalid) e.currentTarget.style.transform = 'scale(1.03)'; }}
+            onMouseEnter={e => { soundManager.playHover(); if (!isAiCountInvalid) e.currentTarget.style.transform = 'scale(1.03)'; }}
             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >
             <BrainCircuit size={22} /> Üret ve Çöz

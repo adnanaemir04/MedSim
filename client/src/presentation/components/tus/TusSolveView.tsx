@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { ArrowRight, ArrowLeft, CheckCircle, XCircle, BrainCircuit, RefreshCw, LogOut, Loader2 } from 'lucide-react';
 import { getTusConceptExplanation, getTusQuestions, submitTusAnswer, generateTusQuestions } from '../../../infrastructure/api/simulationApi';
+import { soundManager } from '../../../utils/soundManager';
 
 interface TusQuestion {
   id: string;
@@ -105,6 +106,12 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
       const currentQuestionId = questions[currentIndex].id;
       const durationSeconds = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000));
       const data = await submitTusAnswer(userEmail, currentQuestionId, optionKey, durationSeconds);
+      
+      if (data.isCorrect) {
+        soundManager.playSuccess();
+      } else {
+        soundManager.playError();
+      }
       
       setResult(data);
       setSessionResults(prev => {
@@ -383,7 +390,8 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
                 return (
                   <button
                     key={opt.key}
-                    onClick={() => handleAnswerSubmit(opt.key)}
+                    onClick={() => { soundManager.playClick(); handleAnswerSubmit(opt.key); }}
+                    onMouseEnter={() => soundManager.playHover()}
                     disabled={!!currentResult || reviewMode}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '0.8rem',
@@ -436,8 +444,9 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
                 {!reviewMode ? (
                   <button 
                     className="btn-primary"
+                    onMouseEnter={() => soundManager.playHover()}
                     style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '1rem', width: '100%' }}
-                    onClick={handleNextQuestion}
+                    onClick={() => { soundManager.playClick(); handleNextQuestion(); }}
                   >
                     Sonraki Soru <ArrowRight size={18} />
                   </button>
