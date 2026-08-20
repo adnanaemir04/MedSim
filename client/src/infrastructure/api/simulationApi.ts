@@ -199,10 +199,13 @@ export const getTusSubjects = async (): Promise<TusSubjectDto[]> => {
     return response.data;
 };
 
-export const getTusQuestions = async (count: number, subject: string, difficulty?: string): Promise<TusQuestionDto[]> => {
-    let url = `/tus/questions?count=${count}&subject=${encodeURIComponent(subject)}`;
+export const getTusQuestions = async (count: number, subject: string, difficulty?: string, mode: string = 'classic', email?: string): Promise<TusQuestionDto[]> => {
+    let url = `/tus/questions?count=${count}&subject=${encodeURIComponent(subject)}&mode=${mode}`;
     if (difficulty && difficulty !== 'Tümü') {
         url += `&difficulty=${encodeURIComponent(difficulty)}`;
+    }
+    if (email) {
+        url += `&email=${encodeURIComponent(email)}`;
     }
     const response = await apiClient.get<TusQuestionDto[]>(url);
     return response.data;
@@ -285,5 +288,48 @@ export const updateUserProfile = async (email: string, nickname: string, avatar:
 
 export const deleteUserAccount = async (email: string): Promise<any> => {
     const response = await apiClient.delete(`/Auth/deleteAccount/${encodeURIComponent(email)}`);
+    return response.data;
+};
+
+// ── TUS ADMIN APIs ──
+export const getAdminKnowledges = async (subject?: string): Promise<any[]> => {
+    let url = '/TusAdmin/knowledges';
+    if (subject) url += `?subject=${encodeURIComponent(subject)}`;
+    const response = await apiClient.get<any[]>(url);
+    return response.data;
+};
+
+export const saveAdminKnowledge = async (knowledge: any): Promise<any> => {
+    const response = await apiClient.post('/TusAdmin/knowledges', knowledge);
+    return response.data;
+};
+
+export const deleteAdminKnowledge = async (id: string): Promise<any> => {
+    const response = await apiClient.delete(`/TusAdmin/knowledges/${id}`);
+    return response.data;
+};
+
+export const getPendingQuestions = async (): Promise<any[]> => {
+    const response = await apiClient.get<any[]>('/TusAdmin/questions/pending');
+    return response.data;
+};
+
+export const approveQuestion = async (id: string): Promise<any> => {
+    const response = await apiClient.post(`/TusAdmin/questions/${id}/approve`);
+    return response.data;
+};
+
+export const rejectQuestion = async (id: string): Promise<any> => {
+    const response = await apiClient.post(`/TusAdmin/questions/${id}/reject`);
+    return response.data;
+};
+
+export const toggleActiveQuestion = async (id: string): Promise<any> => {
+    const response = await apiClient.post(`/TusAdmin/questions/${id}/toggle-active`);
+    return response.data;
+};
+
+export const generateClassicPipeline = async (subject: string, topicName: string, subTopicName: string): Promise<any> => {
+    const response = await apiClient.post('/TusAdmin/generate-classic-pipeline', { subject, topicName, subTopicName });
     return response.data;
 };

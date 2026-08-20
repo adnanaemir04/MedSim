@@ -11,6 +11,7 @@ public interface IProceduralGeneratorService
     Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, string topicName, string subTopicName, string difficulty = "Orta");
     Task<string> ExplainTusConceptsAsync(string questionText, string optionA, string optionB, string optionC, string optionD, string optionE, string correctOption, string baseExplanation);
     Task<List<TusQuestion>> GenerateTusQuestionsAsync(string subject, int count, string difficulty = "Orta");
+    Task<(TusKnowledge Knowledge, List<TusQuestion> Questions)> GenerateClassicKnowledgeAndQuestionsAsync(string subject, string topicName, string subTopicName);
 }
 
 public class ProceduralGeneratorService : IProceduralGeneratorService
@@ -417,6 +418,134 @@ Lütfen JSON dışında hiçbir metin, açıklama veya markdown bloğu kullanma.
 
         return new List<TusQuestion>();
     }
+
+    public async Task<(TusKnowledge Knowledge, List<TusQuestion> Questions)> GenerateClassicKnowledgeAndQuestionsAsync(string subject, string topicName, string subTopicName)
+    {
+        var apiKey = _configuration["AI_API_KEY"];
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new Exception("AI_API_KEY (Google Gemini) appsettings.json dosyasında tanımlı değil.");
+        }
+
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={apiKey}";
+
+        var prompt = $@"
+Sen uzman bir tıp akademisyenisin. TUS (Tıpta Uzmanlık Sınavı) standartlarında, '{subject}' dersi, '{topicName}' konusu ve '{subTopicName}' alt konusu ile ilgili en sık sorulan, yüksek frekanslı, hap bilgi niteliğinde tek bir Klasikleşmiş TUS Bilgisi (TusKnowledge) ve bu bilgiye bağlı tam 3 adet farklı kısa soru varyasyonu üret.
+
+KURALLAR:
+1. Bilgi (KnowledgeText): Çok net, tek cümlelik, ezberlenmesi kolay bir bilgi olmalıdır. Örn: ""ACE inhibitörleri gebelikte kontrendikedir."" veya ""Osteokondrom en sık görülen benign kemik tümörüdür.""
+2. Sorular (Questions): 
+   - Tam 3 adet soru varyasyonu üret.
+   - Sorular KISA ve DİREKT olmalıdır. Gereksiz uzun klinik vaka hikayesi, laboratuvar veya görüntüleme sonucu içermemelidir.
+   - Hızlı çözülebilir (10-30 saniye) ve tek bir bilgiyi (yukarıdaki KnowledgeText) ölçmelidir.
+   - Her soru 5 seçenekli (OptionA-E) olmalı, tek bir doğru cevap (CorrectOption: A, B, C, D, E) içermelidir.
+   - Doğru şık kesinlikle diğer şıklardan uzun veya parantez içi açıklama içeren yapıda olmamalıdır.
+   - ""explanation"" (açıklama) kısmı kısa, net ve öğretici olmalıdır.
+3. ImportanceScore: Bu bilginin TUS'taki çıkma/sorulma önem derecesi (0-100 arası bir sayı).
+4. RepetitionFrequency: ""Çok Yüksek"", ""Yüksek"", ""Orta"" değerlerinden biri.
+5. Sources: Bu bilginin geçtiği TUS kaynakları (Örn: ""ÖSYM TUS 2023; TUS Konu Kitabı X""). Semicolon ile ayrılmış liste olmalı.
+
+Çıktıyı KESİNLİKLE JSON formatında ver. Sadece geçerli JSON çıktısı üret, başka metin yazma:
+
+{{
+  ""knowledgeText"": ""Osteokondrom en sık görülen benign kemik tümörüdür."",
+  ""importanceScore"": 95,
+  ""repetitionFrequency"": ""Çok Yüksek"",
+  ""sources"": ""ÖSYM TUS 2023; TUS Soru Bankası Y"",
+  ""questions"": [
+    {{
+      ""questionText"": ""En sık görülen benign kemik tümörü hangisidir?"",
+      ""optionA"": ""Osteoid osteoma"",
+      ""optionB"": ""Osteokondrom"",
+      ""optionC"": ""Kondrom"",
+      ""optionD"": ""Osteoblastom"",
+      ""optionE"": ""Kondroblastom"",
+      ""correctOption"": ""B"",
+      ""explanation"": ""Osteokondrom en sık görülen iyi huylu kemik tümörüdür. Genellikle metafizde lokalize olur.""
+    }}
+  ]
+}}
+";
+
+        var payload = new
+        {
+            contents = new[]
+            {
+                new { parts = new[] { new { text = prompt } } }
+            },
+            generationConfig = new
+            {
+                temperature = 0.6,
+                response_mime_type = "application/json"
+            }
+        };
+
+        var response = await _httpClient.PostAsJsonAsync(url, payload);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Gemini API error: {response.StatusCode} - {error}");
+        }
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+        {
+            var text = candidates[0]
+                .GetProperty("content")
+                .GetProperty("parts")[0]
+                .GetProperty("text")
+                .GetString();
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var parsed = JsonSerializer.Deserialize<LLMClassicKnowledgeResponse>(text, options);
+                
+                if (parsed != null)
+                {
+                    var knowledge = new TusKnowledge
+                    {
+                        Id = Guid.NewGuid(),
+                        KnowledgeText = parsed.KnowledgeText,
+                        Subject = subject,
+                        ImportanceScore = parsed.ImportanceScore,
+                        RepetitionFrequency = parsed.RepetitionFrequency,
+                        Sources = parsed.Sources,
+                        IsActive = true
+                    };
+
+                    var questions = parsed.Questions.Select(q => new TusQuestion
+                    {
+                        Id = Guid.NewGuid(),
+                        TusKnowledgeId = knowledge.Id,
+                        TusKnowledge = knowledge,
+                        QuestionText = q.QuestionText,
+                        OptionA = q.OptionA,
+                        OptionB = q.OptionB,
+                        OptionC = q.OptionC,
+                        OptionD = q.OptionD,
+                        OptionE = q.OptionE,
+                        CorrectOption = q.CorrectOption,
+                        Explanation = q.Explanation,
+                        Subject = subject,
+                        Category = subject == "Anatomi" || subject == "Fizyoloji" || subject == "Biyokimya" || subject == "Mikrobiyoloji" || subject == "Patoloji" || subject == "Farmakoloji" ? "Temel Bilimler" : "Klinik Bilimler",
+                        IsClassic = true,
+                        IsApproved = false, // AI-generated starts as pending approval
+                        Difficulty = parsed.ImportanceScore >= 80 ? "Zor" : parsed.ImportanceScore >= 50 ? "Orta" : "Kolay",
+                        DifficultyScore = parsed.ImportanceScore / 10
+                    }).ToList();
+
+                    return (knowledge, questions);
+                }
+            }
+        }
+
+        throw new Exception("Yapay zeka klasik soru üretemedi.");
+    }
 }
 
 // DTOs for parsing LLM JSON response
@@ -476,4 +605,13 @@ public class LLMTusQuestionResponse
     public string Difficulty { get; set; } = string.Empty;
     public int DifficultyScore { get; set; }
     public string DifficultyReason { get; set; } = string.Empty;
+}
+
+public class LLMClassicKnowledgeResponse
+{
+    public string KnowledgeText { get; set; } = string.Empty;
+    public int ImportanceScore { get; set; }
+    public string RepetitionFrequency { get; set; } = string.Empty;
+    public string Sources { get; set; } = string.Empty;
+    public List<LLMTusQuestionResponse> Questions { get; set; } = new();
 }

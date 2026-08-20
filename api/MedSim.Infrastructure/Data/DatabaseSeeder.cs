@@ -26,38 +26,106 @@ public static class DatabaseSeeder
             await context.SaveChangesAsync();
         }
 
-        // Add Mock TUS Questions
-        if (!await context.TusQuestions.AnyAsync())
+        // Add Mock TUS Questions and Knowledge Base
+        if (!await context.TusKnowledges.AnyAsync())
         {
+            var k1 = new TusKnowledge
+            {
+                Id = Guid.NewGuid(),
+                KnowledgeText = "ACE inhibitörleri gebelikte kontrendikedir.",
+                Subject = "Farmakoloji",
+                ImportanceScore = 95,
+                RepetitionFrequency = "Çok Yüksek",
+                Sources = "ÖSYM TUS 2023; TUS Konu Anlatımı X",
+                IsActive = true
+            };
+
+            var k2 = new TusKnowledge
+            {
+                Id = Guid.NewGuid(),
+                KnowledgeText = "Osteokondrom en sık görülen benign kemik tümörüdür.",
+                Subject = "Ortopedi ve Travmatoloji",
+                ImportanceScore = 90,
+                RepetitionFrequency = "Yüksek",
+                Sources = "TUS Soru Bankası Y; Klinik Notlar Z",
+                IsActive = true
+            };
+
+            context.TusKnowledges.AddRange(k1, k2);
+
             var tusQuestions = new List<TusQuestion>
             {
                 new TusQuestion
                 {
                     Id = Guid.NewGuid(),
-                    Category = "Klinik Bilimler",
-                    Subject = "Dahiliye",
-                    QuestionText = "Aşağıdakilerden hangisi akut pankreatitin en sık nedenidir?",
-                    OptionA = "Alkol kullanımı",
-                    OptionB = "Safra taşları",
-                    OptionC = "Hipertrigliseridemi",
-                    OptionD = "Travma",
-                    OptionE = "İlaçlar",
+                    TusKnowledgeId = k1.Id,
+                    TusKnowledge = k1,
+                    Category = "Temel Bilimler",
+                    Subject = "Farmakoloji",
+                    QuestionText = "ACE inhibitörleri aşağıdaki durumlardan hangisinde kontrendikedir?",
+                    OptionA = "Diyabetes Mellitus",
+                    OptionB = "Gebelik",
+                    OptionC = "Hipertansiyon",
+                    OptionD = "Hiperkolesterolemi",
+                    OptionE = "Migren",
                     CorrectOption = "B",
-                    Explanation = "Akut pankreatitin en sık nedeni safra taşlarıdır (koledokolitiyazis). İkinci sıklıkta alkol kullanımı gelir."
+                    Explanation = "ACE inhibitörleri teratojenik etkilerinden dolayı gebelikte kesinlikle kontrendikedir.",
+                    IsClassic = true,
+                    IsApproved = true
                 },
                 new TusQuestion
                 {
                     Id = Guid.NewGuid(),
+                    TusKnowledgeId = k1.Id,
+                    TusKnowledge = k1,
                     Category = "Temel Bilimler",
-                    Subject = "Anatomi",
-                    QuestionText = "Nervus phrenicus hangi spinal sinir köklerinden köken alır?",
-                    OptionA = "C1, C2, C3",
-                    OptionB = "C2, C3, C4",
-                    OptionC = "C3, C4, C5",
-                    OptionD = "C4, C5, C6",
-                    OptionE = "C5, C6, C7",
+                    Subject = "Farmakoloji",
+                    QuestionText = "Gebelikte kullanılmaması gereken antihipertansif ilaç grubu aşağıdakilerden hangisidir?",
+                    OptionA = "Beta blokerler",
+                    OptionB = "Kalsiyum kanal blokerleri",
+                    OptionC = "ACE inhibitörleri",
+                    OptionD = "Alfa blokerler",
+                    OptionE = "Diüretikler",
                     CorrectOption = "C",
-                    Explanation = "N. phrenicus esas olarak C4'ten köken alırken, C3 ve C5'ten de dallar alır. (C3, C4, C5 keeps the diaphragm alive)."
+                    Explanation = "ACE inhibitörleri gebelikte fetotoksik etki (özellikle böbrek yetmezliği, oligohidramniyos) gösterdiğinden kullanılmaz.",
+                    IsClassic = true,
+                    IsApproved = true
+                },
+                new TusQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    TusKnowledgeId = k2.Id,
+                    TusKnowledge = k2,
+                    Category = "Klinik Bilimler",
+                    Subject = "Ortopedi ve Travmatoloji",
+                    QuestionText = "En sık görülen benign kemik tümörü aşağıdakilerden hangisidir?",
+                    OptionA = "Osteoid osteoma",
+                    OptionB = "Osteokondrom",
+                    OptionC = "Kondrom",
+                    OptionD = "Osteoblastom",
+                    OptionE = "Dev hücreli tümör",
+                    CorrectOption = "B",
+                    Explanation = "Benign kemik tümörleri arasında en sık görüleni osteokondromdur (ekzostoz).",
+                    IsClassic = true,
+                    IsApproved = true
+                },
+                new TusQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    TusKnowledgeId = k2.Id,
+                    TusKnowledge = k2,
+                    Category = "Klinik Bilimler",
+                    Subject = "Ortopedi ve Travmatoloji",
+                    QuestionText = "Kemikte benign neoplaziler arasında en yüksek sıklığa sahip olan antite hangisidir?",
+                    OptionA = "Osteosarkom",
+                    OptionB = "Ewing sarkomu",
+                    OptionC = "Kondrosarkom",
+                    OptionD = "Osteokondrom",
+                    OptionE = "Enkondrom",
+                    CorrectOption = "D",
+                    Explanation = "Osteokondrom en sık izlenen benign kemik tümörüdür. Genellikle metafiz yerleşimlidir.",
+                    IsClassic = true,
+                    IsApproved = true
                 }
             };
             

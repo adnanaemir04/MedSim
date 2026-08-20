@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { User } from '../../../domain/entities/User';
-import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX } from 'lucide-react';
+import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { soundManager } from '../../../utils/soundManager';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -40,7 +40,7 @@ const yearIconMap: Record<number, React.ReactNode> = {
 interface SidebarProps {
   user: User | null;
   onLogout: () => void;
-  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus', subjectFilter?: string) => void;
+  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_admin', subjectFilter?: string) => void;
 }
 
 export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
@@ -264,6 +264,21 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
           <Trophy size={18} />
           <span>Liderlik Tablosu</span>
         </button>
+
+        {user.email === 'admin@medsim.com' && (
+          <button 
+            className="nav-item" 
+            onClick={() => nav('tus_admin')}
+            onMouseEnter={() => soundManager.playHover()}
+            style={{
+              background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(16, 185, 129, 0.1))',
+              borderLeft: '4px solid var(--primary)'
+            }}
+          >
+            <Sparkles size={18} color="var(--primary)" />
+            <span style={{ fontWeight: 800 }}>Admin Paneli</span>
+          </button>
+        )}
       </nav>
 
       <div className="sidebar-bottom-actions" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

@@ -141,7 +141,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } }
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 120 } }
   };
 
   if (selectedReviewCase) {

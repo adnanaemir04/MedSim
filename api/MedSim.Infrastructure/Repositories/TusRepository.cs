@@ -27,9 +27,22 @@ public class TusRepository : ITusRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<object>> GetQuestionsAsync(int count, string? subject, string? difficulty)
+    public async Task<IEnumerable<object>> GetQuestionsAsync(int count, string? subject, string? difficulty, string mode, string? email)
     {
-        var query = _context.TusQuestions.AsQueryable();
+        var isClassicMode = mode.Equals("classic", StringComparison.OrdinalIgnoreCase);
+        
+        var query = _context.TusQuestions
+            .Include(q => q.TusKnowledge)
+            .AsQueryable();
+
+        if (isClassicMode)
+        {
+            query = query.Where(q => q.IsClassic && q.IsApproved);
+        }
+        else
+        {
+            query = query.Where(q => !q.IsClassic);
+        }
 
         if (!string.IsNullOrEmpty(subject))
         {
@@ -41,24 +54,63 @@ public class TusRepository : ITusRepository
             query = query.Where(q => q.Difficulty == difficulty);
         }
 
-        return await query
-            .OrderBy(q => EF.Functions.Random())
-            .Take(count)
-            .Select(q => new
-            {
-                q.Id,
-                q.QuestionText,
-                q.OptionA,
-                q.OptionB,
-                q.OptionC,
-                q.OptionD,
-                q.OptionE,
-                q.Category,
-                q.Subject,
-                q.Difficulty
+        List<TusQuestion> selectedQuestions = new List<TusQuestion>();
 
-            })
-            .ToListAsync();
+        // If classic mode, prioritize spaced repetition due questions
+        if (isClassicMode && !string.IsNullOrEmpty(email))
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user != null)
+            {
+                // Find knowledge points that are due
+                var dueKnowledgeIds = await _context.TusKnowledgeProgresses
+                    .Where(p => p.UserId == user.Id && p.NextReviewAt <= DateTime.UtcNow)
+                    .Select(p => p.TusKnowledgeId)
+                    .ToListAsync();
+
+                if (dueKnowledgeIds.Any())
+                {
+                    var dueQuestions = await query
+                        .Where(q => q.TusKnowledgeId.HasValue && dueKnowledgeIds.Contains(q.TusKnowledgeId.Value))
+                        .OrderBy(x => EF.Functions.Random())
+                        .Take(count)
+                        .ToListAsync();
+
+                    selectedQuestions.AddRange(dueQuestions);
+                }
+            }
+        }
+
+        // If we still need more questions, fill the rest
+        if (selectedQuestions.Count < count)
+        {
+            var needed = count - selectedQuestions.Count;
+            var existingIds = selectedQuestions.Select(q => q.Id).ToList();
+
+            var extraQuestions = await query
+                .Where(q => !existingIds.Contains(q.Id))
+                .OrderBy(q => EF.Functions.Random())
+                .Take(needed)
+                .ToListAsync();
+
+            selectedQuestions.AddRange(extraQuestions);
+        }
+
+        // Return mapped questions
+        return selectedQuestions.Select(q => new
+        {
+            q.Id,
+            q.QuestionText,
+            q.OptionA,
+            q.OptionB,
+            q.OptionC,
+            q.OptionD,
+            q.OptionE,
+            q.Category,
+            q.Subject,
+            q.Difficulty,
+            TusPearl = q.TusKnowledge != null ? q.TusKnowledge.KnowledgeText : "TUS İncisi: Bilgi veritabanından çekilemedi."
+        }).ToList();
     }
 
     public async Task<object> SubmitAnswerAsync(string email, Guid questionId, string selectedOption, int durationSeconds)
@@ -90,6 +142,48 @@ public class TusRepository : ITusRepository
         {
             user.Points += 10;
         }
+
+        // Spaced Repetition Logic for Classic TUS Questions
+        if (question.TusKnowledgeId.HasValue)
+        {
+            var knowledgeId = question.TusKnowledgeId.Value;
+            var progress = await _context.TusKnowledgeProgresses
+                .FirstOrDefaultAsync(p => p.UserId == user.Id && p.TusKnowledgeId == knowledgeId);
+
+            if (progress == null)
+            {
+                progress = new TusKnowledgeProgress
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    TusKnowledgeId = knowledgeId,
+                    Views = 0,
+                    CorrectCount = 0,
+                    WrongCount = 0
+                };
+                _context.TusKnowledgeProgresses.Add(progress);
+            }
+
+            progress.Views++;
+            if (isCorrect)
+            {
+                progress.CorrectCount++;
+                if (progress.IntervalDays == 0) progress.IntervalDays = 1;
+                else if (progress.IntervalDays == 1) progress.IntervalDays = 3;
+                else if (progress.IntervalDays == 3) progress.IntervalDays = 7;
+                else if (progress.IntervalDays == 7) progress.IntervalDays = 14;
+                else progress.IntervalDays = 30;
+
+                progress.NextReviewAt = DateTime.UtcNow.AddDays(progress.IntervalDays);
+            }
+            else
+            {
+                progress.WrongCount++;
+                progress.IntervalDays = 1; // Reset to 1 day on mistake
+                progress.NextReviewAt = DateTime.UtcNow.AddDays(1);
+            }
+        }
+
         await _context.SaveChangesAsync();
 
         return new

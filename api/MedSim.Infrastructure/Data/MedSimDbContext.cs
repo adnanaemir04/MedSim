@@ -14,6 +14,8 @@ public class MedSimDbContext : DbContext
     public DbSet<UserFriend> UserFriends { get; set; } = null!;
     public DbSet<TusQuestion> TusQuestions { get; set; } = null!;
     public DbSet<TusSolvedQuestion> TusSolvedQuestions { get; set; } = null!;
+    public DbSet<TusKnowledge> TusKnowledges { get; set; } = null!;
+    public DbSet<TusKnowledgeProgress> TusKnowledgeProgresses { get; set; } = null!;
     
     // Simulation Engine Entities
     public DbSet<Department> Departments { get; set; } = null!;
@@ -135,6 +137,37 @@ public class MedSimDbContext : DbContext
         modelBuilder.Entity<CaseOption>(entity =>
         {
             entity.HasKey(e => e.Id);
+        });
+
+        modelBuilder.Entity<TusKnowledge>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasMany(e => e.Questions)
+                  .WithOne(q => q.TusKnowledge)
+                  .HasForeignKey(q => q.TusKnowledgeId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Department)
+                  .WithMany()
+                  .HasForeignKey(e => e.DepartmentId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.SubTopic)
+                  .WithMany()
+                  .HasForeignKey(e => e.SubTopicId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<TusKnowledgeProgress>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.UserId, e.TusKnowledgeId }).IsUnique();
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.TusKnowledge)
+                  .WithMany()
+                  .HasForeignKey(e => e.TusKnowledgeId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

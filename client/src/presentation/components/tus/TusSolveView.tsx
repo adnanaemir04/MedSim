@@ -65,7 +65,7 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
       if (mode === 'ai') {
         data = await generateTusQuestions(subject, count, difficulty || 'Orta');
       } else {
-        data = await getTusQuestions(count, subject, difficulty);
+        data = await getTusQuestions(count, subject, difficulty, mode, userEmail);
       }
       if (data && data.length > 0) {
         setQuestions(data);
@@ -439,6 +439,26 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
                   dangerouslySetInnerHTML={{ __html: currentResult.explanation }} 
                 />
               </div>
+
+              {mode === 'classic' && currentQ && (currentQ as any).tusPearl && (
+                <div style={{
+                  padding: '1.2rem',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.05))',
+                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.4rem',
+                  boxShadow: '0 4px 15px rgba(245, 158, 11, 0.05)'
+                }}>
+                  <h5 style={{ margin: 0, color: '#f59e0b', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    💡 TUS İncisi
+                  </h5>
+                  <p style={{ margin: 0, color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: 600, lineHeight: 1.5 }}>
+                    {(currentQ as any).tusPearl}
+                  </p>
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                 {!reviewMode ? (

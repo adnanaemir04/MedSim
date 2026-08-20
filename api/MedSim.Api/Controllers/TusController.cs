@@ -30,9 +30,9 @@ public class TusController : ControllerBase
     }
 
     [HttpGet("questions")]
-    public async Task<IActionResult> GetQuestions([FromQuery] int count = 5, [FromQuery] string? subject = null, [FromQuery] string? difficulty = null)
+    public async Task<IActionResult> GetQuestions([FromQuery] int count = 5, [FromQuery] string? subject = null, [FromQuery] string? difficulty = null, [FromQuery] string mode = "classic", [FromQuery] string? email = null)
     {
-        var questions = await _tusRepository.GetQuestionsAsync(count, subject, difficulty);
+        var questions = await _tusRepository.GetQuestionsAsync(count, subject, difficulty, mode, email);
         return Ok(questions);
     }
 

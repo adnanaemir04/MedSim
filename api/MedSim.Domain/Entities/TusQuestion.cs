@@ -33,4 +33,10 @@ public class TusQuestion
     public string Difficulty { get; set; } = string.Empty; // "Kolay", "Orta", "Zor"
     public int DifficultyScore { get; set; } = 5; // 1-10
     public string DifficultyReason { get; set; } = string.Empty;
+
+    // Classic Questions fields
+    public Guid? TusKnowledgeId { get; set; }
+    public TusKnowledge? TusKnowledge { get; set; }
+    public bool IsClassic { get; set; } = false;
+    public bool IsApproved { get; set; } = true; // For pre-seeded classic questions, approved is true. AI-generated classic starts false.
 }
