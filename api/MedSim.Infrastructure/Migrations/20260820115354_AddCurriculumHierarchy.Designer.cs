@@ -3,6 +3,7 @@ using System;
 using MedSim.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedSim.Infrastructure.Migrations
 {
     [DbContext(typeof(MedSimDbContext))]
-    partial class MedSimDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260820115354_AddCurriculumHierarchy")]
+    partial class AddCurriculumHierarchy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -443,7 +446,7 @@ namespace MedSim.Infrastructure.Migrations
             modelBuilder.Entity("MedSim.Domain.Entities.Topic", b =>
                 {
                     b.HasOne("MedSim.Domain.Entities.Department", "Department")
-                        .WithMany("Topics")
+                        .WithMany()
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -513,8 +516,6 @@ namespace MedSim.Infrastructure.Migrations
             modelBuilder.Entity("MedSim.Domain.Entities.Department", b =>
                 {
                     b.Navigation("Cases");
-
-                    b.Navigation("Topics");
                 });
 
             modelBuilder.Entity("MedSim.Domain.Entities.MedicalCase", b =>

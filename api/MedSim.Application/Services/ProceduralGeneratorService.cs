@@ -8,7 +8,7 @@ namespace MedSim.Application.Services;
 
 public interface IProceduralGeneratorService
 {
-    Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, Guid departmentId, string difficulty = "Orta");
+    Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, string topicName, string subTopicName, string difficulty = "Orta");
     Task<string> ExplainTusConceptsAsync(string questionText, string optionA, string optionB, string optionC, string optionD, string optionE, string correctOption, string baseExplanation);
     Task<List<TusQuestion>> GenerateTusQuestionsAsync(string subject, int count, string difficulty = "Orta");
 }
@@ -45,7 +45,7 @@ public class ProceduralGeneratorService : IProceduralGeneratorService
         };
     }
 
-    public async Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, Guid departmentId, string difficulty = "Orta")
+    public async Task<MedicalCaseDto> GenerateCaseAsync(string departmentName, string topicName, string subTopicName, string difficulty = "Orta")
     {
         var apiKey = _configuration["AI_API_KEY"];
         if (string.IsNullOrEmpty(apiKey))
@@ -54,74 +54,65 @@ public class ProceduralGeneratorService : IProceduralGeneratorService
         }
 
         var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={apiKey}";
-
-        var difficultyRules = GetDifficultyPromptForCase(difficulty);
+        
+        string topicContext = string.IsNullOrEmpty(topicName) ? "" : $"Konu: {topicName}";
+        string subTopicContext = string.IsNullOrEmpty(subTopicName) ? "" : $"Alt Konu: {subTopicName}";
         
         var rand = new Random();
         var genders = new[] { "Erkek", "Kadın" };
         var randomGender = genders[rand.Next(genders.Length)];
         var randomAge = rand.Next(18, 85);
-        var randomThemes = new[] { 
-            "Nadir veya atipik prezantasyon", 
-            "Çok sık görülen ancak çeldirici semptomları olan klasik tablo", 
-            "Acil müdahale gerektiren akut ve dramatik tablo", 
-            "Sinsi ilerleyen ve tanısı zor kronik tablo", 
-            "Farklı bir sistemin belirtileriyle karışan (maskelenmiş) komplike durum" 
-        };
-        var randomTheme = randomThemes[rand.Next(randomThemes.Length)];
         var randomVariationSeed = Guid.NewGuid().ToString().Substring(0, 8);
 
-        var prompt = $@"Sen bir tıp eğitmenisin. {departmentName} branşı için çok özgün ve daha önce hiç üretmediğin bir klinik simülasyon vakası oluştur. SADECE JSON döndür, başka hiçbir şey yazma.
-        
+        string prompt = $@"Sen bir tıp eğitmenisin. Aşağıdaki tıp fakültesi klinik branşı ve spesifik konu/alt konu için aşamalı bir medikal vaka senaryosu üret.
+SADECE JSON döndür, başka hiçbir şey yazma. Markdown etiketleri (```json vb.) kullanma.
+
+Branş: {departmentName}
+{topicContext}
+{subTopicContext}
+Zorluk Seviyesi: {difficulty}
+Seed: {randomVariationSeed}
+
 ZORUNLU HASTA PROFİLİ (Vaka Kurgusu Birebir Buna Uymalıdır):
-- Benzersizlik Kodu (Seed): {randomVariationSeed}
 - Hastanın Yaşı: {randomAge}
 - Hastanın Cinsiyeti: {randomGender}
-- Vaka Tipi / Karakteristiği: {randomTheme}
-Yukarıdaki zorunlu profile dayanarak tamamen orijinal, {departmentName} ile alakalı bir hastalık seç ve kurgula. Asla bilindik standart örnekleri tekrar etme.
 
 Kurallar:
 - 2-4 aşama (orderIndex 1'den başlar)
 - Her aşamada tam 4 şık: 1 doğru (isCorrect:true), 3 yanlış (isCorrect:false)
-{difficultyRules}
 - CRITICAL RULE (ÇOK ÖNEMLİ):
   1. Doğru şık KESİNLİKLE en uzun veya en açıklayıcı şık OLMAMALIDIR. Tüm şıkların kelime ve karakter uzunlukları birbirine neredeyse eşit (birebir aynı) olmalıdır.
   2. Şıklarda KESİNLİKLE parantez içinde ek açıklamalar, detaylar veya ipuçları (örn. '... (en sık)', '... (altın standart)', '... (tercih edilen)') bulunmamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
   3. Tüm şıklar kelime sayısı olarak neredeyse birebir aynı boyutta olmalıdır.
 - Şıkların ""feedback"" (açıklama) kısımları ÇOK DETAYLI ve ÖĞRETİCİ olmalıdır. Neden doğru veya neden yanlış olduğu, tıbbi fizyopatolojisi ve mantığıyla birlikte uzunca (3-4 cümle) anlatılmalıdır. Kısaca geçiştirilmemelidir.
-- Yanlış şıklar güçlü tıbbi çeldiriciler olsun
-- title kısa ve net olsun: örn 'Akut Apandisit', 'Tip 2 DM Krizi'
-- patientInfo: Türkçe isim, yaş, cinsiyet, şikayet, vitaller, fizik muayene, özgeçmiş
+- title kısa ve net olsun: örn 'Akut Apandisit'
 
-JSON formatı:
+JSON formatı şöyle olmalıdır:
 {{
-  ""title"": ""kısa başlık"",
-  ""initialText"": ""1-2 cümle geliş senaryosu"",
-  ""difficulty"": ""{difficulty}"",
-  ""difficultyScore"": 7,
-  ""difficultyReason"": ""Vakada X, Y ve Z bulgularının birlikte değerlendirilmesi gerektiği için bu zorluk seçilmiştir."",
+  ""title"": ""Örn: Akut Apandisit - Vaka 101"",
+  ""initialText"": ""Hasta 25 yaşında erkek, sağ alt kadran ağrısı..."",
+  ""difficultyScore"": 5,
+  ""difficultyReason"": ""Atipik prezentasyon"",
   ""patientInfo"": {{
-    ""name"": ""Türkçe Ad Soyad"",
-    ""age"": 45,
-    ""gender"": ""Erkek"",
-    ""chiefComplaint"": ""şikayet"",
-    ""bloodPressure"": ""TA: 140/90 mmHg"",
-    ""heartRate"": ""NDS: 88 atım/dk"",
-    ""temperature"": ""Ateş: 37.2°C"",
-    ""oxygenSaturation"": ""SpO2: %97"",
-    ""respiratoryRate"": ""SS: 18/dk"",
-    ""physicalExam"": ""fizik muayene"",
-    ""medicalHistory"": ""özgeçmiş ve ilaçlar""
+    ""name"": ""Ahmet Y."",
+    ""age"": {randomAge},
+    ""gender"": ""{randomGender}"",
+    ""bloodPressure"": ""120/80 mmHg"",
+    ""heartRate"": ""88 /dk"",
+    ""temperature"": ""37.8 C"",
+    ""oxygenSaturation"": ""%98"",
+    ""respiratoryRate"": ""16 /dk"",
+    ""physicalExam"": ""Sağ alt kadranda defans ve rebound pozitif."",
+    ""medicalHistory"": ""Bilinen ek hastalık yok."",
+    ""chiefComplaint"": ""Karın ağrısı, bulantı""
   }},
   ""stages"": [
     {{
+      ""text"": ""Hastaya ilk yaklaşımınız ne olur?"",
       ""orderIndex"": 1,
-      ""text"": ""aşama sorusu"",
       ""options"": [
-        {{""text"": ""şık A"", ""isCorrect"": true, ""feedback"": ""Tıbbi mekanizmayı, neden doğru olduğunu anlatan çok detaylı, öğretici ve doyurucu bir akademik açıklama (en az 3-4 cümle).""}},
-        {{""text"": ""şık B"", ""isCorrect"": false, ""feedback"": ""Neden yanlış olduğunu ve tuzak noktasını anlatan çok detaylı tıbbi açıklama (en az 3-4 cümle).""}},
-        {{""text"": ""şık C"", ""isCorrect"": false, ""feedback"": ""Neden yanlış olduğunu ve tuzak noktasını anlatan çok detaylı tıbbi açıklama (en az 3-4 cümle).""}},
-        {{""text"": ""şık D"", ""isCorrect"": false, ""feedback"": ""Neden yanlış olduğunu ve tuzak noktasını anlatan çok detaylı tıbbi açıklama (en az 3-4 cümle).""}}
+        {{ ""text"": ""Hemogram ve CRP iste"", ""isCorrect"": true, ""feedback"": ""Tıbbi mekanizmayı anlatan en az 3-4 cümlelik uzun detaylı açıklama."" }},
+        {{ ""text"": ""Eve gönder"", ""isCorrect"": false, ""feedback"": ""Neden yanlış olduğunu anlatan en az 3-4 cümlelik uzun detaylı açıklama."" }}
       ]
     }}
   ]
@@ -150,7 +141,6 @@ JSON formatı:
         {
             var contentText = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString()!.Trim();
 
-            // Strip markdown code fences if Gemini wraps in them
             if (contentText.StartsWith("```json"))
                 contentText = contentText[7..];
             else if (contentText.StartsWith("```"))
@@ -162,17 +152,16 @@ JSON formatı:
             var llmCase = JsonSerializer.Deserialize<LLMCaseResponse>(contentText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (llmCase == null) throw new Exception("LLM yanıtı parse edilemedi.");
 
-            // Build PatientInfoDto from LLM response (preferred) or fallback to random
             var patientInfo = BuildPatientInfo(llmCase, departmentName);
 
             var finalCase = new MedicalCaseDto
             {
                 Id = Guid.NewGuid(),
-                DepartmentId = departmentId,
+                DepartmentName = departmentName,
                 Title = llmCase.Title,
                 InitialText = llmCase.InitialText,
                 IsProcedural = true,
-                Difficulty = llmCase.Difficulty,
+                Difficulty = difficulty,
                 DifficultyScore = llmCase.DifficultyScore,
                 DifficultyReason = llmCase.DifficultyReason,
                 PatientInfo = patientInfo,

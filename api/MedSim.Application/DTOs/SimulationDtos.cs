@@ -5,6 +5,20 @@ public class DepartmentDto
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public int Year { get; set; }
+    public List<TopicDto> Topics { get; set; } = new();
+}
+
+public class TopicDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public List<SubTopicDto> SubTopics { get; set; } = new();
+}
+
+public class SubTopicDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 public class PatientInfoDto
@@ -28,6 +42,9 @@ public class MedicalCaseDto
 {
     public Guid Id { get; set; }
     public Guid DepartmentId { get; set; }
+    public string DepartmentName { get; set; } = string.Empty;
+    public Guid? SubTopicId { get; set; }
+    public string SubTopicName { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string InitialText { get; set; } = string.Empty;
     public bool IsProcedural { get; set; }
@@ -59,6 +76,8 @@ public class CaseOptionDto
 public class GenerateCaseRequest
 {
     public string DepartmentName { get; set; } = string.Empty;
+    public string TopicName { get; set; } = string.Empty;
+    public string SubTopicName { get; set; } = string.Empty;
     public int Count { get; set; } = 1;
     public string Difficulty { get; set; } = "Orta";
 }

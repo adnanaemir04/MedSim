@@ -95,7 +95,7 @@ export default function Home() {
                   updatedPoints = res.points;
                 }
               }
-              setUser({ ...user, points: updatedPoints, solvedCases: [...user.solvedCases, "case_completed"] as any });
+              setUser({ ...user, points: updatedPoints });
             } catch (e) {
               console.error("Failed to save points or solved case", e);
             }

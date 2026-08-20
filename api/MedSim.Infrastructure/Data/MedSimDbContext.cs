@@ -17,6 +17,8 @@ public class MedSimDbContext : DbContext
     
     // Simulation Engine Entities
     public DbSet<Department> Departments { get; set; } = null!;
+    public DbSet<Topic> Topics { get; set; } = null!;
+    public DbSet<SubTopic> SubTopics { get; set; } = null!;
     public DbSet<MedicalCase> MedicalCases { get; set; } = null!;
     public DbSet<CaseStage> CaseStages { get; set; } = null!;
     public DbSet<CaseOption> CaseOptions { get; set; } = null!;
@@ -84,6 +86,32 @@ public class MedSimDbContext : DbContext
                   .WithOne(c => c.Department)
                   .HasForeignKey(c => c.DepartmentId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Topic>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Department)
+                  .WithMany(d => d.Topics)
+                  .HasForeignKey(e => e.DepartmentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(e => e.SubTopics)
+                  .WithOne(s => s.Topic)
+                  .HasForeignKey(s => s.TopicId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SubTopic>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasMany(e => e.MedicalCases)
+                  .WithOne(m => m.SubTopic)
+                  .HasForeignKey(m => m.SubTopicId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasMany(e => e.TusQuestions)
+                  .WithOne(t => t.SubTopic)
+                  .HasForeignKey(t => t.SubTopicId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<MedicalCase>(entity =>

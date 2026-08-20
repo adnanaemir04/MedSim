@@ -24,13 +24,25 @@ public class SimulationController : ControllerBase
     public async Task<ActionResult<List<DepartmentDto>>> GetDepartments()
     {
         var departments = await _context.Departments
+            .Include(d => d.Topics)
+                .ThenInclude(t => t.SubTopics)
             .OrderBy(d => d.Year)
             .ThenBy(d => d.Name)
             .Select(d => new DepartmentDto
             {
                 Id = d.Id,
                 Name = d.Name,
-                Year = d.Year
+                Year = d.Year,
+                Topics = d.Topics.Select(t => new TopicDto
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    SubTopics = t.SubTopics.Select(s => new SubTopicDto
+                    {
+                        Id = s.Id,
+                        Name = s.Name
+                    }).ToList()
+                }).ToList()
             })
             .ToListAsync();
 
@@ -48,6 +60,9 @@ public class SimulationController : ControllerBase
             {
                 Id = c.Id,
                 DepartmentId = c.DepartmentId,
+                SubTopicId = c.SubTopicId,
+                SubTopicName = c.SubTopic != null ? c.SubTopic.Name : "",
+                DepartmentName = c.Department.Name,
                 Title = c.Title,
                 InitialText = c.InitialText,
                 IsProcedural = c.IsProcedural,
@@ -80,17 +95,27 @@ public class SimulationController : ControllerBase
         if (department == null)
             return BadRequest("Klinik branş bulunamadı.");
 
+        SubTopic? subTopic = null;
+        if (!string.IsNullOrEmpty(request.SubTopicName))
+        {
+            subTopic = await _context.SubTopics.FirstOrDefaultAsync(s => s.Name == request.SubTopicName);
+        }
+
         var generatedCases = new List<MedicalCaseDto>();
 
         for (int i = 0; i < request.Count; i++)
         {
-            var newCaseDto = await _generatorService.GenerateCaseAsync(department.Name, department.Id, request.Difficulty);
+            var newCaseDto = await _generatorService.GenerateCaseAsync(department.Name, request.TopicName, request.SubTopicName, request.Difficulty);
+            newCaseDto.Id = Guid.NewGuid();
+            newCaseDto.DepartmentId = department.Id;
+            newCaseDto.SubTopicId = subTopic?.Id;
             newCaseDto.Title += $" - Vaka {DateTime.UtcNow.Ticks % 1000}";
             
             var newCase = new MedicalCase
             {
                 Id = newCaseDto.Id,
                 DepartmentId = newCaseDto.DepartmentId,
+                SubTopicId = newCaseDto.SubTopicId,
                 Title = newCaseDto.Title,
                 InitialText = newCaseDto.InitialText,
                 IsProcedural = newCaseDto.IsProcedural,

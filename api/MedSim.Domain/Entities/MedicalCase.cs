@@ -6,6 +6,10 @@ public class MedicalCase
     public Guid DepartmentId { get; set; }
     public Department Department { get; set; } = null!;
     
+    public Guid? SubTopicId { get; set; }
+    public SubTopic? SubTopic { get; set; }
+    
+    
     public string Title { get; set; } = string.Empty;
     public string InitialText { get; set; } = string.Empty;
     public bool IsProcedural { get; set; } = false; // To identify if it was AI generated

@@ -10,10 +10,22 @@ const apiClient = axios.create({
     }
 });
 
+export interface SubTopicDto {
+    id: string;
+    name: string;
+}
+
+export interface TopicDto {
+    id: string;
+    name: string;
+    subTopics: SubTopicDto[];
+}
+
 export interface DepartmentDto {
     id: string;
     name: string;
     year: number;
+    topics: TopicDto[];
 }
 
 export interface CaseOptionDto {
@@ -47,6 +59,9 @@ export interface PatientInfoDto {
 export interface MedicalCaseDto {
     id: string;
     departmentId: string;
+    departmentName?: string;
+    subTopicId?: string;
+    subTopicName?: string;
     title: string;
     initialText: string;
     isProcedural: boolean;
@@ -137,9 +152,11 @@ export const getCases = async (): Promise<MedicalCaseDto[]> => {
     return response.data;
 };
 
-export const generateCases = async (departmentName: string, count: number, difficulty: string = "Orta"): Promise<MedicalCaseDto[]> => {
+export const generateCases = async (departmentName: string, topicName: string, subTopicName: string, count: number, difficulty: string = "Orta"): Promise<MedicalCaseDto[]> => {
     const response = await apiClient.post<MedicalCaseDto[]>('/simulation/generate', {
         departmentName,
+        topicName,
+        subTopicName,
         count,
         difficulty
     });

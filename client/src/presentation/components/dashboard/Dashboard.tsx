@@ -55,6 +55,8 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [genYear, setGenYear] = useState<string>('4');
   const [genSubject, setGenSubject] = useState(filterSubject || 'Dahiliye');
+  const [genTopic, setGenTopic] = useState('');
+  const [genSubTopic, setGenSubTopic] = useState('');
   const [genDifficulty, setGenDifficulty] = useState('Orta');
   const [genCount, setGenCount] = useState(1);
   const [generatedCases, setGeneratedCases] = useState<any[]>([]);
@@ -89,8 +91,21 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
     const subjectsForYear = departments.filter(d => d.year === Number(genYear));
     if (subjectsForYear.length > 0 && !subjectsForYear.find(d => d.name === genSubject)) {
       setGenSubject(subjectsForYear[0].name);
+      setGenTopic('');
+      setGenSubTopic('');
     }
   }, [genYear, departments, filterSubject]);
+
+  // Reset Topic when Subject changes
+  useEffect(() => {
+    setGenTopic('');
+    setGenSubTopic('');
+  }, [genSubject]);
+
+  // Reset SubTopic when Topic changes
+  useEffect(() => {
+    setGenSubTopic('');
+  }, [genTopic]);
 
   // When filterSubject or departments change, lock to that subject
   useEffect(() => {
@@ -110,7 +125,7 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
     setGenerateError(null);
 
     try {
-      const newCases = await generateCases(genSubject, count, genDifficulty);
+      const newCases = await generateCases(genSubject, genTopic, genSubTopic, count, genDifficulty);
       const mappedNewCases = newCases.map(c => ({
         subject: genSubject,
         title: c.title,
@@ -223,16 +238,49 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
         
-        {generatedCases.filter(c => !filterSubject || c.subject === filterSubject).map((c, index) => {
-          const solved = c.data?.id ? solvedCases.find(sc => sc.medicalCaseId === c.data.id) : undefined;
-          if (solved && !filterSubject) return null; // Hide solved cases from general Dashboard, show if filtered by subject
+        {(() => {
+          const generatedList = generatedCases.filter(c => !filterSubject || c.subject === filterSubject);
+          const dbList = dbCases.filter(c => {
+            const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
+            const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
+            if (solved && !filterSubject) return false;
+            if (filterSubject && subjName !== filterSubject) return false;
+            return true;
+          });
+          
+          if (generatedList.length === 0 && dbList.length === 0) {
+            return (
+              <div style={{ gridColumn: '1 / -1', padding: '4rem 2rem', textAlign: 'center', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-xl)' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>🩺</div>
+                <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>Henüz Vaka Bulunamadı</h3>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+                  {filterSubject 
+                    ? `${filterSubject} branşına ait henüz bir vaka oluşturulmamış veya çözmemişsiniz.` 
+                    : "Sistemde çözülmeyi bekleyen veya sizin ürettiğiniz hiçbir vaka yok."}
+                </p>
+                <button 
+                  onClick={() => { soundManager.playClick(); setShowGenerateModal(true); }}
+                  className="btn-solve-case"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem' }}
+                >
+                  <Sparkles size={18} />
+                  İlk Vakanızı Üretin
+                </button>
+              </div>
+            );
+          }
+
           return (
-            <div 
-              key={`gen-${index}`} 
-              style={{ 
-                background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(6, 182, 212, 0.1))', 
-                border: '1px solid var(--primary)',
-                borderRadius: 'var(--radius-xl)', 
+            <>
+              {generatedList.map((c, index) => {
+                const solved = c.data?.id ? solvedCases.find(sc => sc.medicalCaseId === c.data.id) : undefined;
+                return (
+                  <div 
+                    key={`gen-${index}`} 
+                    style={{ 
+                      background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(6, 182, 212, 0.1))', 
+                      border: '1px solid var(--primary)',
+                      borderRadius: 'var(--radius-xl)', 
                 padding: '1.5rem',
                 boxShadow: '0 0 15px var(--primary-glow)',
                 display: 'flex', flexDirection: 'column', gap: '1rem',
@@ -249,6 +297,11 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                 <div style={subjectBadgeStyle}>
                   {c.subject}
                 </div>
+                {c.data?.subTopicName && (
+                  <div style={{...subjectBadgeStyle, background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))', color: '#10b981', borderColor: 'rgba(16,185,129,0.25)'}}>
+                    {c.data.subTopicName}
+                  </div>
+                )}
                 {c.data?.difficulty && (
                   <div 
                     title={c.data.difficultyReason || "Zorluk seviyesi bilgisi"}
@@ -276,12 +329,10 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
           );
         })}
 
-        {dbCases.filter(c => !filterSubject || departments.find(d => d.id === c.departmentId)?.name === filterSubject).map((c, index) => {
+        {dbList.map((c, index) => {
           const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
           const mockData = { id: c.id, title: c.title, text: c.initialText, stages: c.stages, patientInfo: c.patientInfo, difficulty: c.difficulty, difficultyScore: c.difficultyScore, difficultyReason: c.difficultyReason };
           const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
-          
-          if (solved && !filterSubject) return null; // Hide solved cases from general Dashboard, show if filtered by subject
 
           return (
             <div 
@@ -333,6 +384,9 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
             </div>
           );
         })}
+            </>
+          );
+        })()}
       </div>
 
       {showGenerateModal && (
@@ -522,6 +576,78 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
                   </div>
                 </div>
               </div>
+              
+              {/* Konu ve Alt Konu Seçimi */}
+              {(() => {
+                const activeDept = departments.find(d => d.year === Number(genYear) && d.name === genSubject);
+                const topics = activeDept?.topics || [];
+                const activeTopic = topics.find(t => t.name === genTopic);
+                const subTopics = activeTopic?.subTopics || [];
+
+                return (
+                  <>
+                    {topics.length > 0 && (
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
+                          <span>Konu Seçimi (İsteğe Bağlı)</span>
+                        </label>
+                        <div style={{ position: 'relative' }}>
+                          <select 
+                            value={genTopic} 
+                            onChange={e => setGenTopic(e.target.value)}
+                            style={{ 
+                              width: '100%', padding: '0.85rem 1rem', 
+                              borderRadius: '12px', 
+                              background: isLight ? 'white' : 'rgba(30, 41, 59, 0.6)', 
+                              border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
+                              color: isLight ? '#0f172a' : 'white',
+                              fontSize: '0.95rem', fontWeight: 600,
+                              outline: 'none', transition: 'all 0.2s',
+                              appearance: 'none', cursor: 'pointer'
+                            }}
+                          >
+                            <option value="">Rastgele Konu</option>
+                            {topics.map(t => (
+                              <option key={t.id} value={t.name}>{t.name}</option>
+                            ))}
+                          </select>
+                          <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--secondary)', opacity: 0.7, fontSize: '0.8rem' }}>▼</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {genTopic && subTopics.length > 0 && (
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
+                          <span>Alt Konu Seçimi (İsteğe Bağlı)</span>
+                        </label>
+                        <div style={{ position: 'relative' }}>
+                          <select 
+                            value={genSubTopic} 
+                            onChange={e => setGenSubTopic(e.target.value)}
+                            style={{ 
+                              width: '100%', padding: '0.85rem 1rem', 
+                              borderRadius: '12px', 
+                              background: isLight ? 'white' : 'rgba(30, 41, 59, 0.6)', 
+                              border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
+                              color: isLight ? '#0f172a' : 'white',
+                              fontSize: '0.95rem', fontWeight: 600,
+                              outline: 'none', transition: 'all 0.2s',
+                              appearance: 'none', cursor: 'pointer'
+                            }}
+                          >
+                            <option value="">Rastgele Alt Konu</option>
+                            {subTopics.map(s => (
+                              <option key={s.id} value={s.name}>{s.name}</option>
+                            ))}
+                          </select>
+                          <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--secondary)', opacity: 0.7, fontSize: '0.8rem' }}>▼</div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
 
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>

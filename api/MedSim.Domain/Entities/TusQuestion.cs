@@ -19,8 +19,15 @@ public class TusQuestion
     // e.g., "Klinik Bilimler", "Temel Bilimler"
     public string Category { get; set; } = string.Empty;
     
-    // e.g., "Anatomi", "Dahiliye"
+    // e.g., "Anatomi", "Dahiliye" (legacy string)
     public string Subject { get; set; } = string.Empty;
+    
+    // New hierarchical properties
+    public Guid? DepartmentId { get; set; }
+    public Department? Department { get; set; }
+    
+    public Guid? SubTopicId { get; set; }
+    public SubTopic? SubTopic { get; set; }
     
     // Difficulty Classification
     public string Difficulty { get; set; } = string.Empty; // "Kolay", "Orta", "Zor"

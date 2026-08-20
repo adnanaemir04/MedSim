@@ -66,12 +66,12 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
   if (!user) return null;
 
   const deptsByYear: Record<number, string[]> = {
-    1: ["Anatomi", "Fizyoloji", "Tıbbi Biyokimya", "Histoloji ve Embriyoloji", "Tıbbi Biyoloji ve Genetik"],
-    2: ["Tıbbi Mikrobiyoloji", "Nöroanatomi", "Biyofizik", "İlk Yardım"],
-    3: ["Tıbbi Patoloji", "Tıbbi Farmakoloji", "Klinik Bilimlere Giriş", "Biyoistatistik"],
-    4: ["İç Hastalıkları (Dahiliye)", "Çocuk Sağlığı ve Hastalıkları", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum"],
-    5: ["Nöroloji", "Psikiyatri", "Ortopedi ve Travmatoloji", "Göz Hastalıkları", "KBB", "Üroloji", "Dermatoloji", "Enfeksiyon Hastalıkları", "Kardiyoloji"],
-    6: ["Acil Tıp", "Aile Hekimliği", "Halk Sağlığı", "Yoğun Bakım"]
+    1: ["Anatomi", "Histoloji ve Embriyoloji", "Tıbbi Biyokimya", "Fizyoloji", "Tıbbi Biyoloji ve Genetik", "Biyoistatistik"],
+    2: ["Anatomi", "Fizyoloji", "Mikrobiyoloji", "İmmünoloji", "Patoloji", "Farmakoloji"],
+    3: ["Patoloji", "Farmakoloji", "Dahili Tıp Bilimlerine Giriş", "Halk Sağlığı"],
+    4: ["İç Hastalıkları", "Çocuk Sağlığı ve Hastalıkları", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum"],
+    5: ["Psikiyatri", "Nöroloji", "Kardiyoloji", "Göğüs Hastalıkları", "Enfeksiyon Hastalıkları", "Üroloji", "Göz Hastalıkları", "Kulak Burun Boğaz", "Ortopedi ve Travmatoloji", "Dermatoloji", "Anesteziyoloji ve Reanimasyon"],
+    6: ["Acil Tıp", "Aile Hekimliği", "Halk Sağlığı"]
   };
 
   return (

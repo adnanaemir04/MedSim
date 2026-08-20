@@ -567,9 +567,12 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                 <Activity className="spin-slow" size={32} />
               </div>
             ) : cases.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--glass-bg)', borderRadius: '20px', border: '1px dashed var(--glass-border)' }}>
-                <Activity size={32} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
-                <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Sonuç bulunamadı</h3>
+              <div style={{ gridColumn: '1 / -1', padding: '4rem 2rem', textAlign: 'center', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-xl)' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📂</div>
+                <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>Henüz Çözülmüş Vaka Yok</h3>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+                  Çözdüğünüz veya yarıda bıraktığınız tüm vakalar burada listelenir. Henüz bir vaka simülasyonu başlatmamışsınız.
+                </p>
               </div>
             ) : (
               <>
