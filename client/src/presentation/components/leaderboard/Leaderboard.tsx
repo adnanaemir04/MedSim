@@ -46,7 +46,7 @@ export default function Leaderboard() {
       ? '1px solid rgba(255, 255, 255, 0.6)'
       : '1px solid rgba(255, 255, 255, 0.05)',
     boxShadow: isLight 
-      ? '0 30px 60px rgba(0, 50, 150, 0.08), inset 0 0 0 1px rgba(255,255,255,0.5)'
+      ? '0 30px 60px rgba(225, 29, 72, 0.06), inset 0 0 0 1px rgba(255,255,255,0.5)'
       : '0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255,255,255,0.02)',
   };
 
@@ -56,7 +56,7 @@ export default function Leaderboard() {
         if (index === 0) return { bg: 'linear-gradient(120deg, rgba(255,249,230,0.9), rgba(255,255,255,0.8))', border: 'rgba(255, 204, 0, 0.4)', shadow: '0 15px 35px rgba(255, 204, 0, 0.15)' };
         if (index === 1) return { bg: 'linear-gradient(120deg, rgba(241,245,249,0.9), rgba(255,255,255,0.8))', border: 'rgba(148, 163, 184, 0.4)', shadow: '0 15px 35px rgba(148, 163, 184, 0.15)' };
         if (index === 2) return { bg: 'linear-gradient(120deg, rgba(255,247,237,0.9), rgba(255,255,255,0.8))', border: 'rgba(217, 119, 6, 0.4)', shadow: '0 15px 35px rgba(217, 119, 6, 0.15)' };
-        return { bg: 'rgba(255, 255, 255, 0.6)', border: 'rgba(255,255,255,0.8)', shadow: '0 8px 24px rgba(0,0,0,0.04)' };
+        return { bg: 'rgba(255, 255, 255, 0.6)', border: 'rgba(255,255,255,0.8)', shadow: '0 8px 24px rgba(225, 29, 72, 0.05)' };
       } else {
         if (index === 0) return { bg: 'linear-gradient(120deg, rgba(255, 204, 0, 0.1), rgba(0,0,0,0.4))', border: 'rgba(255, 204, 0, 0.3)', shadow: '0 15px 35px rgba(255, 204, 0, 0.1)' };
         if (index === 1) return { bg: 'linear-gradient(120deg, rgba(148, 163, 184, 0.1), rgba(0,0,0,0.4))', border: 'rgba(148, 163, 184, 0.3)', shadow: '0 15px 35px rgba(148, 163, 184, 0.1)' };
@@ -96,10 +96,10 @@ export default function Leaderboard() {
           transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.2 }}
           style={{ 
             padding: '1rem', 
-            background: isLight ? 'linear-gradient(135deg, #ffcc00, #ff9900)' : 'linear-gradient(135deg, rgba(255,204,0,0.2), rgba(255,153,0,0.05))', 
+            background: isLight ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'linear-gradient(135deg, rgba(255,204,0,0.2), rgba(255,153,0,0.05))', 
             borderRadius: '50%', 
             color: isLight ? 'white' : 'var(--warning)',
-            boxShadow: isLight ? '0 10px 25px rgba(255, 204, 0, 0.4)' : '0 0 20px rgba(255, 204, 0, 0.2)',
+            boxShadow: isLight ? '0 10px 25px var(--primary-glow)' : '0 0 20px rgba(255, 204, 0, 0.2)',
             border: isLight ? 'none' : '1px solid rgba(255, 204, 0, 0.4)'
           }}
         >
@@ -149,7 +149,7 @@ export default function Leaderboard() {
             fontWeight: 700, fontSize: '1rem',
             border: 'none',
             cursor: 'pointer',
-            boxShadow: boardType === 'general' ? '0 10px 20px rgba(14, 165, 233, 0.2)' : 'none',
+            boxShadow: boardType === 'general' ? (isLight ? '0 10px 20px var(--primary-glow)' : '0 10px 20px rgba(14, 165, 233, 0.2)') : 'none',
             transition: 'background 0.3s'
           }}
         >
@@ -164,12 +164,12 @@ export default function Leaderboard() {
           style={{
             padding: '0.8rem 1.5rem',
             borderRadius: '12px',
-            background: boardType === 'tus' ? '#ef4444' : 'transparent',
+            background: boardType === 'tus' ? 'var(--secondary)' : 'transparent',
             color: boardType === 'tus' ? 'white' : 'var(--text-muted)',
             fontWeight: 700, fontSize: '1rem',
             border: 'none',
             cursor: 'pointer',
-            boxShadow: boardType === 'tus' ? '0 10px 20px rgba(239, 68, 68, 0.2)' : 'none',
+            boxShadow: boardType === 'tus' ? (isLight ? '0 10px 20px rgba(159, 18, 57, 0.3)' : '0 10px 20px rgba(239, 68, 68, 0.2)') : 'none',
             transition: 'background 0.3s'
           }}
         >
@@ -187,10 +187,10 @@ export default function Leaderboard() {
           style={{
             padding: '0.8rem 1.2rem',
             borderRadius: '12px',
-            background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.08)',
-            color: isLight ? '#475569' : '#cbd5e1',
+            background: isLight ? 'rgba(225, 29, 72, 0.05)' : 'rgba(255,255,255,0.08)',
+            color: isLight ? 'var(--primary)' : '#cbd5e1',
             fontWeight: 600, fontSize: '1rem',
-            border: 'none',
+            border: isLight ? '1px solid rgba(225, 29, 72, 0.1)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -207,7 +207,7 @@ export default function Leaderboard() {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-            style={{ width: '40px', height: '40px', border: '4px solid rgba(14, 165, 233, 0.2)', borderTopColor: '#0ea5e9', borderRadius: '50%', margin: '0 auto' }}
+            style={{ width: '40px', height: '40px', border: isLight ? '4px solid rgba(225, 29, 72, 0.2)' : '4px solid rgba(14, 165, 233, 0.2)', borderTopColor: isLight ? 'var(--primary)' : '#0ea5e9', borderRadius: '50%', margin: '0 auto' }}
           />
         </div>
       ) : (
@@ -285,11 +285,11 @@ export default function Leaderboard() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: '16px', boxShadow: isLight ? 'inset 0 2px 4px rgba(0,0,0,0.02)' : 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
-                  <span style={{ fontSize: '1.2rem', fontWeight: 900, color: isLight ? (boardType === 'tus' ? '#ef4444' : '#0ea5e9') : (boardType === 'tus' ? '#f87171' : '#38bdf8'), letterSpacing: '-1px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isLight ? 'rgba(225, 29, 72, 0.04)' : 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: '16px', boxShadow: isLight ? 'inset 0 2px 4px rgba(225,29,72,0.03)' : 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 900, color: isLight ? (boardType === 'tus' ? 'var(--secondary)' : 'var(--primary)') : (boardType === 'tus' ? '#f87171' : '#38bdf8'), letterSpacing: '-1px' }}>
                     {boardType === 'general' ? user.points?.toLocaleString() : user.tusCorrects}
                   </span>
-                  <span style={{ fontSize: '0.9rem', color: isLight ? '#64748b' : '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ fontSize: '0.9rem', color: isLight ? '#9f1239' : '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8 }}>
                     {boardType === 'general' ? 'Puan' : 'Doğru'}
                   </span>
                 </div>
@@ -307,7 +307,7 @@ export default function Leaderboard() {
       {showInfoModal && typeof document !== 'undefined' && createPortal(
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
+          background: isLight ? 'rgba(255, 255, 255, 0.6)' : 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           backdropFilter: 'blur(25px)'
         }}>
@@ -319,8 +319,8 @@ export default function Leaderboard() {
             maxWidth: '1200px',
             maxHeight: '95vh',
             position: 'relative',
-            boxShadow: '0 30px 60px rgba(0, 0, 0, 0.4)',
-            border: isLight ? '1px solid rgba(255, 255, 255, 1)' : '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: isLight ? '0 30px 60px rgba(225, 29, 72, 0.15)' : '0 30px 60px rgba(0, 0, 0, 0.4)',
+            border: isLight ? '1px solid rgba(225, 29, 72, 0.1)' : '1px solid rgba(255, 255, 255, 0.1)',
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column'
@@ -328,17 +328,17 @@ export default function Leaderboard() {
             <button 
               onClick={() => { soundManager.playClick(); setShowInfoModal(false); }}
               onMouseEnter={() => soundManager.playHover()}
-              style={{ position: 'absolute', top: '2rem', right: '2rem', background: isLight ? '#f1f5f9' : '#0f172a', padding: '0.8rem', borderRadius: '50%', border: 'none', cursor: 'pointer', color: isLight ? '#64748b' : '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+              style={{ position: 'absolute', top: '2rem', right: '2rem', background: isLight ? 'rgba(225, 29, 72, 0.05)' : '#0f172a', padding: '0.8rem', borderRadius: '50%', border: 'none', cursor: 'pointer', color: isLight ? 'var(--primary)' : '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
             >
               <X size={24} />
             </button>
             
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '2.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <div style={{ display: 'inline-flex', padding: '0.8rem', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '50%', color: '#0ea5e9' }}>
+                <div style={{ display: 'inline-flex', padding: '0.8rem', background: isLight ? 'rgba(225, 29, 72, 0.1)' : 'rgba(14, 165, 233, 0.1)', borderRadius: '50%', color: isLight ? 'var(--primary)' : '#0ea5e9' }}>
                   <Info size={28} />
                 </div>
-                <h3 style={{ margin: 0, color: isLight ? '#0f172a' : '#f8fafc', fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.5px' }}>
+                <h3 style={{ margin: 0, color: isLight ? '#9f1239' : '#f8fafc', fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.5px' }}>
                   Puanlama ve Rütbe Sistemi
                 </h3>
               </div>
