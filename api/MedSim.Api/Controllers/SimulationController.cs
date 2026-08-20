@@ -5,6 +5,7 @@ using MedSim.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MedSim.Api.Controllers;
 
@@ -15,39 +16,49 @@ public class SimulationController : ControllerBase
 {
     private readonly MedSimDbContext _context;
     private readonly IProceduralGeneratorService _generatorService;
+    private readonly IMemoryCache _cache;
 
-    public SimulationController(MedSimDbContext context, IProceduralGeneratorService generatorService)
+    public SimulationController(MedSimDbContext context, IProceduralGeneratorService generatorService, IMemoryCache cache)
     {
         _context = context;
         _generatorService = generatorService;
+        _cache = cache;
     }
 
     [HttpGet("departments")]
     public async Task<ActionResult<List<DepartmentDto>>> GetDepartments()
     {
-        var departments = await _context.Departments
-            .AsNoTracking()
-            .Include(d => d.Topics)
-                .ThenInclude(t => t.SubTopics)
-            .OrderBy(d => d.Year)
-            .ThenBy(d => d.Name)
-            .Select(d => new DepartmentDto
-            {
-                Id = d.Id,
-                Name = d.Name,
-                Year = d.Year,
-                Topics = d.Topics.Select(t => new TopicDto
+        if (!_cache.TryGetValue("departments_cache", out List<DepartmentDto>? departments))
+        {
+            departments = await _context.Departments
+                .AsNoTracking()
+                .Include(d => d.Topics)
+                    .ThenInclude(t => t.SubTopics)
+                .OrderBy(d => d.Year)
+                .ThenBy(d => d.Name)
+                .Select(d => new DepartmentDto
                 {
-                    Id = t.Id,
-                    Name = t.Name,
-                    SubTopics = t.SubTopics.Select(s => new SubTopicDto
+                    Id = d.Id,
+                    Name = d.Name,
+                    Year = d.Year,
+                    Topics = d.Topics.Select(t => new TopicDto
                     {
-                        Id = s.Id,
-                        Name = s.Name
+                        Id = t.Id,
+                        Name = t.Name,
+                        SubTopics = t.SubTopics.Select(s => new SubTopicDto
+                        {
+                            Id = s.Id,
+                            Name = s.Name
+                        }).ToList()
                     }).ToList()
-                }).ToList()
-            })
-            .ToListAsync();
+                })
+                .ToListAsync();
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromHours(1));
+            
+            _cache.Set("departments_cache", departments, cacheOptions);
+        }
 
         return Ok(departments);
     }
@@ -55,39 +66,47 @@ public class SimulationController : ControllerBase
     [HttpGet("cases")]
     public async Task<ActionResult<List<MedicalCaseDto>>> GetCases()
     {
-        var cases = await _context.MedicalCases
-            .AsNoTracking()
-            .Include(c => c.Stages)
-                .ThenInclude(s => s.Options)
-            .OrderByDescending(c => c.CreatedAt)
-            .Select(c => new MedicalCaseDto
-            {
-                Id = c.Id,
-                DepartmentId = c.DepartmentId,
-                SubTopicId = c.SubTopicId,
-                SubTopicName = c.SubTopic != null ? c.SubTopic.Name : "",
-                DepartmentName = c.Department.Name,
-                Title = c.Title,
-                InitialText = c.InitialText,
-                IsProcedural = c.IsProcedural,
-                Difficulty = c.Difficulty,
-                DifficultyScore = c.DifficultyScore,
-                DifficultyReason = c.DifficultyReason,
-                Stages = c.Stages.OrderBy(s => s.OrderIndex).Select(s => new CaseStageDto
+        if (!_cache.TryGetValue("cases_cache", out List<MedicalCaseDto>? cases))
+        {
+            cases = await _context.MedicalCases
+                .AsNoTracking()
+                .Include(c => c.Stages)
+                    .ThenInclude(s => s.Options)
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new MedicalCaseDto
                 {
-                    Id = s.Id,
-                    Text = s.Text,
-                    OrderIndex = s.OrderIndex,
-                    Options = s.Options.Select(o => new CaseOptionDto
+                    Id = c.Id,
+                    DepartmentId = c.DepartmentId,
+                    SubTopicId = c.SubTopicId,
+                    SubTopicName = c.SubTopic != null ? c.SubTopic.Name : "",
+                    DepartmentName = c.Department.Name,
+                    Title = c.Title,
+                    InitialText = c.InitialText,
+                    IsProcedural = c.IsProcedural,
+                    Difficulty = c.Difficulty,
+                    DifficultyScore = c.DifficultyScore,
+                    DifficultyReason = c.DifficultyReason,
+                    Stages = c.Stages.OrderBy(s => s.OrderIndex).Select(s => new CaseStageDto
                     {
-                        Id = o.Id,
-                        Text = o.Text,
-                        IsCorrect = o.IsCorrect,
-                        Feedback = o.Feedback
+                        Id = s.Id,
+                        Text = s.Text,
+                        OrderIndex = s.OrderIndex,
+                        Options = s.Options.Select(o => new CaseOptionDto
+                        {
+                            Id = o.Id,
+                            Text = o.Text,
+                            IsCorrect = o.IsCorrect,
+                            Feedback = o.Feedback
+                        }).ToList()
                     }).ToList()
-                }).ToList()
-            })
-            .ToListAsync();
+                })
+                .ToListAsync();
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+            
+            _cache.Set("cases_cache", cases, cacheOptions);
+        }
 
         return Ok(cases);
     }

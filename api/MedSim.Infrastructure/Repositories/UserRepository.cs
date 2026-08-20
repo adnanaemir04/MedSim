@@ -2,16 +2,19 @@ using MedSim.Application.Interfaces;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MedSim.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
     private readonly MedSimDbContext _context;
+    private readonly IMemoryCache _cache;
 
-    public UserRepository(MedSimDbContext context)
+    public UserRepository(MedSimDbContext context, IMemoryCache cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     public async Task<User?> GetByIdAsync(Guid id)
@@ -36,11 +39,17 @@ public class UserRepository : IUserRepository
 
     public async Task<IEnumerable<User>> GetLeaderboardAsync(int top = 10)
     {
-        return await _context.Users
-            .AsNoTracking()
-            .OrderByDescending(u => u.Points)
-            .Take(top)
-            .ToListAsync();
+        if (!_cache.TryGetValue("user_leaderboard", out IEnumerable<User>? leaderboard))
+        {
+            leaderboard = await _context.Users
+                .AsNoTracking()
+                .OrderByDescending(u => u.Points)
+                .Take(top)
+                .ToListAsync();
+            
+            _cache.Set("user_leaderboard", leaderboard, TimeSpan.FromMinutes(1));
+        }
+        return leaderboard ?? new List<User>();
     }
 
     public async Task AddAsync(User user)

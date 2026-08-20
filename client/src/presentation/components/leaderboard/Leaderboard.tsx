@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import { User } from '../../../domain/entities/User';
 import { Trophy, Medal, Award, Info, X, Sparkles, TrendingUp } from 'lucide-react';
@@ -12,27 +13,19 @@ import { getGeneralLeaderboard, getTusLeaderboard } from '../../../infrastructur
 import { soundManager } from '../../../utils/soundManager';
 
 export default function Leaderboard() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [boardType, setBoardType] = useState<'general' | 'tus'>('general');
   const [showInfoModal, setShowInfoModal] = useState(false);
   const { theme } = useTheme();
   const isLight = theme === 'light';
-
-  useEffect(() => {
-    setLoading(true);
-    const fetchLeaderboard = boardType === 'general' ? getGeneralLeaderboard : getTusLeaderboard;
-      
-    fetchLeaderboard()
-      .then(data => {
-        setUsers(data.slice(0, 10));
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Leaderboard fetch error:", err);
-        setLoading(false);
-      });
-  }, [boardType]);
+  const { data: users = [], isLoading: loading } = useQuery({
+    queryKey: ['leaderboard', boardType],
+    queryFn: async () => {
+      const fetchLeaderboard = boardType === 'general' ? getGeneralLeaderboard : getTusLeaderboard;
+      const data = await fetchLeaderboard();
+      return data.slice(0, 10);
+    },
+    staleTime: 60 * 1000,
+  });
 
   const containerStyle = {
     padding: '3rem', maxWidth: '1100px', margin: '0.5rem auto 2rem auto',

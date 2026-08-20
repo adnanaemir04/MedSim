@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
+using MedSim.Api.Hubs;
 
 namespace MedSim.Api.Controllers;
 
@@ -17,12 +19,14 @@ public class TusController : ControllerBase
     private readonly ITusRepository _tusRepository;
     private readonly IProceduralGeneratorService _proceduralGeneratorService;
     private readonly MedSimDbContext _context;
+    private readonly IHubContext<MedSimHub> _hubContext;
 
-    public TusController(ITusRepository tusRepository, IProceduralGeneratorService proceduralGeneratorService, MedSimDbContext context)
+    public TusController(ITusRepository tusRepository, IProceduralGeneratorService proceduralGeneratorService, MedSimDbContext context, IHubContext<MedSimHub> hubContext)
     {
         _tusRepository = tusRepository;
         _proceduralGeneratorService = proceduralGeneratorService;
         _context = context;
+        _hubContext = hubContext;
     }
 
     [HttpGet("subjects")]
@@ -46,6 +50,7 @@ public class TusController : ControllerBase
         try
         {
             var result = await _tusRepository.SubmitAnswerAsync(request.Email, request.QuestionId, request.SelectedOption, request.DurationSeconds);
+            await _hubContext.Clients.All.SendAsync("LeaderboardUpdated");
             return Ok(result);
         }
         catch (KeyNotFoundException ex)

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Tıp öğrencileri için interaktif klinik vaka simülasyon platformu.",
 };
 
-import { ThemeProvider } from "../presentation/context/ThemeContext";
+import Providers from "../presentation/context/Providers";
 
 export default function RootLayout({
   children,
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider>
+        <Providers>
           {/* Animated Background Mesh */}
           <div className="bg-mesh">
             <div className="mesh-blob blob-1"></div>
@@ -29,7 +29,7 @@ export default function RootLayout({
           <div className="app-wrapper">
             {children}
           </div>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

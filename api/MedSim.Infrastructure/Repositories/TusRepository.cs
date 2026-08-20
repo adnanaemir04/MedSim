@@ -2,16 +2,19 @@ using MedSim.Application.Interfaces;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MedSim.Infrastructure.Repositories;
 
 public class TusRepository : ITusRepository
 {
     private readonly MedSimDbContext _context;
+    private readonly IMemoryCache _cache;
 
-    public TusRepository(MedSimDbContext context)
+    public TusRepository(MedSimDbContext context, IMemoryCache cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     public async Task<IEnumerable<object>> GetSubjectsAsync()
@@ -352,19 +355,25 @@ public class TusRepository : ITusRepository
 
     public async Task<IEnumerable<object>> GetLeaderboardAsync()
     {
-        return await _context.Users
-            .AsNoTracking()
-            .Select(u => new
-            {
-                u.Id,
-                u.Nickname,
-                u.Avatar,
-                u.Points,
-                TusCorrects = u.TusSolvedQuestions.Where(t => t.IsCorrect).Select(t => t.TusQuestionId).Distinct().Count()
-            })
-            .OrderByDescending(u => u.TusCorrects)
-            .Take(50)
-            .ToListAsync();
+        if (!_cache.TryGetValue("tus_leaderboard", out IEnumerable<object>? leaderboard))
+        {
+            leaderboard = await _context.Users
+                .AsNoTracking()
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Nickname,
+                    u.Avatar,
+                    u.Points,
+                    TusCorrects = u.TusSolvedQuestions.Where(t => t.IsCorrect).Select(t => t.TusQuestionId).Distinct().Count()
+                })
+                .OrderByDescending(u => u.TusCorrects)
+                .Take(50)
+                .ToListAsync();
+            
+            _cache.Set("tus_leaderboard", leaderboard, TimeSpan.FromMinutes(1));
+        }
+        return leaderboard ?? new List<object>();
     }
 
     public async Task<TusQuestion?> GetQuestionByIdAsync(Guid id)

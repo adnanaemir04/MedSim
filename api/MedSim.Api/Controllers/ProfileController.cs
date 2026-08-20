@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
+using MedSim.Api.Hubs;
 
 namespace MedSim.Api.Controllers;
 
@@ -14,10 +16,12 @@ namespace MedSim.Api.Controllers;
 public class ProfileController : ControllerBase
 {
     private readonly MedSimDbContext _context;
+    private readonly IHubContext<MedSimHub> _hubContext;
 
-    public ProfileController(MedSimDbContext context)
+    public ProfileController(MedSimDbContext context, IHubContext<MedSimHub> hubContext)
     {
         _context = context;
+        _hubContext = hubContext;
     }
 
     [HttpGet("solved-cases")]
@@ -172,6 +176,8 @@ public class ProfileController : ControllerBase
         _context.AuditLogs.Add(auditLog);
 
         await _context.SaveChangesAsync();
+
+        await _hubContext.Clients.All.SendAsync("LeaderboardUpdated");
 
         return Ok(new { message = "Vaka başarıyla kaydedildi.", points = user.Points });
     }
