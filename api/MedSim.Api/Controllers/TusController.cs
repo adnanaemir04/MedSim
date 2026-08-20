@@ -2,13 +2,16 @@ using MedSim.Application.Interfaces;
 using MedSim.Application.Services;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace MedSim.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TusController : ControllerBase
 {
     private readonly ITusRepository _tusRepository;
@@ -39,6 +42,7 @@ public class TusController : ControllerBase
     [HttpPost("submit-answer")]
     public async Task<IActionResult> SubmitAnswer([FromBody] TusAnswerRequest request)
     {
+        request.Email = User.FindFirstValue(ClaimTypes.Email) ?? request.Email;
         try
         {
             var result = await _tusRepository.SubmitAnswerAsync(request.Email, request.QuestionId, request.SelectedOption, request.DurationSeconds);
@@ -53,6 +57,7 @@ public class TusController : ControllerBase
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats([FromQuery] string email, [FromQuery] string? subject = null)
     {
+        email = User.FindFirstValue(ClaimTypes.Email) ?? email;
         try
         {
             var stats = await _tusRepository.GetStatsAsync(email, subject);
@@ -73,6 +78,7 @@ public class TusController : ControllerBase
         [FromQuery] string? difficulty = null,
         [FromQuery] string? sortOrder = "desc")
     {
+        email = User.FindFirstValue(ClaimTypes.Email) ?? email;
         try
         {
             var list = await _tusRepository.GetSolvedQuestionsListAsync(email, subject, page, pageSize, difficulty, sortOrder);

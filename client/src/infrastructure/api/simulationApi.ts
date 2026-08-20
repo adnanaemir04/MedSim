@@ -10,6 +10,56 @@ const apiClient = axios.create({
     }
 });
 
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('medsim_access_token') : null;
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            try {
+                const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('medsim_refresh_token') : null;
+                const accessToken = typeof window !== 'undefined' ? localStorage.getItem('medsim_access_token') : null;
+                
+                if (refreshToken && accessToken) {
+                    const res = await axios.post(`${API_BASE}/Auth/refresh-token`, {
+                        accessToken: accessToken,
+                        refreshToken: refreshToken
+                    });
+                    
+                    const newAccessToken = res.data.accessToken;
+                    const newRefreshToken = res.data.refreshToken;
+                    
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem('medsim_access_token', newAccessToken);
+                        localStorage.setItem('medsim_refresh_token', newRefreshToken);
+                    }
+                    
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                    return apiClient(originalRequest);
+                }
+            } catch (refreshError) {
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('medsim_access_token');
+                    localStorage.removeItem('medsim_refresh_token');
+                    window.location.href = '/'; // or dispatch logout event
+                }
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export interface SubTopicDto {
     id: string;
     name: string;

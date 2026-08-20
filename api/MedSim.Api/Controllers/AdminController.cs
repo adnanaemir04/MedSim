@@ -1,13 +1,17 @@
 using MedSim.Application.DTOs;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using BCrypt.Net;
 
 namespace MedSim.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class AdminController : ControllerBase
 {
     private readonly MedSimDbContext _context;
@@ -18,11 +22,11 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("users-stats")]
-    public async Task<IActionResult> GetUsersStats([FromHeader(Name = "User-Email")] string requestorEmail)
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> GetUsersStats()
     {
+        var requestorEmail = User.FindFirstValue(ClaimTypes.Email);
         var requestor = await _context.Users.FirstOrDefaultAsync(u => u.Email == requestorEmail);
-        if (requestor == null || (requestor.Role != "SuperAdmin" && requestor.Role != "Admin"))
-            return Unauthorized("Bu işlem için yetkiniz yok.");
 
         var users = await _context.Users
             .Include(u => u.TusSolvedQuestions)
@@ -49,11 +53,11 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("audit-logs")]
-    public async Task<IActionResult> GetAuditLogs([FromHeader(Name = "User-Email")] string requestorEmail)
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> GetAuditLogs()
     {
+        var requestorEmail = User.FindFirstValue(ClaimTypes.Email);
         var requestor = await _context.Users.FirstOrDefaultAsync(u => u.Email == requestorEmail);
-        if (requestor == null || (requestor.Role != "SuperAdmin" && requestor.Role != "Admin"))
-            return Unauthorized("Bu işlem için yetkiniz yok.");
 
         var logs = await _context.AuditLogs
             .Include(l => l.User)
@@ -73,11 +77,12 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("create-admin")]
-    public async Task<IActionResult> CreateAdmin([FromHeader(Name = "User-Email")] string requestorEmail, [FromBody] CreateAdminDto dto)
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminDto dto)
     {
+        var requestorEmail = User.FindFirstValue(ClaimTypes.Email);
         var requestor = await _context.Users.FirstOrDefaultAsync(u => u.Email == requestorEmail);
-        if (requestor == null || requestor.Role != "SuperAdmin")
-            return Unauthorized("Sadece SuperAdmin yeni bir yönetici oluşturabilir.");
+        if (requestor == null) return Unauthorized();
 
         var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (existingUser != null)
@@ -87,7 +92,7 @@ public class AdminController : ControllerBase
         {
             Email = dto.Email,
             Nickname = dto.Nickname,
-            PasswordHash = dto.Password, // WARNING: In production, hash this password!
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Role = "Admin",
             Points = 1000, // starting points
             Avatar = "👑"

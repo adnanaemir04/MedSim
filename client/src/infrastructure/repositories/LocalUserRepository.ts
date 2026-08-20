@@ -15,7 +15,7 @@ export class LocalUserRepository implements IUserRepository {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
-  async save(user: User): Promise<void> {
+  async save(user: User): Promise<User | void> {
     const users = this.getUsersData();
     users[user.email] = user;
     this.saveUsersData(users);

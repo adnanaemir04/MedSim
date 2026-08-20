@@ -24,8 +24,8 @@ export class AuthUseCase {
       avatar: '👨‍⚕️'
     };
 
-    await this.userRepository.save(newUser);
-    return newUser;
+    const savedUser = await this.userRepository.save(newUser);
+    return savedUser || newUser;
   }
 
   async login(email: string, password?: string): Promise<User> {

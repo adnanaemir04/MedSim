@@ -1,13 +1,16 @@
 using MedSim.Application.DTOs;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace MedSim.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ProfileController : ControllerBase
 {
     private readonly MedSimDbContext _context;
@@ -27,6 +30,7 @@ public class ProfileController : ControllerBase
         [FromQuery] string? difficulty = null,
         [FromQuery] string? sortOrder = "desc")
     {
+        email = User.FindFirstValue(ClaimTypes.Email) ?? email;
         if (string.IsNullOrEmpty(email))
             return BadRequest("Email parametresi zorunludur.");
 
@@ -116,6 +120,7 @@ public class ProfileController : ControllerBase
     [HttpPost("solve-case")]
     public async Task<IActionResult> SolveCase([FromBody] SolveCaseRequest request)
     {
+        request.Email = User.FindFirstValue(ClaimTypes.Email) ?? request.Email;
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
@@ -169,6 +174,7 @@ public class ProfileController : ControllerBase
     [HttpPost("add-friend")]
     public async Task<IActionResult> AddFriend([FromBody] FriendRequest request)
     {
+        request.UserEmail = User.FindFirstValue(ClaimTypes.Email) ?? request.UserEmail;
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.UserEmail);
         if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
@@ -195,6 +201,7 @@ public class ProfileController : ControllerBase
     [HttpDelete("remove-friend")]
     public async Task<IActionResult> RemoveFriend([FromBody] FriendRequest request)
     {
+        request.UserEmail = User.FindFirstValue(ClaimTypes.Email) ?? request.UserEmail;
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.UserEmail);
         if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
@@ -215,6 +222,7 @@ public class ProfileController : ControllerBase
     [HttpGet("friends")]
     public async Task<IActionResult> GetFriends([FromQuery] string email)
     {
+        email = User.FindFirstValue(ClaimTypes.Email) ?? email;
         var user = await _context.Users
             .Include(u => u.Friends)
             .ThenInclude(f => f.Friend)

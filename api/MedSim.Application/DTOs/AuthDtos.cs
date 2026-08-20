@@ -36,3 +36,18 @@ public class UserResponseDto
     public string Avatar { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
 }
+
+public class AuthResponseDto
+{
+    public string AccessToken { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public UserResponseDto User { get; set; } = new UserResponseDto();
+}
+
+public class RefreshTokenRequestDto
+{
+    [Required]
+    public string AccessToken { get; set; } = string.Empty;
+    [Required]
+    public string RefreshToken { get; set; } = string.Empty;
+}

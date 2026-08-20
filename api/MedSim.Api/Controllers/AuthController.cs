@@ -2,6 +2,13 @@ using MedSim.Application.DTOs;
 using MedSim.Application.Interfaces;
 using MedSim.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using BCrypt.Net;
 
 namespace MedSim.Api.Controllers;
 
@@ -10,10 +17,12 @@ namespace MedSim.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IUserRepository _userRepository;
+    private readonly IConfiguration _configuration;
 
-    public AuthController(IUserRepository userRepository)
+    public AuthController(IUserRepository userRepository, IConfiguration configuration)
     {
         _userRepository = userRepository;
+        _configuration = configuration;
     }
 
     [HttpPost("register")]
@@ -29,7 +38,7 @@ public class AuthController : ControllerBase
         {
             Email = dto.Email,
             Nickname = dto.Nickname,
-            PasswordHash = dto.Password, // WARNING: In production, hash this password!
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Points = 20,
             Avatar = "👨‍⚕️"
         };
@@ -37,14 +46,26 @@ public class AuthController : ControllerBase
         await _userRepository.AddAsync(user);
         await _userRepository.SaveChangesAsync();
 
-        return Ok(new UserResponseDto
+        var accessToken = GenerateAccessToken(user);
+        var refreshToken = GenerateRefreshToken();
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await _userRepository.UpdateAsync(user);
+        await _userRepository.SaveChangesAsync();
+
+        return Ok(new AuthResponseDto
         {
-            Id = user.Id,
-            Email = user.Email,
-            Nickname = user.Nickname,
-            Points = user.Points,
-            Avatar = user.Avatar,
-            Role = user.Role
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            User = new UserResponseDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Nickname = user.Nickname,
+                Points = user.Points,
+                Avatar = user.Avatar,
+                Role = user.Role
+            }
         });
     }
 
@@ -53,20 +74,32 @@ public class AuthController : ControllerBase
     {
         var user = await _userRepository.GetByEmailAsync(dto.Email);
         
-        // Simple plaintext comparison for simulation purposes
-        if (user == null || user.PasswordHash != dto.Password)
+        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
         {
             return Unauthorized("Hatalı e-posta veya şifre.");
         }
 
-        return Ok(new UserResponseDto
+        var accessToken = GenerateAccessToken(user);
+        var refreshToken = GenerateRefreshToken();
+        
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await _userRepository.UpdateAsync(user);
+        await _userRepository.SaveChangesAsync();
+
+        return Ok(new AuthResponseDto
         {
-            Id = user.Id,
-            Email = user.Email,
-            Nickname = user.Nickname,
-            Points = user.Points,
-            Avatar = user.Avatar,
-            Role = user.Role
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            User = new UserResponseDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Nickname = user.Nickname,
+                Points = user.Points,
+                Avatar = user.Avatar,
+                Role = user.Role
+            }
         });
     }
 
@@ -134,5 +167,110 @@ public class AuthController : ControllerBase
         }).ToList();
 
         return Ok(dtoList);
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
+    {
+        var principal = GetPrincipalFromExpiredToken(dto.AccessToken);
+        if (principal == null)
+            return BadRequest("Geçersiz access token veya refresh token.");
+
+        var userEmail = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(userEmail)) return BadRequest("Token içinden kullanıcı bilgisi okunamadı.");
+
+        var user = await _userRepository.GetByEmailAsync(userEmail);
+
+        if (user == null || user.RefreshToken != dto.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
+            return BadRequest("Geçersiz refresh token.");
+        }
+
+        var newAccessToken = GenerateAccessToken(user);
+        var newRefreshToken = GenerateRefreshToken();
+
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await _userRepository.UpdateAsync(user);
+        await _userRepository.SaveChangesAsync();
+
+        return Ok(new AuthResponseDto
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+            User = new UserResponseDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Nickname = user.Nickname,
+                Points = user.Points,
+                Avatar = user.Avatar,
+                Role = user.Role
+            }
+        });
+    }
+
+    private string GenerateAccessToken(User user)
+    {
+        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var secretKey = jwtSettings["Secret"];
+        
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role),
+            new Claim("Nickname", user.Nickname),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: jwtSettings["Issuer"],
+            audience: jwtSettings["Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpiryMinutes"]!)),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
+
+    private ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+    {
+        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var secretKey = jwtSettings["Secret"];
+
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = true, 
+            ValidAudience = jwtSettings["Audience"],
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!)),
+            ValidateLifetime = false // we want to get claims from expired token
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new SecurityTokenException("Invalid token");
+        }
+
+        return principal;
     }
 }

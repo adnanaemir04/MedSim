@@ -19,6 +19,13 @@ export class ApiUserRepository implements IUserRepository {
       const errorText = await res.text();
       throw new Error(errorText || 'Kayıt olurken bir hata oluştu.');
     }
+
+    const data = await res.json();
+    if (data.accessToken && data.refreshToken) {
+      localStorage.setItem('medsim_access_token', data.accessToken);
+      localStorage.setItem('medsim_refresh_token', data.refreshToken);
+      return data.user;
+    }
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -46,6 +53,12 @@ export class ApiUserRepository implements IUserRepository {
       throw new Error(errorText || 'Giriş başarısız.');
     }
 
-    return await res.json();
+    const data = await res.json();
+    if (data.accessToken && data.refreshToken) {
+      localStorage.setItem('medsim_access_token', data.accessToken);
+      localStorage.setItem('medsim_refresh_token', data.refreshToken);
+      return data.user;
+    }
+    return data;
   }
 }

@@ -2,6 +2,7 @@ using MedSim.Application.DTOs;
 using MedSim.Application.Services;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ namespace MedSim.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class SimulationController : ControllerBase
 {
     private readonly MedSimDbContext _context;

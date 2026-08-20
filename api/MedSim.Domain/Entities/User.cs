@@ -9,6 +9,9 @@ public class User
     public int Points { get; set; } = 20;
     public string Avatar { get; set; } = "👨‍⚕️";
     public string Role { get; set; } = "User"; // "SuperAdmin", "Admin", "User"
+
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
     
     // Navigation Property
     public ICollection<SolvedCase> SolvedCases { get; set; } = new List<SolvedCase>();
