@@ -29,6 +29,7 @@ public class AdminController : ControllerBase
         var requestor = await _context.Users.FirstOrDefaultAsync(u => u.Email == requestorEmail);
 
         var users = await _context.Users
+            .AsNoTracking()
             .Include(u => u.TusSolvedQuestions)
             .Include(u => u.SolvedCases)
             .ToListAsync();
@@ -60,6 +61,7 @@ public class AdminController : ControllerBase
         var requestor = await _context.Users.FirstOrDefaultAsync(u => u.Email == requestorEmail);
 
         var logs = await _context.AuditLogs
+            .AsNoTracking()
             .Include(l => l.User)
             .OrderByDescending(l => l.CreatedAt)
             .Take(100)

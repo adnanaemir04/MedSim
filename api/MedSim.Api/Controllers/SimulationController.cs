@@ -26,6 +26,7 @@ public class SimulationController : ControllerBase
     public async Task<ActionResult<List<DepartmentDto>>> GetDepartments()
     {
         var departments = await _context.Departments
+            .AsNoTracking()
             .Include(d => d.Topics)
                 .ThenInclude(t => t.SubTopics)
             .OrderBy(d => d.Year)
@@ -55,6 +56,7 @@ public class SimulationController : ControllerBase
     public async Task<ActionResult<List<MedicalCaseDto>>> GetCases()
     {
         var cases = await _context.MedicalCases
+            .AsNoTracking()
             .Include(c => c.Stages)
                 .ThenInclude(s => s.Options)
             .OrderByDescending(c => c.CreatedAt)

@@ -31,12 +31,13 @@ public class UserRepository : IUserRepository
 
     public async Task<IEnumerable<User>> GetAllAsync()
     {
-        return await _context.Users.ToListAsync();
+        return await _context.Users.AsNoTracking().ToListAsync();
     }
 
     public async Task<IEnumerable<User>> GetLeaderboardAsync(int top = 10)
     {
         return await _context.Users
+            .AsNoTracking()
             .OrderByDescending(u => u.Points)
             .Take(top)
             .ToListAsync();

@@ -209,7 +209,7 @@ public class TusRepository : ITusRepository
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
 
-        var query = _context.TusSolvedQuestions.Where(t => t.UserId == user.Id);
+        var query = _context.TusSolvedQuestions.AsNoTracking().Where(t => t.UserId == user.Id);
         
         if (!string.IsNullOrEmpty(subject))
         {
@@ -224,6 +224,7 @@ public class TusRepository : ITusRepository
 
         // Calculate Case Success Rate
         var caseQuery = _context.SolvedCases
+            .AsNoTracking()
             .Include(s => s.MedicalCase)
             .ThenInclude(c => c.Stages)
             .Where(s => s.UserId == user.Id);
@@ -283,10 +284,14 @@ public class TusRepository : ITusRepository
 
     public async Task<object> GetSolvedQuestionsListAsync(string email, string? subject, int page, int pageSize, string? difficulty, string? sortOrder)
     {
+        page = Math.Max(1, page);
+        pageSize = Math.Min(pageSize, 50);
+
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
 
         var query = _context.TusSolvedQuestions
+            .AsNoTracking()
             .Include(t => t.TusQuestion)
             .Where(t => t.UserId == user.Id)
             .AsQueryable();
@@ -348,6 +353,7 @@ public class TusRepository : ITusRepository
     public async Task<IEnumerable<object>> GetLeaderboardAsync()
     {
         return await _context.Users
+            .AsNoTracking()
             .Select(u => new
             {
                 u.Id,

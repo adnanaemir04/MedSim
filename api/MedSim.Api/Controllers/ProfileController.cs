@@ -30,6 +30,9 @@ public class ProfileController : ControllerBase
         [FromQuery] string? difficulty = null,
         [FromQuery] string? sortOrder = "desc")
     {
+        page = Math.Max(1, page);
+        pageSize = Math.Min(pageSize, 50);
+
         email = User.FindFirstValue(ClaimTypes.Email) ?? email;
         if (string.IsNullOrEmpty(email))
             return BadRequest("Email parametresi zorunludur.");
@@ -39,6 +42,7 @@ public class ProfileController : ControllerBase
             return NotFound("Kullanıcı bulunamadı.");
 
         var query = _context.SolvedCases
+            .AsNoTracking()
             .Include(sc => sc.MedicalCase)
             .ThenInclude(mc => mc.Department)
             .Where(sc => sc.UserId == user.Id)
@@ -224,6 +228,7 @@ public class ProfileController : ControllerBase
     {
         email = User.FindFirstValue(ClaimTypes.Email) ?? email;
         var user = await _context.Users
+            .AsNoTracking()
             .Include(u => u.Friends)
             .ThenInclude(f => f.Friend)
             .FirstOrDefaultAsync(u => u.Email == email);
