@@ -322,31 +322,37 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
           </p>
         </div>
 
-        {/* Tab Selection */}
-        <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem', marginBottom: '2rem' }}>
+        {/* Tab Selection (Segmented Control Style) */}
+        <div style={{ 
+          display: 'flex', gap: '0.5rem', background: isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.04)', 
+          padding: '0.4rem', borderRadius: '16px', marginBottom: '2rem', width: 'fit-content', 
+          border: '1px solid var(--glass-border)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' 
+        }}>
           <button 
             onClick={() => setActiveTab('cases')}
             style={{
               background: activeTab === 'cases' ? 'var(--primary)' : 'transparent',
-              border: activeTab === 'cases' ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
+              border: 'none',
               color: activeTab === 'cases' ? 'white' : 'var(--text-main)',
               padding: '0.6rem 1.5rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem'
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', display: 'flex', alignItems: 'center', gap: '0.5rem',
+              boxShadow: activeTab === 'cases' ? '0 4px 15px var(--primary-glow)' : 'none'
             }}
           >
-            <Activity size={16} /> Geçmiş Vakalar
+            <Activity size={18} /> Geçmiş Vakalar
           </button>
           <button 
             onClick={() => setActiveTab('tus')}
             style={{
               background: activeTab === 'tus' ? 'var(--primary)' : 'transparent',
-              border: activeTab === 'tus' ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
+              border: 'none',
               color: activeTab === 'tus' ? 'white' : 'var(--text-main)',
               padding: '0.6rem 1.5rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem'
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', display: 'flex', alignItems: 'center', gap: '0.5rem',
+              boxShadow: activeTab === 'tus' ? '0 4px 15px var(--primary-glow)' : 'none'
             }}
           >
-            <BookOpen size={16} /> Çözülen TUS Soruları
+            <BookOpen size={18} /> Çözülen TUS Soruları
           </button>
         </div>
       </div>
