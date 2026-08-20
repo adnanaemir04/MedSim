@@ -473,7 +473,7 @@ body {
 .accordion-content {
   display: flex;
   flex-direction: column;
-  padding-left: 2.5rem;
+  padding-left: 1.5rem;
   margin-top: 0.5rem;
   gap: 0.5rem;
   position: relative;
@@ -482,7 +482,7 @@ body {
 .accordion-content::before {
   content: '';
   position: absolute;
-  left: 1.3rem;
+  left: 0.8rem;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -1199,6 +1199,18 @@ body:not(.dark) .landing-theme-toggle:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
 }
+body:not(.dark) .btn-review-case {
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  color: #4f46e5;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 2px 4px;
+  backdrop-filter: blur(10px);
+}
+body:not(.dark) .btn-review-case:hover {
+  background: rgba(79, 70, 229, 0.15);
+  border-color: rgba(79, 70, 229, 0.5);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 8px;
+}
 
 .btn-solve-case {
   border-radius: 12px;
@@ -1214,9 +1226,21 @@ body:not(.dark) .landing-theme-toggle:hover {
   justify-content: center;
   gap: 0.4rem;
 }
+body:not(.dark) .btn-solve-case {
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  color: #4f46e5;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 2px 4px;
+  backdrop-filter: blur(10px);
+}
 .btn-solve-case:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+}
+body:not(.dark) .btn-solve-case:hover {
+  background: rgba(79, 70, 229, 0.15);
+  border-color: rgba(79, 70, 229, 0.5);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 8px;
 }
 
 .btn-full {

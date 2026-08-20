@@ -281,10 +281,12 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
             onClick={() => { soundManager.playClick(); onSolveQuestions(parsedClassicCount, 'classic', classicDifficulty); }}
             disabled={isClassicCountInvalid}
             style={{ 
-              background: isClassicCountInvalid ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, #10b981, #059669)',
-              color: isClassicCountInvalid ? 'var(--text-muted)' : 'white', border: 'none', padding: '1.1rem 2rem', borderRadius: '16px',
+              background: isClassicCountInvalid ? 'rgba(0,0,0,0.1)' : (isLight ? 'rgba(79, 70, 229, 0.08)' : 'linear-gradient(135deg, #10b981, #059669)'),
+              color: isClassicCountInvalid ? 'var(--text-muted)' : (isLight ? '#4f46e5' : 'white'), 
+              border: isLight ? '1px solid rgba(79, 70, 229, 0.3)' : 'none', 
+              padding: '1.1rem 2rem', borderRadius: '16px',
               fontSize: '1.1rem', fontWeight: 800, cursor: isClassicCountInvalid ? 'not-allowed' : 'pointer',
-              boxShadow: isClassicCountInvalid ? 'none' : '0 8px 20px rgba(16, 185, 129, 0.3)',
+              boxShadow: isClassicCountInvalid ? 'none' : (isLight ? 'rgba(0, 0, 0, 0.05) 0px 2px 4px' : '0 8px 20px rgba(16, 185, 129, 0.3)'),
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', gap: '0.8rem', width: '100%', justifyContent: 'center'
             }}
@@ -382,10 +384,12 @@ export default function TusSubjectStatsView({ subject, userEmail, onSolveQuestio
             onClick={() => { soundManager.playClick(); onSolveQuestions(parsedAiCount, 'ai', aiDifficulty); }}
             disabled={isAiCountInvalid}
             style={{ 
-              background: isAiCountInvalid ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, var(--primary), var(--secondary))',
-              color: isAiCountInvalid ? 'var(--text-muted)' : 'white', border: 'none', padding: '1.1rem 2rem', borderRadius: '16px',
+              background: isAiCountInvalid ? 'rgba(0,0,0,0.1)' : (isLight ? 'rgba(79, 70, 229, 0.08)' : 'linear-gradient(135deg, var(--primary), var(--secondary))'),
+              color: isAiCountInvalid ? 'var(--text-muted)' : (isLight ? '#4f46e5' : 'white'), 
+              border: isLight ? '1px solid rgba(79, 70, 229, 0.3)' : 'none', 
+              padding: '1.1rem 2rem', borderRadius: '16px',
               fontSize: '1.1rem', fontWeight: 800, cursor: isAiCountInvalid ? 'not-allowed' : 'pointer',
-              boxShadow: isAiCountInvalid ? 'none' : '0 8px 20px var(--primary-glow)',
+              boxShadow: isAiCountInvalid ? 'none' : (isLight ? 'rgba(0, 0, 0, 0.05) 0px 2px 4px' : '0 8px 20px var(--primary-glow)'),
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', gap: '0.8rem', width: '100%', justifyContent: 'center'
             }}

@@ -217,21 +217,24 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
               className="glass-panel hover-scale"
               style={{ 
                 padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', cursor: 'pointer',
-                background: isLight ? 'linear-gradient(135deg, #ffffff, #f8fafc)' : 'var(--glass-bg)',
-                boxShadow: isLight ? '0 8px 25px rgba(0, 0, 0, 0.04), inset 0 2px 0 rgba(255,255,255,1)' : 'var(--shadow-float)',
-                border: isLight ? '1px solid rgba(0, 0, 0, 0.05)' : '1px solid var(--glass-border)'
+                background: isLight ? 'rgba(79, 70, 229, 0.08)' : 'var(--glass-bg)',
+                boxShadow: isLight ? 'rgba(0, 0, 0, 0.05) 0px 2px 4px' : 'var(--shadow-float)',
+                border: isLight ? '1px solid rgba(79, 70, 229, 0.3)' : '1px solid var(--glass-border)',
+                backdropFilter: isLight ? 'blur(10px)' : 'blur(24px)'
               }}
               onMouseEnter={e => {
                 soundManager.playHover();
                 if (isLight) {
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(79, 70, 229, 0.1), inset 0 2px 0 rgba(255,255,255,1)';
-                  e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+                  e.currentTarget.style.boxShadow = 'rgba(0, 0, 0, 0.1) 0px 4px 8px';
+                  e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.5)';
+                  e.currentTarget.style.background = 'rgba(79, 70, 229, 0.15)';
                 }
               }}
               onMouseLeave={e => {
                 if (isLight) {
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.04), inset 0 2px 0 rgba(255,255,255,1)';
-                  e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.boxShadow = 'rgba(0, 0, 0, 0.05) 0px 2px 4px';
+                  e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.3)';
+                  e.currentTarget.style.background = 'rgba(79, 70, 229, 0.08)';
                 }
               }}
               onClick={() => { soundManager.playClick(); handleSubjectClick(subject.name); }}
