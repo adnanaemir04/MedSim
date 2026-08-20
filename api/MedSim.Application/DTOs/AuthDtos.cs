@@ -34,4 +34,5 @@ public class UserResponseDto
     public string Nickname { get; set; } = string.Empty;
     public int Points { get; set; }
     public string Avatar { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
 }

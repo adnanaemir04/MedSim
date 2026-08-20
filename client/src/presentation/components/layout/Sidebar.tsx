@@ -40,7 +40,7 @@ const yearIconMap: Record<number, React.ReactNode> = {
 interface SidebarProps {
   user: User | null;
   onLogout: () => void;
-  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_admin', subjectFilter?: string) => void;
+  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_admin' | 'admin', subjectFilter?: string) => void;
 }
 
 export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
@@ -265,10 +265,10 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
           <span>Liderlik Tablosu</span>
         </button>
 
-        {user.email === 'admin@medsim.com' && (
+        {(user?.role === 'Admin' || user?.role === 'SuperAdmin') && (
           <button 
             className="nav-item" 
-            onClick={() => nav('tus_admin')}
+            onClick={() => nav('admin')}
             onMouseEnter={() => soundManager.playHover()}
             style={{
               background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(16, 185, 129, 0.1))',

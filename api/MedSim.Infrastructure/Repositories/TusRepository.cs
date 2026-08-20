@@ -143,6 +143,15 @@ public class TusRepository : ITusRepository
             user.Points += 10;
         }
 
+        var auditLog = new AuditLog
+        {
+            UserId = user.Id,
+            Action = "TusQuestionSolved",
+            Details = $"QuestionId: {question.Id}, IsCorrect: {isCorrect}"
+        };
+        _context.AuditLogs.Add(auditLog);
+
+
         // Spaced Repetition Logic for Classic TUS Questions
         if (question.TusKnowledgeId.HasValue)
         {

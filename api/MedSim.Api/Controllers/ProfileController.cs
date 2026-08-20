@@ -1,4 +1,5 @@
 using MedSim.Application.DTOs;
+using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -152,6 +153,15 @@ public class ProfileController : ControllerBase
         }
 
         user.Points += pointsEarned;
+        
+        var auditLog = new AuditLog
+        {
+            UserId = user.Id,
+            Action = "CaseSolved",
+            Details = $"MedicalCaseId: {request.MedicalCaseId}, EarnedPoints: {pointsEarned}"
+        };
+        _context.AuditLogs.Add(auditLog);
+
         await _context.SaveChangesAsync();
 
         return Ok(new { message = "Vaka başarıyla kaydedildi.", points = user.Points });

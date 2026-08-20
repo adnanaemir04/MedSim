@@ -8,11 +8,13 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public int Points { get; set; } = 20;
     public string Avatar { get; set; } = "👨‍⚕️";
+    public string Role { get; set; } = "User"; // "SuperAdmin", "Admin", "User"
     
     // Navigation Property
     public ICollection<SolvedCase> SolvedCases { get; set; } = new List<SolvedCase>();
     public ICollection<UserFriend> Friends { get; set; } = new List<UserFriend>();
     public ICollection<TusSolvedQuestion> TusSolvedQuestions { get; set; } = new List<TusSolvedQuestion>();
+    public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
 }
 
 public class SolvedCase

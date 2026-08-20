@@ -43,7 +43,8 @@ public class AuthController : ControllerBase
             Email = user.Email,
             Nickname = user.Nickname,
             Points = user.Points,
-            Avatar = user.Avatar
+            Avatar = user.Avatar,
+            Role = user.Role
         });
     }
 
@@ -64,7 +65,8 @@ public class AuthController : ControllerBase
             Email = user.Email,
             Nickname = user.Nickname,
             Points = user.Points,
-            Avatar = user.Avatar
+            Avatar = user.Avatar,
+            Role = user.Role
         });
     }
 
@@ -100,7 +102,8 @@ public class AuthController : ControllerBase
             Email = user.Email,
             Nickname = user.Nickname,
             Points = user.Points,
-            Avatar = user.Avatar
+            Avatar = user.Avatar,
+            Role = user.Role
         });
     }
 
@@ -126,7 +129,8 @@ public class AuthController : ControllerBase
             Email = u.Email, // Might want to hide this in prod, but ok for now
             Nickname = u.Nickname,
             Points = u.Points,
-            Avatar = u.Avatar
+            Avatar = u.Avatar,
+            Role = u.Role
         }).ToList();
 
         return Ok(dtoList);

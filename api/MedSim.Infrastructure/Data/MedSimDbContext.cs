@@ -16,6 +16,7 @@ public class MedSimDbContext : DbContext
     public DbSet<TusSolvedQuestion> TusSolvedQuestions { get; set; } = null!;
     public DbSet<TusKnowledge> TusKnowledges { get; set; } = null!;
     public DbSet<TusKnowledgeProgress> TusKnowledgeProgresses { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
     
     // Simulation Engine Entities
     public DbSet<Department> Departments { get; set; } = null!;
@@ -77,6 +78,16 @@ public class MedSimDbContext : DbContext
             entity.HasOne(e => e.TusQuestion)
                   .WithMany()
                   .HasForeignKey(e => e.TusQuestionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.AuditLogs)
+                  .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 

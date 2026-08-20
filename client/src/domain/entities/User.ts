@@ -4,5 +4,6 @@ export interface User {
   password?: string; // Stored securely in real DB, but we keep it optional for auth models
   points: number;
   avatar?: string;
+  role?: string;
   solvedCases: string[]; // array of Case IDs
 }

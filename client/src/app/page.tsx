@@ -15,10 +15,11 @@ import TusCenter from '../presentation/components/tus/TusCenter';
 import TusAboutView from '../presentation/components/tus/TusAboutView';
 import TusSolveView from '../presentation/components/tus/TusSolveView';
 import TusAdminPanel from '../presentation/components/tus/TusAdminPanel';
+import AdminDashboard from '../presentation/components/admin/AdminDashboard';
 import { ArrowLeft } from 'lucide-react';
 import { updateUserProfile, solveCase } from '../infrastructure/api/simulationApi';
 
-type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_about' | 'tus_solve' | 'tus_admin';
+type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_about' | 'tus_solve' | 'tus_admin' | 'admin';
 
 export default function Home() {
   const [isLanding, setIsLanding] = useState(true);
@@ -34,7 +35,8 @@ export default function Home() {
     nickname: '',
     points: 0,
     avatar: '👨‍⚕️',
-    solvedCases: []
+    solvedCases: [],
+    role: 'User'
   });
 
   const handleLogout = () => {
@@ -45,7 +47,8 @@ export default function Home() {
       nickname: '',
       points: 0,
       avatar: '👨‍⚕️',
-      solvedCases: []
+      solvedCases: [],
+      role: 'User'
     });
   };
 
@@ -232,6 +235,10 @@ export default function Home() {
 
           {currentView === 'tus_admin' && (
             <TusAdminPanel onBack={() => setCurrentView('tus')} />
+          )}
+
+          {currentView === 'admin' && (
+            <AdminDashboard userEmail={user.email} />
           )}
         </div>
       </div>
