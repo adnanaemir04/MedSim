@@ -118,10 +118,10 @@ JSON formatı:
       ""orderIndex"": 1,
       ""text"": ""aşama sorusu"",
       ""options"": [
-        {{""text"": ""şık A"", ""isCorrect"": true, ""feedback"": ""açıklama""}},
-        {{""text"": ""şık B"", ""isCorrect"": false, ""feedback"": ""açıklama""}},
-        {{""text"": ""şık C"", ""isCorrect"": false, ""feedback"": ""açıklama""}},
-        {{""text"": ""şık D"", ""isCorrect"": false, ""feedback"": ""açıklama""}}
+        {{""text"": ""şık A"", ""isCorrect"": true, ""feedback"": ""Tıbbi mekanizmayı, neden doğru olduğunu anlatan çok detaylı, öğretici ve doyurucu bir akademik açıklama (en az 3-4 cümle).""}},
+        {{""text"": ""şık B"", ""isCorrect"": false, ""feedback"": ""Neden yanlış olduğunu ve tuzak noktasını anlatan çok detaylı tıbbi açıklama (en az 3-4 cümle).""}},
+        {{""text"": ""şık C"", ""isCorrect"": false, ""feedback"": ""Neden yanlış olduğunu ve tuzak noktasını anlatan çok detaylı tıbbi açıklama (en az 3-4 cümle).""}},
+        {{""text"": ""şık D"", ""isCorrect"": false, ""feedback"": ""Neden yanlış olduğunu ve tuzak noktasını anlatan çok detaylı tıbbi açıklama (en az 3-4 cümle).""}}
       ]
     }}
   ]

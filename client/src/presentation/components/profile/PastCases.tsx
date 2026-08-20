@@ -98,7 +98,14 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
     soundManager.playClick();
     const matched = allCases.find(c => c.id === medicalCaseId);
     if (matched) {
-      setSelectedReviewCase(matched);
+      const mockData = {
+        id: matched.id,
+        title: matched.title,
+        text: matched.initialText,
+        stages: matched.stages,
+        patientInfo: matched.patientInfo
+      };
+      onStartCase(subject, -1, mockData, givenAnswers);
     } else {
       alert("Vaka detayları yüklenemedi. Lütfen daha sonra tekrar deneyin.");
     }

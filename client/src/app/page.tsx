@@ -24,7 +24,7 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
-  const [selectedCase, setSelectedCase] = useState<{subject: string, index: number, data?: any, initialAnswers?: number[]} | null>(null);
+  const [selectedCase, setSelectedCase] = useState<{subject: string, index: number, data?: any, initialAnswers?: number[], sourceView?: string} | null>(null);
   const [selectedTusSolve, setSelectedTusSolve] = useState<{subject: string, count: number, mode: 'classic' | 'ai', difficulty?: string} | null>(null);
   const [filterSubject, setFilterSubject] = useState<string | undefined>();
   
@@ -85,7 +85,7 @@ export default function Home() {
           caseIndex={selectedCase.index}
           generatedData={selectedCase.data}
           initialAnswers={selectedCase.initialAnswers}
-          onBack={() => setCurrentView('dashboard')} 
+          onBack={() => setCurrentView(selectedCase.sourceView || 'dashboard')} 
           onCaseComplete={async (points, givenAnswers) => {
             try {
               let updatedPoints = user.points;
@@ -186,7 +186,7 @@ export default function Home() {
               userEmail={user.email}
               filterSubject={filterSubject}
               onStartCase={(subject, index, data, initialAnswers) => {
-                setSelectedCase({ subject, index, data, initialAnswers });
+                setSelectedCase({ subject, index, data, initialAnswers, sourceView: 'dashboard' });
                 setCurrentView('simulation');
               }} 
             />
@@ -202,7 +202,7 @@ export default function Home() {
             <PastCases 
               userEmail={user.email} 
               onStartCase={(subject, index, data, initialAnswers) => {
-                setSelectedCase({ subject, index, data, initialAnswers });
+                setSelectedCase({ subject, index, data, initialAnswers, sourceView: 'past_cases' });
                 setCurrentView('simulation');
               }}
             />

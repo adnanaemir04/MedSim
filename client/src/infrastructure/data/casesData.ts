@@ -18,15 +18,15 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Kadavra diseksiyonunda boyun ön üçgeninde bir kitle/varyasyon saptadınız. İlk adımınız nedir?",
         options: [
-          { text: "Karotis kılıfını açıp içeriği incelerim.", isCorrect: true, feedback: "Doğru yaklaşım. V. Jugularis interna, A. carotis communis ve N. vagus incelenmeli." },
-          { text: "Kitleyi doğrudan eksize ederim.", isCorrect: false, feedback: "Hata: Önemli damar/sinir yapılarına zarar verebilirsiniz." }
+          { text: "Karotis kılıfını açıp içeriği incelerim.", isCorrect: true, feedback: "Kesinlikle doğru yaklaşım. Boyun kitlelerinde karotis kılıfının içeriklerinin (V. Jugularis interna, A. carotis communis ve N. vagus) anatomik komşuluklarını detaylıca değerlendirmek cerrahi planlamanın temelidir. Vasküler veya sinirsel bir invazyon olup olmadığını saptamak morbiditeyi (örneğin ses kısıklığı, inme riskini) dramatik şekilde azaltır." },
+          { text: "Kitleyi doğrudan eksize ederim.", isCorrect: false, feedback: "Bu majör bir cerrahi hatadır. Karotis kılıfı, V. jugularis interna, A. carotis communis ve N. vagus'u barındırır. Körlemesine yapılacak bir eksizyon veya yetersiz ekspojur, masif kanamaya veya N. vagus kesisine bağlı kalıcı vokal kord paralizisine yol açarak hastanın yaşam kalitesini ve hayatını tehlikeye atar." }
         ]
       },
       {
         text: "Kılıfı açtığınızda N. Vagus'un seyri etrafında bir lenf nodu büyümesi gördünüz. Hangi lenf nodu grubu olabilir?",
         options: [
-          { text: "Derin servikal lenf nodları", isCorrect: true, feedback: "Tebrikler. Jugulodigastrik nodlar da buradadır." },
-          { text: "Submental lenf nodları", isCorrect: false, feedback: "Hata: Submental nodlar çene altındadır, karotis kılıfında değil." }
+          { text: "Derin servikal lenf nodları", isCorrect: true, feedback: "Harika bir anatomik analiz! Derin servikal lenf nodları, özellikle jugulodigastrik nodlar (Waldeyer halkasının ana drenaj istasyonu) N. vagus ve V. jugularis interna çevresinde seyreder. Bu nodların büyümesi, baş-boyun bölgesi malignitelerinin (örn: tonsil yassı hücreli karsinom) ilk metastaz duraklarından biridir." },
+          { text: "Submental lenf nodları", isCorrect: false, feedback: "Yanlış anatomik lokasyon. Submental lenf nodları M. mylohyoideus üzerinde, çene altında (Level Ia) bulunur ve genellikle alt dudak, ağız tabanı ve dil ucunun drenajını sağlar. Karotis kılıfı boyunca uzanan yapılar derin servikal (Level II, III, IV) lenf nodlarıdır." }
         ]
       }
     ]
@@ -38,8 +38,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "İncelenen hücre kültüründe mitozun durmadığı ve p53 proteininin fonksiyon göstermediği fark edildi. Ne yaparsınız?",
         options: [
-          { text: "Hücreleri apopitoza zorlayacak kaspaz aktivatörü eklerim.", isCorrect: true, feedback: "Doğru. Kanser hücresi modelini durdurmak için apopitoz yolağı uyarılmalıdır." },
-          { text: "G1 evresini hızlandıran büyüme faktörleri eklerim.", isCorrect: false, feedback: "Hata: Zaten durmayan mitozu daha da hızlandırırsınız." }
+          { text: "Hücreleri apopitoza zorlayacak kaspaz aktivatörü eklerim.", isCorrect: true, feedback: "Çok doğru. p53, 'genomun bekçisi' olarak bilinir ve DNA hasarı durumunda hücre döngüsünü G1'de durdurarak apopitozu tetikler. Fonksiyonel p53 eksikliğinde (örneğin mutasyona uğramış kanser hücrelerinde), dışarıdan kaspaz aktivatörleri (özellikle Kaspaz-8 veya Kaspaz-9) gibi pro-apoptotik sinyallerin kullanılması, hücresel ölümü başlatarak onkojenik proliferasyonu durdurmanın en etkili yoludur." },
+          { text: "G1 evresini hızlandıran büyüme faktörleri eklerim.", isCorrect: false, feedback: "Klinik olarak çok tehlikeli bir karar. Kanser hücreleri halihazırda kontrolsüz proliferasyon (mitoz) halindedir. Ortama büyüme faktörleri (örneğin EGF, PDGF) eklemek, onkojenik sinyal yolaklarını (RAS/RAF/MEK/ERK veya PI3K/AKT/mTOR) daha da aktive ederek tümör büyümesini agresifleştirecektir." }
         ]
       }
     ]
@@ -51,8 +51,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Preparatta stratifiye skuamöz epitel izliyorsunuz. Ancak normalde keratinleşmemesi gereken bir bölgede keratin var. Bu nedir?",
         options: [
-          { text: "Skuamöz Metaplazi", isCorrect: true, feedback: "Doğru. Sigara veya kronik irritasyon sonucu epitel değişimi olabilir." },
-          { text: "Basit Atrofi", isCorrect: false, feedback: "Hata: Atrofide hücre küçülür, tip değiştirip keratin üretmez." }
+          { text: "Skuamöz Metaplazi", isCorrect: true, feedback: "Tebrikler, mükemmel patolojik yorum. Sigara dumanı gibi kronik irritanlar, solunum yollarındaki normal yalancı çok katlı silli epitelin, daha dayanıklı olan çok katlı yassı (skuamöz) epitele dönüşmesine neden olur. Buna 'skuamöz metaplazi' denir. Metaplazi reverzibldir ancak stimulus devam ederse displazi ve skuamöz hücreli karsinoma ilerleyebilir." },
+          { text: "Basit Atrofi", isCorrect: false, feedback: "Yanlış hücresel adaptasyon mekanizması. Atrofi, hücresel organellerin yıkımı ve hücre boyutunun küçülmesidir (örneğin immobilizasyona bağlı kas atrofisi). Ortada epitelin bir fenotipten diğerine dönüşümü (keratinize olan çok katlı yassı epitele dönüşüm) varsa, bu durum atrofi değil 'metaplazi'dir." }
         ]
       }
     ]
@@ -66,15 +66,15 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hasta efor sırasında aşırı yorgunluk ve kas güçsüzlüğü yaşıyor. Egzersiz sonrasında gücü geri geliyor. Nöromüsküler kavşak hastalığı şüphesi var. Hangi test istenmeli?",
         options: [
-          { text: "Asetilkolin Reseptör Antikoru testi", isCorrect: true, feedback: "Doğru. Myastenia Gravis şüphesinde ilk istenmesi gereken antikor testidir." },
-          { text: "İleri düzey Kas Biyopsisi analizi", isCorrect: false, feedback: "Hata: İlk aşamada çok invaziv ve spesifik olmayan bir yöntem." }
+          { text: "Asetilkolin Reseptör Antikoru testi", isCorrect: true, feedback: "Kesinlikle doğru. Myastenia Gravis (MG), nöromüsküler kavşaktaki postsinaptik asetilkolin reseptörlerine karşı otoantikorların geliştiği otoimmün bir hastalıktır. Eforda artan yorgunluk klasik bulgusudur. Teşhiste ilk ve en spesifik adım Anti-AChR (Asetilkolin Reseptör Antikoru) ve Anti-MuSK antikorlarının bakılmasıdır." },
+          { text: "İleri düzey Kas Biyopsisi analizi", isCorrect: false, feedback: "Hatalı bir ilk tercih. Kas biyopsisi oldukça invaziv, maliyetli ve genellikle miyopatilerin (örneğin Musküler Distrofiler veya Polimiyozit) teşhisinde kullanılır. Nöromüsküler kavşak hastalıklarında ilk tercih serolojik antikor testleri ve EMG'dir (ardışık sinir uyarımında dekrement yanıt)." }
         ]
       },
       {
         text: "Test sonucu AChR antikoru pozitif geldi. Hastanın kas kasılmasını iyileştirmek için ne verirsiniz?",
         options: [
-          { text: "Asetilkolinesteraz İnhibitörü ilacı", isCorrect: true, feedback: "Tebrikler. Kavşakta asetilkolin miktarını artırarak kasılmayı düzeltirsiniz." },
-          { text: "Botulinum Toksini enjeksiyonu uygulaması", isCorrect: false, feedback: "Hata: Kas felcine yol açarak hastanın ölümüne sebep olabilirsiniz." }
+          { text: "Asetilkolinesteraz İnhibitörü ilacı", isCorrect: true, feedback: "Mükemmel tedavi yaklaşımı. Asetilkolinesteraz inhibitörleri (Örn: Piridostigmin, Neostigmin), sinaptik aralıktaki asetilkolin yıkımını engelleyerek ACh konsantrasyonunu artırır. Bu sayede, otoantikorlar nedeniyle sayıları azalmış olan sağlam ACh reseptörlerine bağlanma olasılığı artar ve kas zayıflığı semptomları hızla geriler." },
+          { text: "Botulinum Toksini enjeksiyonu uygulaması", isCorrect: false, feedback: "Ölümcül bir hata. Botulinum toksini, presinaptik uçtan asetilkolin salınımını geri dönüşümsüz olarak bloke eder (SNARE proteinlerini yıkarak). Myastenia Gravis'te zaten asetilkolin yetersizliği sendromu olduğundan, bu toksinin uygulanması mevcut güçsüzlüğü hızla solunum yetmezliğine ve ölüme götürür." }
         ]
       }
     ]
@@ -86,15 +86,15 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hastanın kan kültüründe Stafilokokus Aureus üredi. Hastanın ateşi var. İlk antibiyotik tercihiniz nedir?",
         options: [
-          { text: "Ampirik Vankomisin tedavisi başlarım", isCorrect: true, feedback: "Doğru. MRSA (Metisiline Dirençli S. Aureus) ihtimaline karşı Vankomisin iyi bir başlangıçtır." },
-          { text: "Sadece Parasetamol verip takip ederim", isCorrect: false, feedback: "Hata: Bakteriyemisi olan hasta sepsise gidebilir." }
+          { text: "Ampirik Vankomisin tedavisi başlarım", isCorrect: true, feedback: "Doğru farmakolojik yaklaşım. Üzüm salkımı şeklinde Gram (+) koklar ve pozitif koagülaz testi kesin olarak Stafilokokus Aureus'u gösterir. Hastanede veya toplum kökenli ciddi enfeksiyonlarda ampirik tedavide her zaman MRSA (Metisiline Dirençli S. Aureus) ihtimali düşünülmeli ve Vankomisin veya Daptomisin gibi glikopeptit/lipopeptitler başlanmalıdır." },
+          { text: "Sadece Parasetamol verip takip ederim", isCorrect: false, feedback: "Bu bir tıbbi ihmaldir (Malpraktis). Kan kültüründe Stafilokokus Aureus üremesi her zaman patojenik kabul edilir ve acil IV antibiyoterapi gerektirir. Sadece semptomatik tedaviyle hastayı izlemek, endokardit, osteomiyelit ve hızla gelişecek fatal septik şok tablosuna neden olur." }
         ]
       },
       {
         text: "Antibiyogram sonucu geldi. Bakteri metisiline duyarlı (MSSA) çıktı. Tedaviyi nasıl değiştirirsiniz?",
         options: [
-          { text: "Sefazolin veya Nafsilin tedavisine geçerim", isCorrect: true, feedback: "Mükemmel. MSSA enfeksiyonlarında Vankomisine göre çok daha etkilidir." },
-          { text: "Vankomisin tedavisine aynen devam ederim", isCorrect: false, feedback: "Kısmi Hata: Gerekli değildir, nefrotoksisite riski artar." }
+          { text: "Sefazolin veya Nafsilin tedavisine geçerim", isCorrect: true, feedback: "Mükemmel bir de-eskalasyon örneği! Kan kültürü Metisiline Duyarlı S. Aureus (MSSA) geldiğinde, Vankomisin tedavisi kesilmeli ve Nafsilin, Oksasilin veya Sefazolin (1. kuşak sefalosporin) tedavisine geçilmelidir. Beta-laktamlar, MSSA için vankomisinden çok daha hızlı bakterisidal etki gösterir ve doku penetrasyonları daha iyidir." },
+          { text: "Vankomisin tedavisine aynen devam ederim", isCorrect: false, feedback: "Gereksiz geniş spektrum kullanımı. Bakterinin metisiline duyarlı olduğu kanıtlandıktan sonra Vankomisin'e devam etmek, hem bakteriyel temizlenme (klirens) hızını yavaşlatır hem de hastayı nefrotoksisite, ototoksisite ve VRE (Vankomisine Dirençli Enterokok) gibi dirençli süperenfeksiyon risklerine maruz bırakır." }
         ]
       }
     ]
@@ -108,8 +108,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Özkıyım amaçlı yüksek doz parasetamol alan hasta acile geldi. Spesifik antidotu nedir?",
         options: [
-          { text: "N-Asetilsistein infüzyonu tedavisi", isCorrect: true, feedback: "Doğru. Glutatyon depolarını yenileyerek karaciğeri korur." },
-          { text: "Flumazenil infüzyonu tedavisi başlarım", isCorrect: false, feedback: "Hata: Flumazenil benzodiazepin antidotudur." }
+          { text: "N-Asetilsistein infüzyonu tedavisi", isCorrect: true, feedback: "Hayat kurtaran bir müdahale. Parasetamol zehirlenmesinde toksik metabolit olan NAPQI karaciğerde birikerek hepatosit nekrozuna yol açar. N-Asetilsistein (NAC), karaciğerin glutatyon depolarını yenileyerek NAPQI'yi sülfatla konjuge edip zararsız hale getirir ve toksik hepatiti engeller." },
+          { text: "Flumazenil infüzyonu tedavisi başlarım", isCorrect: false, feedback: "Yanlış antidot seçimi. Flumazenil, benzodiazepinlerin (Örn: Diazepam, Alprazolam) kompetitif antagonistidir ve sadece benzodiazepin zehirlenmelerinde kullanılır. Parasetamol zehirlenmesinde hiçbir etkisi olmadığı gibi, hastanın akut karaciğer yetmezliğine girmesine neden olursunuz." }
         ]
       }
     ]
@@ -121,8 +121,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Memedeki kitleden yapılan biyopside İnvaziv Duktal Karsinom saptandı. Tümörün reseptör durumunu bilmek neden önemlidir?",
         options: [
-          { text: "Hedefe yönelik akıllı tedaviyi planlamak için", isCorrect: true, feedback: "Doğru. ER, PR ve HER2 durumuna göre tedavi belirlenir." },
-          { text: "Sadece hastanın yaşını doğru tahmin etmek için", isCorrect: false, feedback: "Hata: Patolojide reseptörler tedaviyi belirler." }
+          { text: "Hedefe yönelik akıllı tedaviyi planlamak için", isCorrect: true, feedback: "Doğru onkolojik prensip. İnvaziv duktal karsinomda hormon reseptörlerinin (Östrojen ve Progesteron) ve HER2 gen amplifikasyonunun durumu tedavinin köşe taşıdır. ER/PR pozitifliğinde anti-östrojen ajanlar (Örn: Tamoksifen, Aromataz İnhibitörleri), HER2 pozitifliğinde ise monoklonal antikorlar (Örn: Trastuzumab) ile sağkalım ciddi oranda artar." },
+          { text: "Sadece hastanın yaşını doğru tahmin etmek için", isCorrect: false, feedback: "Hatalı bir düşünce yapısı. Kanser yönetiminde moleküler patoloji, hastanın takvim yaşından çok daha önemlidir. Hastanın yaşı kemoterapi toleransını etkilese de, tümörün biyolojik karakteri (ER, PR, HER2) tüm tedavi şemasını, seçilecek ajanları ve prognozu belirleyen en kritik parametredir." }
         ]
       }
     ]
@@ -136,7 +136,7 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hasta bilinç bulanıklığı ve Kussmaul solunumu ile acile getirildi. Ağzında aseton kokusu var. İlk adımınız nedir?",
         options: [
-          { text: "Hızlıca damardan sıvı tedavisi başlarım", isCorrect: true, feedback: "Çok doğru. DKA hastaları şiddetli dehidratedir, ilk iş sıvı vermektir." },
+          { text: "Hızlıca damardan sıvı tedavisi başlarım", isCorrect: true, feedback: "Mükemmel acil yaklaşımı. Diyabetik Ketoasidoz (DKA) patofizyolojisinde ozmotik diürez nedeniyle hastalar ciddi sıvı açığına sahiptir (ortalama 5-8 litre). Tedavide ilk ve en önemli adım agresif izotonik (%0.9 NaCl) sıvı replasmanıdır. Bu hem volüm şokunu engeller hem de böbrek perfüzyonunu artırarak keton atılımını hızlandırır." },
           { text: "Anında yüksek doz insülin tedavisi yaparım", isCorrect: false, feedback: "Hata: Yeterli sıvı vermeden insülin yaparsanız hasta hipovolemik şoka girer." }
         ]
       },
@@ -157,7 +157,7 @@ export const medCasesData: Record<string, any> = {
         text: "6 aylık bebek, öksürük ve hırıltılı solunum ile getirildi. Beslenmesi bozulmuş, SpO2 %89. Solunum sıkıntısı var. İlk müdahale?",
         options: [
           { text: "Nemli oksijen desteği ve burun aspirasyonu yaparım", isCorrect: true, feedback: "Doğru. Bronşiolitte en önemli tedavi oksijenizasyon ve hidrasyondur." },
-          { text: "Geniş spektrumlu damardan antibiyotik tedavisi başlarım", isCorrect: false, feedback: "Hata: Bronşiolit %90 viraldir (RSV), antibiyotik faydasızdır." }
+          { text: "Geniş spektrumlu damardan antibiyotik tedavisi başlarım", isCorrect: false, feedback: "Gereksiz antibiyotik kullanımı. Çocuklarda sık görülen bronşiolit vakalarının büyük çoğunluğu Respiratuar Sinsityal Virüs (RSV) kaynaklıdır. Bakteriyel enfeksiyon kanıtı (Pnömoni vs.) olmadan damardan antibiyotik vermek sadece dirençli mikroorganizma gelişimine ve potansiyel yan etkilere yol açar." }
         ]
       }
     ]
@@ -171,8 +171,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "75 yaşındaki hasta düşme sonrası kalça ağrısıyla geldi. Röntgen femur boyun kırığını doğruladı. Ne önerirsiniz?",
         options: [
-          { text: "Cerrahi tedaviyle düzeltme planı yaparım", isCorrect: true, feedback: "Doğru. Yaşlı hastalarda deplase femur boyun kırığı cerrahi gerektirir." },
-          { text: "Ağrı kesici verip evde alçı takibi öneririm", isCorrect: false, feedback: "Hata: Femur boynu alçıyla iyileşmez, hasta yatağa bağımlı kalıp emboliden ölür." }
+          { text: "Cerrahi tedaviyle düzeltme planı yaparım", isCorrect: true, feedback: "Doğru ortopedik yaklaşım. Yaşlı hastalarda (özellikle osteoporotik kemiklerde) deplase femur boyun kırıklarında avasküler nekroz riski çok yüksektir. Tedavi altın standardı genellikle hemiartroplasti (yarım kalça protezi) veya total kalça protezidir. Erken mobilizasyon (hareket), fatal komplikasyonları önlemek için kritiktir." },
+          { text: "Ağrı kesici verip evde alçı takibi öneririm", isCorrect: false, feedback: "Çok ciddi bir klinik yönetim hatası. Femur boynu kırıkları konservatif (alçı/yatak) istirahati ile tedavi edilmez. Hastayı yatağa bağlamak; Derin Ven Trombozu (DVT), Pulmoner Emboli (PE), dekübitüs ülserleri (yatak yaraları) ve ölümcül pnömonilerle sonuçlanan bir mortalite zincirini başlatır." }
         ]
       }
     ]
@@ -184,15 +184,15 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hasta son 1 aydır hayattan zevk alamadığını, uyuyamadığını ve ölmek istediğini söylüyor. İlk adımınız nedir?",
         options: [
-          { text: "İntihar riskini sorgulayıp yatış kararı alırım", isCorrect: true, feedback: "Kritik Karar! Suisidal düşüncesi olan hasta acil psikiyatrik müdahale gerektirir." },
-          { text: "Hastayı tatile çıkması için taburcu ederim", isCorrect: false, feedback: "Hata: Depresyon tıbbi bir hastalıktır, tavsiye ile geçmez." }
+          { text: "İntihar riskini sorgulayıp yatış kararı alırım", isCorrect: true, feedback: "Hayat kurtaran psikiyatrik karar. Majör depresif atakta en büyük mortalite riski intihardır. Hastanın aktif suisidal düşünceleri, planı veya eylemi varsa, hastanın kendi rızası dışında (istemsiz yatış) bile olsa kapalı bir psikiyatri servisine yatırılarak güvenliğinin sağlanması tıbbi ve yasal bir zorunluluktur." },
+          { text: "Hastayı tatile çıkması için taburcu ederim", isCorrect: false, feedback: "Bu, çağ dışı ve tehlikeli bir yaklaşımdır. Majör Depresif Bozukluk (MDB), beynin nörotransmitter (Serotonin, Norepinefrin, Dopamin) dengesinin bozulduğu biyolojik bir hastalıktır. İntihar riski taşıyan bir hastayı sadece tavsiyelerle eve veya tatile göndermek, intihara teşvik etmek veya göz yummakla eşdeğer tıbbi bir hatadır." }
         ]
       },
       {
         text: "Hasta güvende. İlaç tedavisi başlanacak. Hangi grup ilacı ilk seçenek olarak düşünürsünüz?",
         options: [
-          { text: "Seçici serotonin geri alım inhibitörü başlarım", isCorrect: true, feedback: "Doğru. Yan etki profili düşük ve etkilidir (Örn: Sertralin, Essitalopram)." },
-          { text: "Eski nesil yüksek doz antipsikotik tedavisi başlarım", isCorrect: false, feedback: "Hata: Psikozu olmayan hastaya gereksiz yan etki yüklemiş olursunuz." }
+          { text: "Seçici serotonin geri alım inhibitörü başlarım", isCorrect: true, feedback: "Doğru farmakolojik tercih. Seçici Serotonin Geri Alım İnhibitörleri (SSRI - örn: Sertralin, Essitalopram, Fluoksetin), trisiklik antidepresanlara (TCA) kıyasla kardiyotoksik, antikolinerjik ve antihistaminik yan etkileri çok daha düşük olduğu için depresyon tedavisinde birinci basamak ajanlardır." },
+          { text: "Eski nesil yüksek doz antipsikotik tedavisi başlarım", isCorrect: false, feedback: "Hatalı bir ilaç tercihi. Antipsikotikler (özellikle 1. nesil tipik antipsikotikler; Haloperidol vb.), dopamin D2 reseptörlerini bloke ederek ekstrapiramidal yan etkiler (Parkinsonizm, distoni), tardiv diskinezi ve Nöroleptik Malign Sendrom gibi çok ağır riskler taşır. Psikotik bulgusu olmayan depresyonda endikasyon dışı ve zararlıdır." }
         ]
       }
     ]
@@ -204,8 +204,8 @@ export const medCasesData: Record<string, any> = {
       {
         text: "Hastanın sırtında giderek büyüyen ve rengi koyulaşan asimetrik bir ben var. Dermatoskopi melanom şüphesi uyandırdı. Yaklaşımınız?",
         options: [
-          { text: "Eksizyonel biyopsi ile lezyonu çıkarıp gönderirim", isCorrect: true, feedback: "Doğru. Melanom şüphesinde lezyon bütünüyle çıkarılıp incelenmelidir." },
-          { text: "Nemlendirici krem verip evine gönderir takip ederim", isCorrect: false, feedback: "Hata: Malign Melanom çok agresif bir kanserdir, hasta kaybedilebilir." }
+          { text: "Eksizyonel biyopsi ile lezyonu çıkarıp gönderirim", isCorrect: true, feedback: "Çok doğru onkolojik/cerrahi yaklaşım. Şüpheli pigmente lezyonlarda tanısal altın standart 'Total Eksizyonel Biyopsi'dir (1-2 mm sağlam sınır ile). İnsizyonel (parça alma) veya punch biyopsi, lezyonun kalınlığını (Breslow derinliğini) yanlış değerlendirmeye ve tümörün evrelenmesinde ölümcül hatalara yol açabilir." },
+          { text: "Nemlendirici krem verip evine gönderir takip ederim", isCorrect: false, feedback: "Büyük bir malpraktis. Malign melanom, çok hızlı metastaz yapma potansiyeli olan (özellikle beyin, karaciğer, akciğer) ölümcül bir deri kanseridir. Dermatoskopik olarak şüpheli (Asimetri, Sınır düzensizliği, Renk değişkenliği, Çap >6mm) bir lezyonu tedavisiz bırakmak, hastanın kısa sürede yaygın metastazla kaybedilmesine neden olur." }
         ]
       }
     ]
@@ -219,15 +219,15 @@ export const medCasesData: Record<string, any> = {
       {
         text: "60 yaşında göğsünde baskı hisseden hasta terleyerek acile girdi. EKG'de Anteriyor STEMI gördünüz. İlk yapılması gereken medikal müdahale?",
         options: [
-          { text: "Aspirin, nitrat ve oksijen tedavisi başlarım", isCorrect: true, feedback: "Çok doğru! MONA-B (Morfin, Oksijen, Nitrat, Aspirin) yaklaşımı." },
-          { text: "Sırtına masaj yapıp ağrı kesici reçete ederim", isCorrect: false, feedback: "Ölümcül Hata: NSAID'ler kriz anında kontrendikedir." }
+          { text: "Aspirin, nitrat ve oksijen tedavisi başlarım", isCorrect: true, feedback: "Mükemmel acil refleks. Akut Koroner Sendromda (özellikle STEMI) anında Aspirin (trombosit agregasyonunu engeller), Oksijen (iskemik doku perfüzyonunu artırır), Nitrat (vazodilatasyonla kalbin iş yükünü azaltır) ve Morfin (ağrı ve sempatik tonusu düşürür) verilmesi standart hayat kurtarıcı ilk protokoldür." },
+          { text: "Sırtına masaj yapıp ağrı kesici reçete ederim", isCorrect: false, feedback: "Ölümcül hata! Akut myokard enfarktüsünde Aspirin dışındaki tüm non-steroid anti-inflamatuar ilaçlar (NSAİİ'ler - Örn: İbuprofen, Diklofenak) miyokardiyal rüptür (kalp yırtılması) riskini artırdığı, iyileşme dokusunu bozduğu ve pro-trombotik etkileri olabileceği için KESİNLİKLE kontrendikedir." }
         ]
       },
       {
         text: "Acil medikal tedaviyi başlattınız. Hastanın tıkanan kalp damarını açmak için kesin tedavisi nedir?",
         options: [
-          { text: "Acil koroner anjiyografi laboratuvarına almak", isCorrect: true, feedback: "Harika! Altın standart tedavi, tıkalı damarı stent ile açmaktır." },
-          { text: "Kardiyoloji servisine yatırıp kontrol planlarım", isCorrect: false, feedback: "Hata: Dakikalar içinde kalp kası ölür (Time is muscle)." }
+          { text: "Acil koroner anjiyografi laboratuvarına almak", isCorrect: true, feedback: "Kesinlikle doğru karar! STEMI'de (ST elevasyonlu miyokard enfarktüsü) asıl hedef reperfüzyondur. Altın standart, ilk 90 dakika içinde Primer Perkütan Koroner Girişim (PCI / Anjiyo ve Stent) yaparak tıkalı koroner arteri mekanik olarak açmaktır. Eğer PCI imkanı yoksa trombolitik (pıhtı eritici) tedavi ilk 30 dakikada verilmelidir." },
+          { text: "Kardiyoloji servisine yatırıp kontrol planlarım", isCorrect: false, feedback: "Hastanın hayatını riske attınız. 'Time is Muscle' (Zaman Kastır) prensibi gereği, miyokard enfarktüsünde geçen her dakika geri dönüşümsüz kas nekrozuna (ölümüne), kalp yetmezliğine ve fatal aritmilere yol açar. Damarı açmadan sadece yatırmak, modern tıpta kabul edilemez bir eksik tedavidir." }
         ]
       }
     ]

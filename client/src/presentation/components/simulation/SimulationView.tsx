@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { medCasesData } from '../../../infrastructure/data/casesData';
-import { CheckCircle, XCircle, ArrowRight, HeartPulse, Activity, User, FileText, Stethoscope } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, ArrowLeft, HeartPulse, Activity, User, FileText, Stethoscope } from 'lucide-react';
 import { soundManager } from '../../../utils/soundManager';
 
 interface SimulationViewProps {
@@ -93,6 +93,21 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
   };
 
   if (isFinished) {
+    if (isReviewMode) {
+      return (
+        <div className="glass-panel" style={{ maxWidth: '600px', margin: '2rem auto', textAlign: 'center', padding: '4rem 2rem' }}>
+          <Activity size={64} color="var(--primary)" style={{ margin: '0 auto 1.5rem auto' }} />
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Vaka İncelemesi Tamamlandı</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginBottom: '2.5rem' }}>
+            Bu vakanın tüm aşamalarındaki yanıtlarınızı ve açıklamaları incelediniz.
+          </p>
+          <button className="btn-primary" onMouseEnter={() => soundManager.playHover()} onClick={() => { soundManager.playClick(); handleFinish(); }} style={{ width: '100%', maxWidth: '300px' }}>
+            İncelemeyi Bitir
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="glass-panel" style={{ maxWidth: '600px', margin: '2rem auto', textAlign: 'center', padding: '4rem 2rem' }}>
         <HeartPulse size={64} color={finalPoints > 0 ? "var(--success)" : "var(--danger)"} style={{ margin: '0 auto 1.5rem auto' }} />
@@ -110,7 +125,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
           )}
         </p>
         <button className="btn-primary" onMouseEnter={() => soundManager.playHover()} onClick={() => { soundManager.playClick(); handleFinish(); }} style={{ width: '100%', maxWidth: '300px' }}>
-          Dashboard'a Dön
+          Geri Dön
         </button>
       </div>
     );
@@ -506,7 +521,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                 {isReviewMode && currentStage > 0 && (
                   <button
                     className="btn-secondary"
-                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--glass-bg)', color: 'var(--text-main)', border: '1px solid var(--glass-border)' }}
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                     onClick={() => {
                       soundManager.playClick();
                       setCurrentStage(prev => prev - 1);
@@ -514,7 +529,8 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                     }}
                     onMouseEnter={() => soundManager.playHover()}
                   >
-                    ← Önceki Aşama
+                    <ArrowLeft size={18} />
+                    Önceki Aşama
                   </button>
                 )}
                 <button
