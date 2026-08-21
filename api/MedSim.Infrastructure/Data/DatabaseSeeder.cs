@@ -10,6 +10,9 @@ public static class DatabaseSeeder
         // Add Curriculum Hierarchy
         await CurriculumSeeder.SeedAsync(context);
 
+        // Seed high-quality classic Anatomy TUS questions (idempotent)
+        await AnatomyClassicSeeder.SeedAsync(context);
+
         // Add Test User
         if (!await context.Users.AnyAsync(u => u.Email == "test@test.com"))
         {
