@@ -327,11 +327,12 @@ ZORUNLU SORU KONSEPTİ:
 - Soru Odak Noktası: {randomFocus}
 Lütfen tüm soruları ağırlıklı olarak '{randomFocus}' konseptine göre kurgula. Asla daha önce ürettiğin bilindik örnekleri veya standart TUS çıkmış sorularının aynısını tekrar etme.
 
-Kritik Kural (Çok Önemli):
-1. Soru metni (questionText) çok ÖZET ve KISA olmalıdır. Kesinlikle gereksiz detaylar ve laf kalabalığı yapılmamalı, okumayı zorlaştıracak uzunlukta olmamalıdır.
-2. Şıkların metinleri MÜMKÜN OLDUĞUNCA KISA tutulmalıdır (tercihen 2-5 kelime arası). Ayrıca tüm şıklar kelime/karakter uzunluğu olarak birbirine neredeyse eşit olmalıdır. Doğru şık kesinlikle diğerlerinden daha uzun olmamalıdır.
-3. Şıklarda KESİNLİKLE parantez içinde ek bilgiler, açıklamalar veya ipuçları (örn. '... (en olası)', '... (altın standart)') yer almamalıdır. Parantez kullanımı şıklarda tamamen yasaktır.
-4. ""explanation"" (açıklama) kısmı ÇOK DETAYLI ve ÖĞRETİCİ olmalıdır. Ancak okunmasını kolaylaştırmak için DÜZ YAZI YERİNE mutlaka HTML etiketleri (<b>, <br/><br/>, <ul><li> vb.) kullanılarak paragraflara ve maddelere bölünmelidir. Örneğin: '<b>Doğru Cevap:</b> ... <br/><br/> <b>Diğer Şıklar Neden Yanlış:</b><ul><li><b>A Şıkkı:</b> ...</li></ul>' şeklinde göze hitap eden bir format kullanılmalıdır.
+KESİNLİKLE UYULMASI ZORUNLU ŞIK KURALLARI (ihlal edilirse yanıt kabul edilmez):
+1. Soru metni (questionText) çok ÖZET ve KISA olmalıdır. Gereksiz detay, laf kalabalığı yasak.
+2. Tüm şıklar (optionA–E) kelime sayısı olarak birbirine EŞİT uzunlukta olmalı. Hiçbir şık diğerinden 3 kelimeden fazla uzun olmamalı.
+3. Doğru şık (correctOption) hiçbir zaman 5 şık arasında EN UZUN şık olmamalı. Doğru şık uzunluk bakımından orta ya da kısa olmalı.
+4. Şıklarda ASLA parantez '(' veya ')' kullanılmamalı. Hiçbir şıkta parantez içinde bilgi, açıklama veya ipucu bulunmamalı.
+5. ""explanation"" (açıklama) kısmı ÇOK DETAYLI ve ÖĞRETİCİ olmalıdır. HTML etiketleri (<b>, <br/><br/>, <ul><li> vb.) kullanılarak bölünmeli: '<b>Doğru Cevap:</b> ... <br/><br/> <b>Diğer Şıklar Neden Yanlış:</b><ul><li><b>A Şıkkı:</b> ...</li></ul>'
 
 {difficultyRules}
 
@@ -395,23 +396,29 @@ Lütfen JSON dışında hiçbir metin, açıklama veya markdown bloğu kullanma.
                 
                 if (parsedList != null)
                 {
-                    return parsedList.Select(q => new TusQuestion
+                    var tusQuestions = parsedList.Select(q =>
                     {
-                        Id = Guid.NewGuid(),
-                        QuestionText = q.QuestionText,
-                        OptionA = q.OptionA,
-                        OptionB = q.OptionB,
-                        OptionC = q.OptionC,
-                        OptionD = q.OptionD,
-                        OptionE = q.OptionE,
-                        CorrectOption = q.CorrectOption,
-                        Explanation = q.Explanation,
-                        Difficulty = q.Difficulty,
-                        DifficultyScore = q.DifficultyScore,
-                        DifficultyReason = q.DifficultyReason,
-                        Category = "Temel Bilimler", // Simplification
-                        Subject = subject
+                        var tq = new TusQuestion
+                        {
+                            Id = Guid.NewGuid(),
+                            QuestionText = q.QuestionText,
+                            OptionA = StripParentheses(q.OptionA),
+                            OptionB = StripParentheses(q.OptionB),
+                            OptionC = StripParentheses(q.OptionC),
+                            OptionD = StripParentheses(q.OptionD),
+                            OptionE = StripParentheses(q.OptionE),
+                            CorrectOption = q.CorrectOption,
+                            Explanation = q.Explanation,
+                            Difficulty = q.Difficulty,
+                            DifficultyScore = q.DifficultyScore,
+                            DifficultyReason = q.DifficultyReason,
+                            Category = "Temel Bilimler",
+                            Subject = subject
+                        };
+                        ShuffleTusOptions(tq);
+                        return tq;
                     }).ToList();
+                    return tusQuestions;
                 }
             }
         }
@@ -432,15 +439,17 @@ Lütfen JSON dışında hiçbir metin, açıklama veya markdown bloğu kullanma.
         var prompt = $@"
 Sen uzman bir tıp akademisyenisin. TUS (Tıpta Uzmanlık Sınavı) standartlarında, '{subject}' dersi, '{topicName}' konusu ve '{subTopicName}' alt konusu ile ilgili en sık sorulan, yüksek frekanslı, hap bilgi niteliğinde tek bir Klasikleşmiş TUS Bilgisi (TusKnowledge) ve bu bilgiye bağlı tam 3 adet farklı kısa soru varyasyonu üret.
 
-KURALLAR:
-1. Bilgi (KnowledgeText): Çok net, tek cümlelik, ezberlenmesi kolay bir bilgi olmalıdır. Örn: ""ACE inhibitörleri gebelikte kontrendikedir."" veya ""Osteokondrom en sık görülen benign kemik tümörüdür.""
+KESİNLİKLE UYULMASI ZORUNLU KURALLAR:
+1. Bilgi (KnowledgeText): Çok net, tek cümlelik, ezberlenmesi kolay bir bilgi olmalıdır. Örn: ""ACE inhibitörleri gebelikte kontrendikedir.""
 2. Sorular (Questions): 
    - Tam 3 adet soru varyasyonu üret.
-   - Sorular KISA ve DİREKT olmalıdır. Gereksiz uzun klinik vaka hikayesi, laboratuvar veya görüntüleme sonucu içermemelidir.
-   - Hızlı çözülebilir (10-30 saniye) ve tek bir bilgiyi (yukarıdaki KnowledgeText) ölçmelidir.
-   - Her soru 5 seçenekli (OptionA-E) olmalı, tek bir doğru cevap (CorrectOption: A, B, C, D, E) içermelidir.
-   - Doğru şık kesinlikle diğer şıklardan uzun veya parantez içi açıklama içeren yapıda olmamalıdır.
-   - ""explanation"" (açıklama) kısmı kısa, net ve öğretici olmalıdır.
+   - Sorular KISA ve DİREKT olmalıdır. Gereksiz uzun klinik vaka yasak.
+   - Hızlı çözülebilir (10-30 saniye) ve tek bir bilgiyi ölçmeli.
+   - Her soru 5 seçenekli (OptionA-E) olmalı, tek doğru cevap içermeli.
+   - Tüm şıklar kelime sayısı olarak birbirine EŞİT uzunlukta olmalı (max 3 kelime fark).
+   - Doğru şık (correctOption) hiçbir zaman 5 şık arasında EN UZUN şık olmamalı.
+   - Şıklarda ASLA parantez '(' veya ')' kullanılmamalı. Parantez tamamen yasak.
+   - Açıklama kısa, net ve öğretici olmalıdır.
 3. ImportanceScore: Bu bilginin TUS'taki çıkma/sorulma önem derecesi (0-100 arası bir sayı).
 4. RepetitionFrequency: ""Çok Yüksek"", ""Yüksek"", ""Orta"" değerlerinden biri.
 5. Sources: Bu bilginin geçtiği TUS kaynakları (Örn: ""ÖSYM TUS 2023; TUS Konu Kitabı X""). Semicolon ile ayrılmış liste olmalı.
@@ -518,25 +527,30 @@ KURALLAR:
                         IsActive = true
                     };
 
-                    var questions = parsed.Questions.Select(q => new TusQuestion
+                    var questions = parsed.Questions.Select(q =>
                     {
-                        Id = Guid.NewGuid(),
-                        TusKnowledgeId = knowledge.Id,
-                        TusKnowledge = knowledge,
-                        QuestionText = q.QuestionText,
-                        OptionA = q.OptionA,
-                        OptionB = q.OptionB,
-                        OptionC = q.OptionC,
-                        OptionD = q.OptionD,
-                        OptionE = q.OptionE,
-                        CorrectOption = q.CorrectOption,
-                        Explanation = q.Explanation,
-                        Subject = subject,
-                        Category = subject == "Anatomi" || subject == "Fizyoloji" || subject == "Biyokimya" || subject == "Mikrobiyoloji" || subject == "Patoloji" || subject == "Farmakoloji" ? "Temel Bilimler" : "Klinik Bilimler",
-                        IsClassic = true,
-                        IsApproved = false, // AI-generated starts as pending approval
-                        Difficulty = parsed.ImportanceScore >= 80 ? "Zor" : parsed.ImportanceScore >= 50 ? "Orta" : "Kolay",
-                        DifficultyScore = parsed.ImportanceScore / 10
+                        var tq = new TusQuestion
+                        {
+                            Id = Guid.NewGuid(),
+                            TusKnowledgeId = knowledge.Id,
+                            TusKnowledge = knowledge,
+                            QuestionText = q.QuestionText,
+                            OptionA = StripParentheses(q.OptionA),
+                            OptionB = StripParentheses(q.OptionB),
+                            OptionC = StripParentheses(q.OptionC),
+                            OptionD = StripParentheses(q.OptionD),
+                            OptionE = StripParentheses(q.OptionE),
+                            CorrectOption = q.CorrectOption,
+                            Explanation = q.Explanation,
+                            Subject = subject,
+                            Category = subject == "Anatomi" || subject == "Fizyoloji" || subject == "Biyokimya" || subject == "Mikrobiyoloji" || subject == "Patoloji" || subject == "Farmakoloji" ? "Temel Bilimler" : "Klinik Bilimler",
+                            IsClassic = true,
+                            IsApproved = false,
+                            Difficulty = parsed.ImportanceScore >= 80 ? "Zor" : parsed.ImportanceScore >= 50 ? "Orta" : "Kolay",
+                            DifficultyScore = parsed.ImportanceScore / 10
+                        };
+                        ShuffleTusOptions(tq);
+                        return tq;
                     }).ToList();
 
                     return (knowledge, questions);
@@ -545,6 +559,48 @@ KURALLAR:
         }
 
         throw new Exception("Yapay zeka klasik soru üretemedi.");
+    }
+
+    /// <summary>
+    /// Removes all parenthetical content from option text.
+    /// e.g. "Metformin (ilk seçenek)" → "Metformin"
+    /// </summary>
+    private static string StripParentheses(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return text;
+        // Remove content inside parentheses and trim
+        var result = System.Text.RegularExpressions.Regex.Replace(text, @"\s*\([^)]*\)", string.Empty).Trim();
+        return string.IsNullOrWhiteSpace(result) ? text : result; // fallback to original if stripping makes it empty
+    }
+
+    /// <summary>
+    /// Shuffles TusQuestion options so the correct answer lands on a random position (A-E).
+    /// Prevents AI from always placing the correct answer in the same or longest position.
+    /// </summary>
+    private void ShuffleTusOptions(TusQuestion q)
+    {
+        var opts = new[] { q.OptionA, q.OptionB, q.OptionC, q.OptionD, q.OptionE };
+        var correctIndex = q.CorrectOption switch
+        {
+            "A" => 0, "B" => 1, "C" => 2, "D" => 3, "E" => 4, _ => 0
+        };
+        var correctText = opts[correctIndex];
+
+        // Shuffle
+        for (int i = opts.Length - 1; i > 0; i--)
+        {
+            int j = _random.Next(i + 1);
+            (opts[i], opts[j]) = (opts[j], opts[i]);
+        }
+
+        // Find new position of the correct answer
+        int newCorrectIndex = Array.IndexOf(opts, correctText);
+        q.CorrectOption = ((char)('A' + newCorrectIndex)).ToString();
+        q.OptionA = opts[0];
+        q.OptionB = opts[1];
+        q.OptionC = opts[2];
+        q.OptionD = opts[3];
+        q.OptionE = opts[4];
     }
 }
 
