@@ -158,6 +158,31 @@ export default function Home() {
     );
   }
 
+  if (currentView === 'admin') {
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: 'var(--bg-color)', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+        <div className="bg-mesh" style={{ zIndex: 0 }}>
+          <div className="mesh-blob blob-1" />
+          <div className="mesh-blob blob-2" />
+          <div className="mesh-blob blob-3" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '1rem 2rem', zIndex: 10, flexShrink: 0 }}>
+          <button
+            onClick={() => setCurrentView('dashboard')}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.9rem', padding: '0.6rem 1.25rem', borderRadius: 30, fontWeight: 700, backdropFilter: 'blur(12px)', transition: 'all 0.25s ease', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; (e.currentTarget as HTMLElement).style.transform = 'translateX(-3px)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.transform = 'translateX(0)'; }}
+          >
+            <ArrowLeft size={16} /> Panele Dön
+          </button>
+        </div>
+        <div style={{ flex: 1, margin: '0 2rem 2rem 2rem', background: 'var(--glass-bg)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-float), var(--shadow-inner)', padding: '2rem', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 5, position: 'relative' }}>
+          <AdminDashboard userEmail={user.email} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <TopBar 
