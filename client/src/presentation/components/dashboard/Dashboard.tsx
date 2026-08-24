@@ -181,8 +181,8 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
         </div>
         <button 
           style={{ 
-            padding: '0.7rem 1.6rem', 
-            fontSize: '0.95rem', 
+            padding: filterSubject ? '0.65rem 1.4rem' : '0.7rem 1.6rem', 
+            fontSize: filterSubject ? '0.9rem' : '0.95rem', 
             fontWeight: 800, 
             borderRadius: '50px', 
             background: 'linear-gradient(135deg, #e11d48, #be123c, #f43f5e)',
@@ -195,7 +195,7 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.6rem',
+            gap: filterSubject ? '0.5rem' : '0.6rem',
             animation: 'pulseGlow 2s infinite'
           }} 
           onMouseEnter={e => { 
@@ -211,7 +211,7 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
           onClick={() => { soundManager.playClick(); setShowGenerateModal(true); }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-          YENİ VAKA SİMÜLASYONU OLUŞTUR
+          {filterSubject ? "YENİ VAKA OLUŞTUR" : "YENİ VAKA SİMÜLASYONU OLUŞTUR"}
         </button>
       </div>
 
@@ -351,8 +351,8 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
           <div 
             onClick={e => e.stopPropagation()}
             style={{ 
-              width: '100%', maxWidth: '460px', 
-              padding: '2rem', 
+              width: '100%', maxWidth: '820px', 
+              padding: '2.5rem', 
               background: isLight 
                 ? 'linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95))'
                 : 'linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.98))', 
@@ -363,7 +363,9 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
                 : '0 25px 50px -12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
               animation: 'slideUpScale 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              maxHeight: '95vh',
+              overflowY: 'auto'
             }}
           >
             {/* Decorative Glow */}
@@ -428,305 +430,320 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
                 </div>
               ) : (
                 /* ── Normal Form ── */
-                <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div style={{ 
-                  padding: '0.85rem', 
-                  background: isLight ? 'linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(6, 182, 212, 0.08))' : 'linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(6, 182, 212, 0.15))', 
-                  borderRadius: '16px', color: 'var(--primary)', 
-                  border: isLight ? '1px solid rgba(79, 70, 229, 0.15)' : '1px solid rgba(79, 70, 229, 0.3)',
-                  boxShadow: isLight ? '0 8px 20px rgba(79, 70, 229, 0.08)' : '0 8px 20px rgba(79, 70, 229, 0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <BrainCircuit size={24} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0 0 0.25rem 0', color: isLight ? '#0f172a' : 'white', letterSpacing: '-0.5px' }}>
-                    Klinik Vaka Simülatörü
-                  </h3>
-                  <p style={{ color: isLight ? '#64748b' : '#94a3b8', fontSize: '0.88rem', margin: 0, fontWeight: 500 }}>
-                    Yapay zeka tarafından branşınıza özel kurgulanan özgün klinik vakalar.
-                  </p>
-                </div>
-              </div>
-              
-              <div style={{ height: '1px', background: isLight ? 'linear-gradient(90deg, rgba(0,0,0,0.06), transparent)' : 'linear-gradient(90deg, rgba(255,255,255,0.06), transparent)', margin: '1.25rem 0' }} />
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
-                    <Stethoscope size={16} color="var(--primary)" />
-                    Dönem / Eğitim Yılı
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <select 
-                      value={genYear} 
-                      onChange={e => setGenYear(e.target.value)} 
-                      disabled={!!filterSubject}
-                      style={{ 
-                        width: '100%', padding: '0.85rem 1rem', 
-                        borderRadius: '12px', 
-                        background: !!filterSubject ? (isLight ? '#e2e8f0' : 'rgba(0,0,0,0.5)') : (isLight ? 'white' : 'rgba(30, 41, 59, 0.6)'), 
-                        border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
-                        color: !!filterSubject ? (isLight ? '#64748b' : '#94a3b8') : (isLight ? '#0f172a' : 'white'),
-                        fontSize: '0.95rem', fontWeight: 600,
-                        outline: 'none', transition: 'all 0.2s',
-                        appearance: 'none',
-                        cursor: !!filterSubject ? 'not-allowed' : 'pointer'
-                      }}
-                      onFocus={e => { if (!filterSubject) { e.currentTarget.style.borderColor = 'var(--primary)'; } }}
-                      onBlur={e => { e.currentTarget.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)'; }}
-                    >
-                      {uniqueYears.map(year => (
-                        <option key={year} value={year.toString()} style={{ background: isLight ? 'white' : '#1e293b' }}>
-                          Dönem {year}
-                        </option>
-                      ))}
-                    </select>
-                    <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--primary)', opacity: 0.7, fontSize: '0.8rem' }}>
-                      ▼
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
-                    <Activity size={16} color="var(--secondary)" />
-                    Klinik Branş
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <select 
-                      value={genSubject} 
-                      onChange={e => setGenSubject(e.target.value)} 
-                      disabled={!!filterSubject}
-                      style={{ 
-                        width: '100%', padding: '0.85rem 1rem', 
-                        borderRadius: '12px', 
-                        background: !!filterSubject ? (isLight ? '#e2e8f0' : 'rgba(0,0,0,0.5)') : (isLight ? 'white' : 'rgba(30, 41, 59, 0.6)'), 
-                        border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
-                        color: !!filterSubject ? (isLight ? '#64748b' : '#94a3b8') : (isLight ? '#0f172a' : 'white'),
-                        fontSize: '0.95rem', fontWeight: 600,
-                        outline: 'none', transition: 'all 0.2s',
-                        appearance: 'none',
-                        cursor: !!filterSubject ? 'not-allowed' : 'pointer'
-                      }}
-                      onFocus={e => { if (!filterSubject) { e.currentTarget.style.borderColor = 'var(--secondary)'; } }}
-                      onBlur={e => { e.currentTarget.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)'; }}
-                    >
-                      {departments.filter(d => d.year === Number(genYear)).map(subj => (
-                        <option key={subj.id} value={subj.name} style={{ background: isLight ? 'white' : '#1e293b' }}>{subj.name}</option>
-                      ))}
-                    </select>
-                    <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--secondary)', opacity: 0.7, fontSize: '0.8rem' }}>
-                      ▼
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Konu ve Alt Konu Seçimi */}
-              {(() => {
-                const activeDept = departments.find(d => d.year === Number(genYear) && d.name === genSubject);
-                const topics = activeDept?.topics || [];
-                const activeTopic = topics.find(t => t.name === genTopic);
-                const subTopics = activeTopic?.subTopics || [];
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {/* Two Column Layout for Horizontal Alignment */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start' }}>
+                    
+                    {/* ── LEFT COLUMN ── */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {/* Header */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div style={{ 
+                          padding: '0.85rem', 
+                          background: isLight ? 'linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(6, 182, 212, 0.08))' : 'linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(6, 182, 212, 0.15))', 
+                          borderRadius: '16px', color: 'var(--primary)', 
+                          border: isLight ? '1px solid rgba(79, 70, 229, 0.15)' : '1px solid rgba(79, 70, 229, 0.3)',
+                          boxShadow: isLight ? '0 8px 20px rgba(79, 70, 229, 0.08)' : '0 8px 20px rgba(79, 70, 229, 0.2)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                          <BrainCircuit size={28} strokeWidth={2.5} />
+                        </div>
+                        <div>
+                          <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.25rem 0', color: isLight ? '#0f172a' : 'white', letterSpacing: '-0.5px' }}>
+                            Klinik Vaka Simülatörü
+                          </h3>
+                          <p style={{ color: isLight ? '#64748b' : '#94a3b8', fontSize: '0.88rem', margin: 0, fontWeight: 500, lineHeight: 1.4 }}>
+                            Yapay zeka tarafından branşınıza özel kurgulanan özgün klinik vakalar.
+                          </p>
+                        </div>
+                      </div>
 
-                return (
-                  <>
-                    {topics.length > 0 && (
+                      <div style={{ height: '1px', background: isLight ? 'linear-gradient(90deg, rgba(0,0,0,0.06), transparent)' : 'linear-gradient(90deg, rgba(255,255,255,0.06), transparent)', margin: '0.5rem 0 1.5rem 0' }} />
+
                       <div style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
-                          <span>Konu Seçimi (İsteğe Bağlı)</span>
+                          <span>Zorluk Seviyesi</span>
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          {['Kolay', 'Orta', 'Zor'].map((lvl) => (
+                            <button
+                              key={lvl}
+                              onClick={() => { soundManager.playClick(); setGenDifficulty(lvl); }}
+                              onMouseEnter={() => soundManager.playHover()}
+                              style={{
+                                flex: 1,
+                                padding: '0.75rem',
+                                borderRadius: '10px',
+                                fontWeight: 700,
+                                fontSize: '0.9rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                background: genDifficulty === lvl 
+                                  ? (lvl === 'Zor' ? 'rgba(244,63,94,0.15)' : lvl === 'Orta' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)')
+                                  : (isLight ? 'white' : 'rgba(30, 41, 59, 0.6)'),
+                                color: genDifficulty === lvl 
+                                  ? (lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : '#10b981')
+                                  : (isLight ? '#64748b' : '#94a3b8'),
+                                border: genDifficulty === lvl 
+                                  ? `1.5px solid ${lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : '#10b981'}`
+                                  : (isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)')
+                              }}
+                            >
+                              {lvl}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
+                          <span>Üretilecek Vaka Sayısı</span>
+                          <span style={{ fontSize: '0.8rem', color: isLight ? '#94a3b8' : '#64748b' }}>(1 - 10)</span>
                         </label>
                         <div style={{ position: 'relative' }}>
-                          <select 
-                            value={genTopic} 
-                            onChange={e => setGenTopic(e.target.value)}
+                          <input 
+                            type="number" min="1" max="10" 
+                            value={genCount} 
+                            onChange={e => {
+                              let val = e.target.value;
+                              if (val === '') {
+                                setGenCount('' as any);
+                                return;
+                              }
+                              let num = parseInt(val, 10);
+                              if (isNaN(num)) return;
+                              if (num > 10) num = 10;
+                              setGenCount(num);
+                            }} 
                             style={{ 
                               width: '100%', padding: '0.85rem 1rem', 
                               borderRadius: '12px', 
                               background: isLight ? 'white' : 'rgba(30, 41, 59, 0.6)', 
                               border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
                               color: isLight ? '#0f172a' : 'white',
-                              fontSize: '0.95rem', fontWeight: 600,
+                              fontSize: '1.1rem', fontWeight: 700,
                               outline: 'none', transition: 'all 0.2s',
-                              appearance: 'none', cursor: 'pointer'
+                              boxShadow: isLight ? 'inset 0 1px 2px rgba(0,0,0,0.05)' : 'none'
                             }}
-                          >
-                            <option value="">Rastgele Konu</option>
-                            {topics.map(t => (
-                              <option key={t.id} value={t.name}>{t.name}</option>
-                            ))}
-                          </select>
-                          <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--secondary)', opacity: 0.7, fontSize: '0.8rem' }}>▼</div>
+                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                            onBlur={e => {
+                              let val = Number(e.target.value);
+                              if (val < 1 || isNaN(val) || e.target.value === '') setGenCount(1);
+                              e.currentTarget.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)';
+                            }}
+                          />
+                          <div style={{ position: 'absolute', right: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: isLight ? '#94a3b8' : '#64748b', pointerEvents: 'none', fontWeight: 800, fontSize: '0.85rem' }}>VAKA</div>
                         </div>
+                      </div>
+
+                    </div>
+
+                    {/* ── RIGHT COLUMN ── */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
+                            <Stethoscope size={16} color="var(--primary)" />
+                            Dönem / Eğitim Yılı
+                          </label>
+                          <div style={{ position: 'relative' }}>
+                            <select 
+                              value={genYear} 
+                              onChange={e => setGenYear(e.target.value)} 
+                              disabled={!!filterSubject}
+                              style={{ 
+                                width: '100%', padding: '0.85rem 1rem', 
+                                borderRadius: '12px', 
+                                background: !!filterSubject ? (isLight ? '#e2e8f0' : 'rgba(0,0,0,0.5)') : (isLight ? 'white' : 'rgba(30, 41, 59, 0.6)'), 
+                                border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
+                                color: !!filterSubject ? (isLight ? '#64748b' : '#94a3b8') : (isLight ? '#0f172a' : 'white'),
+                                fontSize: '0.95rem', fontWeight: 600,
+                                outline: 'none', transition: 'all 0.2s',
+                                appearance: 'none',
+                                cursor: !!filterSubject ? 'not-allowed' : 'pointer'
+                              }}
+                              onFocus={e => { if (!filterSubject) { e.currentTarget.style.borderColor = 'var(--primary)'; } }}
+                              onBlur={e => { e.currentTarget.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)'; }}
+                            >
+                              {uniqueYears.map(year => (
+                                <option key={year} value={year.toString()} style={{ background: isLight ? 'white' : '#1e293b' }}>
+                                  Dönem {year}
+                                </option>
+                              ))}
+                            </select>
+                            <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--primary)', opacity: 0.7, fontSize: '0.8rem' }}>
+                              ▼
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
+                            <Activity size={16} color="var(--secondary)" />
+                            Klinik Branş
+                          </label>
+                          <div style={{ position: 'relative' }}>
+                            <select 
+                              value={genSubject} 
+                              onChange={e => setGenSubject(e.target.value)} 
+                              disabled={!!filterSubject}
+                              style={{ 
+                                width: '100%', padding: '0.85rem 1rem', 
+                                borderRadius: '12px', 
+                                background: !!filterSubject ? (isLight ? '#e2e8f0' : 'rgba(0,0,0,0.5)') : (isLight ? 'white' : 'rgba(30, 41, 59, 0.6)'), 
+                                border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
+                                color: !!filterSubject ? (isLight ? '#64748b' : '#94a3b8') : (isLight ? '#0f172a' : 'white'),
+                                fontSize: '0.95rem', fontWeight: 600,
+                                outline: 'none', transition: 'all 0.2s',
+                                appearance: 'none',
+                                cursor: !!filterSubject ? 'not-allowed' : 'pointer'
+                              }}
+                              onFocus={e => { if (!filterSubject) { e.currentTarget.style.borderColor = 'var(--secondary)'; } }}
+                              onBlur={e => { e.currentTarget.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)'; }}
+                            >
+                              {departments.filter(d => d.year === Number(genYear)).map(subj => (
+                                <option key={subj.id} value={subj.name} style={{ background: isLight ? 'white' : '#1e293b' }}>{subj.name}</option>
+                              ))}
+                            </select>
+                            <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--secondary)', opacity: 0.7, fontSize: '0.8rem' }}>
+                              ▼
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Konu ve Alt Konu Seçimi */}
+                      {(() => {
+                        const activeDept = departments.find(d => d.year === Number(genYear) && d.name === genSubject);
+                        const topics = activeDept?.topics || [];
+                        const activeTopic = topics.find(t => t.name === genTopic);
+                        const subTopics = activeTopic?.subTopics || [];
+
+                        return (
+                          <>
+                            {topics.length > 0 && (
+                              <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
+                                  <span>Konu Seçimi (İsteğe Bağlı)</span>
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                  <select 
+                                    value={genTopic} 
+                                    onChange={e => setGenTopic(e.target.value)}
+                                    style={{ 
+                                      width: '100%', padding: '0.85rem 1rem', 
+                                      borderRadius: '12px', 
+                                      background: isLight ? 'white' : 'rgba(30, 41, 59, 0.6)', 
+                                      border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
+                                      color: isLight ? '#0f172a' : 'white',
+                                      fontSize: '0.95rem', fontWeight: 600,
+                                      outline: 'none', transition: 'all 0.2s',
+                                      appearance: 'none', cursor: 'pointer'
+                                    }}
+                                  >
+                                    <option value="">Rastgele Konu</option>
+                                    {topics.map(t => (
+                                      <option key={t.id} value={t.name}>{t.name}</option>
+                                    ))}
+                                  </select>
+                                  <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--secondary)', opacity: 0.7, fontSize: '0.8rem' }}>▼</div>
+                                </div>
+                              </div>
+                            )}
+
+                            {genTopic && subTopics.length > 0 && (
+                              <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
+                                  <span>Alt Konu Seçimi (İsteğe Bağlı)</span>
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                  <select 
+                                    value={genSubTopic} 
+                                    onChange={e => setGenSubTopic(e.target.value)}
+                                    style={{ 
+                                      width: '100%', padding: '0.85rem 1rem', 
+                                      borderRadius: '12px', 
+                                      background: isLight ? 'white' : 'rgba(30, 41, 59, 0.6)', 
+                                      border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
+                                      color: isLight ? '#0f172a' : 'white',
+                                      fontSize: '0.95rem', fontWeight: 600,
+                                      outline: 'none', transition: 'all 0.2s',
+                                      appearance: 'none', cursor: 'pointer'
+                                    }}
+                                  >
+                                    <option value="">Rastgele Alt Konu</option>
+                                    {subTopics.map(s => (
+                                      <option key={s.id} value={s.name}>{s.name}</option>
+                                    ))}
+                                  </select>
+                                  <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--secondary)', opacity: 0.7, fontSize: '0.8rem' }}>▼</div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* BOTTOM ACTIONS */}
+                  <div style={{ marginTop: '0.5rem' }}>
+                    {generateError && (
+                      <div style={{ marginBottom: '1.5rem', padding: '0.75rem 1rem', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: '12px', color: '#f43f5e', fontSize: '0.85rem', lineHeight: 1.5, fontWeight: 600 }}>
+                        ⚠️ {generateError}
                       </div>
                     )}
 
-                    {genTopic && subTopics.length > 0 && (
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
-                          <span>Alt Konu Seçimi (İsteğe Bağlı)</span>
-                        </label>
-                        <div style={{ position: 'relative' }}>
-                          <select 
-                            value={genSubTopic} 
-                            onChange={e => setGenSubTopic(e.target.value)}
-                            style={{ 
-                              width: '100%', padding: '0.85rem 1rem', 
-                              borderRadius: '12px', 
-                              background: isLight ? 'white' : 'rgba(30, 41, 59, 0.6)', 
-                              border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
-                              color: isLight ? '#0f172a' : 'white',
-                              fontSize: '0.95rem', fontWeight: 600,
-                              outline: 'none', transition: 'all 0.2s',
-                              appearance: 'none', cursor: 'pointer'
-                            }}
-                          >
-                            <option value="">Rastgele Alt Konu</option>
-                            {subTopics.map(s => (
-                              <option key={s.id} value={s.name}>{s.name}</option>
-                            ))}
-                          </select>
-                          <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--secondary)', opacity: 0.7, fontSize: '0.8rem' }}>▼</div>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
-                  <span>Zorluk Seviyesi</span>
-                </label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {['Kolay', 'Orta', 'Zor'].map((lvl) => (
-                    <button
-                      key={lvl}
-                      onClick={() => { soundManager.playClick(); setGenDifficulty(lvl); }}
-                      onMouseEnter={() => soundManager.playHover()}
-                      style={{
-                        flex: 1,
-                        padding: '0.75rem',
-                        borderRadius: '10px',
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        background: genDifficulty === lvl 
-                          ? (lvl === 'Zor' ? 'rgba(244,63,94,0.15)' : lvl === 'Orta' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)')
-                          : (isLight ? 'white' : 'rgba(30, 41, 59, 0.6)'),
-                        color: genDifficulty === lvl 
-                          ? (lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : '#10b981')
-                          : (isLight ? '#64748b' : '#94a3b8'),
-                        border: genDifficulty === lvl 
-                          ? `1.5px solid ${lvl === 'Zor' ? '#f43f5e' : lvl === 'Orta' ? '#f59e0b' : '#10b981'}`
-                          : (isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)')
-                      }}
-                    >
-                      {lvl}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '2rem' }}>
-                <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 700 }}>
-                  <span>Üretilecek Vaka Sayısı</span>
-                  <span style={{ fontSize: '0.8rem', color: isLight ? '#94a3b8' : '#64748b' }}>(1 - 10)</span>
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input 
-                    type="number" min="1" max="10" 
-                    value={genCount} 
-                    onChange={e => {
-                      let val = e.target.value;
-                      if (val === '') {
-                        setGenCount('' as any);
-                        return;
-                      }
-                      let num = parseInt(val, 10);
-                      if (isNaN(num)) return;
-                      if (num > 10) num = 10;
-                      setGenCount(num);
-                    }} 
-                    style={{ 
-                      width: '100%', padding: '0.85rem 1rem', 
-                      borderRadius: '12px', 
-                      background: isLight ? 'white' : 'rgba(30, 41, 59, 0.6)', 
-                      border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.1)', 
-                      color: isLight ? '#0f172a' : 'white',
-                      fontSize: '1.1rem', fontWeight: 700,
-                      outline: 'none', transition: 'all 0.2s',
-                      boxShadow: isLight ? 'inset 0 1px 2px rgba(0,0,0,0.05)' : 'none'
-                    }}
-                    onFocus={e => { e.currentTarget.style.borderColor = 'var(--primary)'; }}
-                    onBlur={e => {
-                      let val = Number(e.target.value);
-                      if (val < 1 || isNaN(val) || e.target.value === '') setGenCount(1);
-                      e.currentTarget.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)';
-                    }}
-                  />
-                  <div style={{ position: 'absolute', right: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: isLight ? '#94a3b8' : '#64748b', pointerEvents: 'none', fontWeight: 800, fontSize: '0.85rem' }}>VAKA</div>
-                </div>
-              </div>
-
-              {generateError && (
-                <div style={{ marginBottom: '1.25rem', padding: '0.75rem 1rem', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: '12px', color: '#f43f5e', fontSize: '0.85rem', lineHeight: 1.5, fontWeight: 600 }}>
-                  ⚠️ {generateError}
+                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                      <button 
+                        onClick={() => { soundManager.playClick(); setShowGenerateModal(false); setGenerateError(null); }}
+                        disabled={isGenerating}
+                        style={{ 
+                          padding: '0.85rem 2rem', background: 'transparent', 
+                          border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.15)', 
+                          color: isLight ? '#475569' : '#cbd5e1', 
+                          borderRadius: '14px', fontWeight: 700, fontSize: '0.95rem',
+                          cursor: isGenerating ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                          opacity: isGenerating ? 0.5 : 1
+                        }}
+                        onMouseEnter={e => { if (!isGenerating) { e.currentTarget.style.background = isLight ? '#f1f5f9' : 'rgba(255,255,255,0.05)'; } }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                      >
+                        İptal
+                      </button>
+                      <button 
+                        onClick={() => { soundManager.playClick(); handleGenerate(); }}
+                        disabled={isGenerating}
+                        style={{ 
+                          padding: '0.85rem 2.5rem', 
+                          background: isGenerating ? 'rgba(79,70,229,0.5)' : 'linear-gradient(135deg, var(--primary), var(--secondary))', 
+                          border: 'none', color: 'white', 
+                          borderRadius: '14px', fontWeight: 800, fontSize: '0.95rem',
+                          boxShadow: isGenerating ? 'none' : '0 8px 20px rgba(79, 70, 229, 0.3)',
+                          cursor: isGenerating ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                        }}
+                        onMouseEnter={e => { if (!isGenerating) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(79, 70, 229, 0.4)'; } }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isGenerating ? 'none' : '0 8px 20px rgba(79, 70, 229, 0.3)'; }}
+                      >
+                        {isGenerating ? (
+                          <>
+                            <div style={{ position: 'relative', width: '16px', height: '16px' }}>
+                              <span style={{ display: 'inline-block', position: 'absolute', inset: 0, border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                            </div>
+                            Simülasyon Kuruluyor...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={16} />
+                            Simülasyonu Başlat
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
-
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button 
-                  onClick={() => { soundManager.playClick(); setShowGenerateModal(false); setGenerateError(null); }}
-                  disabled={isGenerating}
-                  style={{ 
-                    flex: 1, padding: '0.85rem', background: 'transparent', 
-                    border: isLight ? '1.5px solid #cbd5e1' : '1.5px solid rgba(255,255,255,0.15)', 
-                    color: isLight ? '#475569' : '#cbd5e1', 
-                    borderRadius: '14px', fontWeight: 700, fontSize: '0.95rem',
-                    cursor: isGenerating ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
-                    opacity: isGenerating ? 0.5 : 1
-                  }}
-                  onMouseEnter={e => { if (!isGenerating) { e.currentTarget.style.background = isLight ? '#f1f5f9' : 'rgba(255,255,255,0.05)'; } }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                >
-                  İptal
-                </button>
-                <button 
-                  onClick={() => { soundManager.playClick(); handleGenerate(); }}
-                  disabled={isGenerating}
-                  style={{ 
-                    flex: 1.5, padding: '0.85rem', 
-                    background: isGenerating ? 'rgba(79,70,229,0.5)' : 'linear-gradient(135deg, var(--primary), var(--secondary))', 
-                    border: 'none', color: 'white', 
-                    borderRadius: '14px', fontWeight: 800, fontSize: '0.95rem',
-                    boxShadow: isGenerating ? 'none' : '0 8px 20px rgba(79, 70, 229, 0.3)',
-                    cursor: isGenerating ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
-                  }}
-                  onMouseEnter={e => { if (!isGenerating) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(79, 70, 229, 0.4)'; } }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isGenerating ? 'none' : '0 8px 20px rgba(79, 70, 229, 0.3)'; }}
-                >
-                  {isGenerating ? (
-                    <>
-                      <div style={{ position: 'relative', width: '16px', height: '16px' }}>
-                        <span style={{ display: 'inline-block', position: 'absolute', inset: 0, border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                      </div>
-                      Simülasyon Kuruluyor...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={16} />
-                      Simülasyonu Başlat
-                    </>
-                  )}
-                </button>
-              </div>
-            </>
-            )}
             </div>
             
             <style>{`
