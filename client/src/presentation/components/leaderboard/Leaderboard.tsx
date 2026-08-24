@@ -297,109 +297,146 @@ export default function Leaderboard() {
         </div>
       )}
 
-      {showInfoModal && typeof document !== 'undefined' && createPortal(
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: isLight ? 'rgba(255, 255, 255, 0.6)' : 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backdropFilter: 'blur(25px)'
-        }}>
-          <div style={{
-            background: isLight ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)',
-            padding: '3rem',
-            borderRadius: '32px',
-            width: '95vw',
-            maxWidth: '1200px',
-            maxHeight: '95vh',
-            position: 'relative',
-            boxShadow: isLight ? '0 30px 60px rgba(225, 29, 72, 0.15)' : '0 30px 60px rgba(0, 0, 0, 0.4)',
-            border: isLight ? '1px solid rgba(225, 29, 72, 0.1)' : '1px solid rgba(255, 255, 255, 0.1)',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-            <button 
-              onClick={() => { soundManager.playClick(); setShowInfoModal(false); }}
-              onMouseEnter={() => soundManager.playHover()}
-              style={{ position: 'absolute', top: '2rem', right: '2rem', background: isLight ? 'rgba(225, 29, 72, 0.05)' : '#0f172a', padding: '0.8rem', borderRadius: '50%', border: 'none', cursor: 'pointer', color: isLight ? 'var(--primary)' : '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+      {/* Rütbe Sistemi Modalı (Aesthetic 500% Override) */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showInfoModal && (
+            <motion.div 
+              key="info-modal"
+              initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} 
+              animate={{ opacity: 1, backdropFilter: 'blur(25px)' }} 
+              exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              transition={{ duration: 0.4 }}
+              style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: isLight ? 'rgba(255, 255, 255, 0.4)' : 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
             >
-              <X size={24} />
-            </button>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '2.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <div style={{ display: 'inline-flex', padding: '0.8rem', background: isLight ? 'rgba(225, 29, 72, 0.1)' : 'rgba(14, 165, 233, 0.1)', borderRadius: '50%', color: isLight ? 'var(--primary)' : '#0ea5e9' }}>
-                  <Info size={28} />
+              <motion.div 
+                initial={{ scale: 0.9, y: 50, opacity: 0 }} 
+                animate={{ scale: 1, y: 0, opacity: 1 }} 
+                exit={{ scale: 0.9, y: 50, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                style={{
+                  background: isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(30, 41, 59, 0.85)',
+                  padding: '2rem', borderRadius: '32px', width: '95vw', maxWidth: '1100px', maxHeight: '95vh',
+                  position: 'relative', overflowY: 'auto', display: 'flex', flexDirection: 'column',
+                  boxShadow: isLight ? '0 40px 100px rgba(14, 165, 233, 0.15), inset 0 0 0 1px rgba(255,255,255,1)' : '0 40px 100px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(40px)'
+                }}
+              >
+                <motion.button 
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => { soundManager.playClick(); setShowInfoModal(false); }}
+                  onMouseEnter={() => soundManager.playHover()}
+                  style={{ 
+                    position: 'absolute', top: '1.5rem', right: '1.5rem', 
+                    background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)', 
+                    padding: '0.8rem', borderRadius: '50%', border: 'none', cursor: 'pointer', 
+                    color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}
+                >
+                  <X size={20} strokeWidth={3} />
+                </motion.button>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+                  <motion.div 
+                    initial={{ rotate: -180, scale: 0 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.8rem' }}
+                  >
+                    <div style={{ display: 'inline-flex', padding: '0.8rem', background: isLight ? 'linear-gradient(135deg, #38bdf8, #818cf8)' : 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(129,140,248,0.2))', borderRadius: '30%', color: isLight ? 'white' : '#38bdf8', transform: 'rotate(10deg)', boxShadow: isLight ? '0 10px 25px rgba(56,189,248,0.4)' : '0 0 20px rgba(56,189,248,0.2)' }}>
+                      <Award size={28} strokeWidth={2.5} />
+                    </div>
+                    <h3 style={{ margin: 0, color: isLight ? '#0f172a' : '#f8fafc', fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-1px', background: isLight ? 'linear-gradient(135deg, #0f172a, #334155)' : 'linear-gradient(135deg, #ffffff, #cbd5e1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                      Rütbe Sistemi
+                    </h3>
+                  </motion.div>
+                  <motion.p 
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                    style={{ color: isLight ? '#475569' : '#94a3b8', fontSize: '1rem', maxWidth: '800px', margin: '0 auto', fontWeight: 500 }}
+                  >
+                    Klinik vakaları çözerek puan toplayın ve en tepeye tırmanın. TUS Sıralaması ise TUS denemelerindeki netlerinize göre hesaplanır.
+                  </motion.p>
                 </div>
-                <h3 style={{ margin: 0, color: isLight ? '#9f1239' : '#f8fafc', fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.5px' }}>
-                  Puanlama ve Rütbe Sistemi
-                </h3>
-              </div>
-              <p style={{ color: isLight ? '#475569' : '#cbd5e1', lineHeight: '1.5', fontSize: '1.05rem', maxWidth: '850px', margin: '0 auto' }}>
-                Vaka simülasyonlarını başarıyla tamamladıkça puan kazanırsınız. Puanınız arttıkça yeni rütbelere terfi edersiniz. TUS Sıralaması ise TUS denemelerindeki doğru sayınıza göre hesaplanır.
-              </p>
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', flex: 1 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', background: isLight ? 'rgba(248, 250, 252, 0.8)' : 'rgba(15, 23, 42, 0.6)', borderRadius: '24px', border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s' }}>
-                <span style={{ fontSize: '3rem', marginBottom: '0.8rem', filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.1))' }}>🩺</span>
-                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#94a3b8', marginBottom: '0.3rem' }}>Tıp Öğrencisi</span>
-                <span style={{ fontSize: '1rem', color: isLight ? '#64748b' : '#64748b', fontWeight: 700 }}>0 - 999 Puan</span>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', background: isLight ? 'rgba(240, 249, 255, 0.8)' : 'rgba(14, 165, 233, 0.05)', borderRadius: '24px', border: isLight ? '1px solid #bae6fd' : '1px solid rgba(14, 165, 233, 0.2)', transition: 'all 0.3s' }}>
-                <span style={{ fontSize: '3rem', marginBottom: '0.8rem', filter: 'drop-shadow(0 10px 15px rgba(14, 165, 233, 0.2))' }}>🎓</span>
-                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#0ea5e9', marginBottom: '0.3rem' }}>İntern Doktor</span>
-                <span style={{ fontSize: '1rem', color: isLight ? '#0284c7' : '#38bdf8', fontWeight: 700 }}>1000 - 2499 Puan</span>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', background: isLight ? 'rgba(236, 253, 245, 0.8)' : 'rgba(16, 185, 129, 0.05)', borderRadius: '24px', border: isLight ? '1px solid #a7f3d0' : '1px solid rgba(16, 185, 129, 0.2)', transition: 'all 0.3s' }}>
-                <span style={{ fontSize: '3rem', marginBottom: '0.8rem', filter: 'drop-shadow(0 10px 15px rgba(16, 185, 129, 0.2))' }}>⚕️</span>
-                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#10b981', marginBottom: '0.3rem' }}>Pratisyen Hekim</span>
-                <span style={{ fontSize: '1rem', color: isLight ? '#059669' : '#34d399', fontWeight: 700 }}>2500 - 4999 Puan</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', background: isLight ? 'rgba(245, 243, 255, 0.8)' : 'rgba(139, 92, 246, 0.05)', borderRadius: '24px', border: isLight ? '1px solid #ddd6fe' : '1px solid rgba(139, 92, 246, 0.2)', transition: 'all 0.3s' }}>
-                <span style={{ fontSize: '3rem', marginBottom: '0.8rem', filter: 'drop-shadow(0 10px 15px rgba(139, 92, 246, 0.2))' }}>👨‍⚕️</span>
-                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#8b5cf6', marginBottom: '0.3rem' }}>Asistan Hekim</span>
-                <span style={{ fontSize: '1rem', color: isLight ? '#6d28d9' : '#a78bfa', fontWeight: 700 }}>5000 - 9999 Puan</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', background: isLight ? 'rgba(255, 251, 235, 0.8)' : 'rgba(245, 158, 11, 0.05)', borderRadius: '24px', border: isLight ? '1px solid #fde68a' : '1px solid rgba(245, 158, 11, 0.2)', transition: 'all 0.3s' }}>
-                <span style={{ fontSize: '3rem', marginBottom: '0.8rem', filter: 'drop-shadow(0 10px 15px rgba(245, 158, 11, 0.2))' }}>🌟</span>
-                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#f59e0b', marginBottom: '0.3rem' }}>Uzman Doktor</span>
-                <span style={{ fontSize: '1rem', color: isLight ? '#b45309' : '#fbbf24', fontWeight: 700 }}>10000 - 19999 Puan</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', background: isLight ? 'rgba(255, 241, 242, 0.8)' : 'rgba(244, 63, 94, 0.05)', borderRadius: '24px', border: isLight ? '1px solid #fecdd3' : '1px solid rgba(244, 63, 94, 0.2)', transition: 'all 0.3s' }}>
-                <span style={{ fontSize: '3rem', marginBottom: '0.8rem', filter: 'drop-shadow(0 10px 15px rgba(244, 63, 94, 0.2))' }}>👑</span>
-                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#f43f5e', marginBottom: '0.3rem' }}>Doçent</span>
-                <span style={{ fontSize: '1rem', color: isLight ? '#be123c' : '#fb7185', fontWeight: 700 }}>20000 - 34999 Puan</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', background: isLight ? 'rgba(254, 242, 242, 0.8)' : 'rgba(239, 68, 68, 0.05)', borderRadius: '24px', border: isLight ? '1px solid #fecaca' : '1px solid rgba(239, 68, 68, 0.2)', transition: 'all 0.3s' }}>
-                <span style={{ fontSize: '3rem', marginBottom: '0.8rem', filter: 'drop-shadow(0 10px 15px rgba(239, 68, 68, 0.2))' }}>🏆</span>
-                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#ef4444', marginBottom: '0.3rem' }}>Profesör</span>
-                <span style={{ fontSize: '1rem', color: isLight ? '#b91c1c' : '#f87171', fontWeight: 700 }}>35000 - 49999 Puan</span>
-              </div>
-              
-              {/* Ordinaryus */}
-              <div style={{ 
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', 
-                background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(234, 88, 12, 0.15) 100%)', 
-                borderRadius: '24px', border: '1px solid rgba(251, 191, 36, 0.4)', 
-                boxShadow: '0 0 25px rgba(251, 191, 36, 0.2), inset 0 0 15px rgba(251, 191, 36, 0.1)',
-                transition: 'all 0.3s', position: 'relative', overflow: 'hidden'
-              }}>
-                <div style={{ position: 'absolute', top: '-20%', left: '-20%', right: '-20%', bottom: '-20%', background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%)', opacity: 0.5, pointerEvents: 'none' }}></div>
-                <span style={{ fontSize: '3.5rem', marginBottom: '0.8rem', filter: 'drop-shadow(0 15px 25px rgba(251, 191, 36, 0.4))' }}>💎</span>
-                <span style={{ fontWeight: 900, fontSize: '1.3rem', color: '#fbbf24', marginBottom: '0.3rem', textShadow: '0 2px 10px rgba(251, 191, 36, 0.3)', letterSpacing: '1px', textTransform: 'uppercase' }}>Ordinaryus</span>
-                <span style={{ fontSize: '1rem', color: '#fcd34d', fontWeight: 800 }}>50000+ Puan</span>
-              </div>
-            </div>
-            
-          </div>
-        </div>
+                <motion.div 
+                  initial="hidden" animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+                  }}
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', flex: 1 }}
+                >
+                  {[
+                    { icon: '🩺', name: 'Tıp Öğrencisi', range: '0 - 999', color: '#94a3b8', bgLight: 'rgba(241,245,249,0.8)', bgDark: 'rgba(30,41,59,0.4)' },
+                    { icon: '🎓', name: 'İntern Doktor', range: '1000 - 2499', color: '#0ea5e9', bgLight: 'rgba(240,249,255,0.8)', bgDark: 'rgba(14,165,233,0.1)' },
+                    { icon: '⚕️', name: 'Pratisyen Hekim', range: '2500 - 4999', color: '#10b981', bgLight: 'rgba(236,253,245,0.8)', bgDark: 'rgba(16,185,129,0.1)' },
+                    { icon: '👨‍⚕️', name: 'Asistan Hekim', range: '5000 - 9999', color: '#8b5cf6', bgLight: 'rgba(245,243,255,0.8)', bgDark: 'rgba(139,92,246,0.1)' },
+                    { icon: '🌟', name: 'Uzman Doktor', range: '10000 - 19999', color: '#f59e0b', bgLight: 'rgba(255,251,235,0.8)', bgDark: 'rgba(245,158,11,0.1)' },
+                    { icon: '👑', name: 'Doçent', range: '20000 - 34999', color: '#f43f5e', bgLight: 'rgba(255,241,242,0.8)', bgDark: 'rgba(244,63,94,0.1)' },
+                    { icon: '🏆', name: 'Profesör', range: '35000 - 49999', color: '#ef4444', bgLight: 'rgba(254,242,242,0.8)', bgDark: 'rgba(239,68,68,0.1)' }
+                  ].map(rank => (
+                    <motion.div 
+                      key={rank.name}
+                      variants={{ hidden: { opacity: 0, y: 20, scale: 0.95 }, visible: { opacity: 1, y: 0, scale: 1 } }}
+                      whileHover={{ scale: 1.05, y: -5, boxShadow: `0 15px 30px ${rank.color}30` }}
+                      style={{ 
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+                        padding: '1.5rem 1rem', background: isLight ? rank.bgLight : rank.bgDark, 
+                        borderRadius: '24px', border: `1px solid ${isLight ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.05)'}`,
+                        cursor: 'pointer', transition: 'border 0.3s'
+                      }}
+                    >
+                      <motion.span 
+                        whileHover={{ rotate: [0, -10, 10, -10, 10, 0] }} transition={{ duration: 0.5 }}
+                        style={{ fontSize: '2.8rem', marginBottom: '0.6rem', filter: `drop-shadow(0 10px 15px ${rank.color}60)` }}
+                      >
+                        {rank.icon}
+                      </motion.span>
+                      <span style={{ fontWeight: 900, fontSize: '1.1rem', color: rank.color, marginBottom: '0.4rem', letterSpacing: '-0.3px', textAlign: 'center' }}>{rank.name}</span>
+                      <div style={{ background: isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.3)', padding: '0.3rem 0.8rem', borderRadius: '10px' }}>
+                        <span style={{ fontSize: '0.9rem', color: isLight ? '#475569' : '#cbd5e1', fontWeight: 800 }}>{rank.range} Puan</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                  
+                  {/* Ordinaryus (Ultimate Flex) */}
+                  <motion.div 
+                    variants={{ hidden: { opacity: 0, y: 20, scale: 0.95 }, visible: { opacity: 1, y: 0, scale: 1 } }}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    style={{ 
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem', 
+                      background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(234, 88, 12, 0.15) 100%)', 
+                      borderRadius: '24px', border: '1px solid rgba(251, 191, 36, 0.4)', 
+                      boxShadow: '0 0 30px rgba(251, 191, 36, 0.2), inset 0 0 15px rgba(251, 191, 36, 0.1)',
+                      position: 'relative', overflow: 'hidden', cursor: 'pointer'
+                    }}
+                  >
+                    <motion.div 
+                      animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                      style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'conic-gradient(from 0deg, transparent 0 340deg, rgba(251,191,36,0.3) 360deg)', opacity: 0.5, pointerEvents: 'none' }} 
+                    />
+                    <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <motion.span 
+                        animate={{ y: [0, -5, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                        style={{ fontSize: '3.2rem', marginBottom: '0.6rem', filter: 'drop-shadow(0 15px 20px rgba(251, 191, 36, 0.6))' }}
+                      >
+                        💎
+                      </motion.span>
+                      <span style={{ fontWeight: 900, fontSize: '1.2rem', color: '#fbbf24', marginBottom: '0.4rem', textShadow: '0 2px 10px rgba(251, 191, 36, 0.5)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Ordinaryus</span>
+                      <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '0.3rem 0.8rem', borderRadius: '10px', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
+                        <span style={{ fontSize: '0.9rem', color: '#fcd34d', fontWeight: 900 }}>50000+ Puan</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+                
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       , document.body)}
     </motion.main>
   );
