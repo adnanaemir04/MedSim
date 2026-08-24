@@ -269,23 +269,29 @@ body {
   background: linear-gradient(-45deg,
       var(--primary),
       var(--secondary),
-      #f43f5e,
+      var(--accent),
       var(--primary));
   background-size: 300% 300%;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent;
   animation: liquidGradient 8s ease infinite;
   display: inline-flex;
   align-items: center;
   position: relative;
-  filter: drop-shadow(0 4px 15px rgba(6, 182, 212, 0.3));
-  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 15px var(--primary-glow));
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
+  will-change: transform, filter, letter-spacing;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .medsim-logo-premium:hover {
-  transform: scale(1.05) translateY(-2px);
-  filter: drop-shadow(0 8px 25px rgba(6, 182, 212, 0.6));
+  transform: scale(1.08) translateY(-2px) translateZ(0);
+  letter-spacing: -0.5px;
+  filter: drop-shadow(0 10px 30px var(--primary-glow));
 }
 
 .medsim-logo-premium::after {
