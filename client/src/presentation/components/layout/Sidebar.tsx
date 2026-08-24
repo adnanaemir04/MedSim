@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { User } from '../../../domain/entities/User';
 import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { soundManager } from '../../../utils/soundManager';
+import { getDepartments } from '../../../infrastructure/api/simulationApi';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Anatomi': <UserIcon size={14} />,
@@ -40,16 +41,43 @@ const yearIconMap: Record<number, React.ReactNode> = {
 interface SidebarProps {
   user: User | null;
   onLogout: () => void;
-  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_admin' | 'admin', subjectFilter?: string) => void;
+  onNavigate: (view: 'dashboard' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'admin', subjectFilter?: string) => void;
+  currentView?: string;
 }
 
-export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
+export default function Sidebar({ user, onLogout, onNavigate, currentView }: SidebarProps) {
   const [isClassExpanded, setIsClassExpanded] = useState(false);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [deptsByYear, setDeptsByYear] = useState<Record<number, string[]>>({
+    1: ["Anatomi", "Histoloji ve Embriyoloji", "Tıbbi Biyokimya", "Fizyoloji", "Tıbbi Biyoloji ve Genetik", "Biyoistatistik"],
+    2: ["Anatomi", "Fizyoloji", "Mikrobiyoloji", "İmmünoloji", "Patoloji", "Farmakoloji"],
+    3: ["Patoloji", "Farmakoloji", "Dahili Tıp Bilimlerine Giriş", "Halk Sağlığı"],
+    4: ["İç Hastalıkları", "Çocuk Sağlığı ve Hastalıkları", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum"],
+    5: ["Psikiyatri", "Nöroloji", "Kardiyoloji", "Göğüs Hastalıkları", "Enfeksiyon Hastalıkları", "Üroloji", "Göz Hastalıkları", "Kulak Burun Boğaz", "Ortopedi ve Travmatoloji", "Dermatoloji", "Anesteziyoloji ve Reanimasyon"],
+    6: ["Acil Tıp", "Aile Hekimliği", "Halk Sağlığı"]
+  });
 
   useEffect(() => {
     setIsMuted(soundManager.getIsMuted());
+    const fetchDepts = async () => {
+      try {
+        const data = await getDepartments();
+        if (data && data.length > 0) {
+          const grouped: Record<number, string[]> = {};
+          data.forEach(d => {
+            if (!grouped[d.year]) grouped[d.year] = [];
+            if (!grouped[d.year].includes(d.name)) {
+              grouped[d.year].push(d.name);
+            }
+          });
+          setDeptsByYear(grouped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dynamic departments for sidebar", err);
+      }
+    };
+    fetchDepts();
   }, []);
 
   const handleToggleMute = () => {
@@ -64,15 +92,6 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
   };
 
   if (!user) return null;
-
-  const deptsByYear: Record<number, string[]> = {
-    1: ["Anatomi", "Histoloji ve Embriyoloji", "Tıbbi Biyokimya", "Fizyoloji", "Tıbbi Biyoloji ve Genetik", "Biyoistatistik"],
-    2: ["Anatomi", "Fizyoloji", "Mikrobiyoloji", "İmmünoloji", "Patoloji", "Farmakoloji"],
-    3: ["Patoloji", "Farmakoloji", "Dahili Tıp Bilimlerine Giriş", "Halk Sağlığı"],
-    4: ["İç Hastalıkları", "Çocuk Sağlığı ve Hastalıkları", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum"],
-    5: ["Psikiyatri", "Nöroloji", "Kardiyoloji", "Göğüs Hastalıkları", "Enfeksiyon Hastalıkları", "Üroloji", "Göz Hastalıkları", "Kulak Burun Boğaz", "Ortopedi ve Travmatoloji", "Dermatoloji", "Anesteziyoloji ve Reanimasyon"],
-    6: ["Acil Tıp", "Aile Hekimliği", "Halk Sağlığı"]
-  };
 
   return (
     <aside className="sidebar">
@@ -109,25 +128,29 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
 
       <nav className="nav-menu">
         <button 
-          className="nav-item" 
+          className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`} 
           onClick={() => nav('dashboard')}
           onMouseEnter={() => soundManager.playHover()}
+          style={currentView === 'dashboard' ? {} : {
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1))',
+            borderLeft: '4px solid #3b82f6'
+          }}
         >
-          <Folder size={18} />
-          <span>Tüm Vakalarım</span>
+          <Folder size={18} color={currentView === 'dashboard' ? 'white' : '#3b82f6'} />
+          <span style={{ fontWeight: 800, color: currentView === 'dashboard' ? 'white' : '#3b82f6' }}>Tüm Vakalarım</span>
         </button>
 
         <button 
-          className="nav-item" 
+          className={`nav-item ${currentView === 'tus' || currentView === 'tus_solve' || currentView === 'tus_about' ? 'active' : ''}`} 
           onClick={() => nav('tus')} 
           onMouseEnter={() => soundManager.playHover()}
-          style={{
+          style={currentView?.startsWith('tus') ? {} : {
             background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1))',
             borderLeft: '4px solid #ef4444'
           }}
         >
-          <BookOpen size={18} color="#ef4444" />
-          <span style={{ fontWeight: 800, color: '#ef4444' }}>TUS Merkezi</span>
+          <BookOpen size={18} color={currentView?.startsWith('tus') ? 'white' : '#ef4444'} />
+          <span style={{ fontWeight: 800, color: currentView?.startsWith('tus') ? 'white' : '#ef4444' }}>TUS Merkezi</span>
         </button>
         
         <div className="nav-accordion">
@@ -143,7 +166,9 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
           
           {isClassExpanded && (
             <div className="accordion-content" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {[1, 2, 3, 4, 5, 6].map(num => (
+              {Object.keys(deptsByYear).sort((a,b) => Number(a) - Number(b)).map(yearStr => {
+                const num = Number(yearStr);
+                return (
                 <div key={num} style={{ position: 'relative' }}>
                   <button 
                     onClick={() => { soundManager.playClick(); setSelectedClass(selectedClass === num ? null : num); }}
@@ -243,13 +268,14 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
         <button 
-          className="nav-item" 
+          className={`nav-item ${currentView === 'past_cases' ? 'active' : ''}`} 
           onClick={() => nav('past_cases')}
           onMouseEnter={() => soundManager.playHover()}
         >
@@ -258,7 +284,7 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
         </button>
 
         <button 
-          className="nav-item" 
+          className={`nav-item ${currentView === 'leaderboard' ? 'active' : ''}`} 
           onClick={() => nav('leaderboard')}
           onMouseEnter={() => soundManager.playHover()}
         >
@@ -269,28 +295,16 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
         {(user?.role === 'Admin' || user?.role === 'SuperAdmin') && (
           <>
             <button 
-              className="nav-item" 
+              className={`nav-item ${currentView === 'admin' ? 'active' : ''}`} 
               onClick={() => nav('admin')}
               onMouseEnter={() => soundManager.playHover()}
-              style={{
+              style={currentView === 'admin' ? {} : {
                 background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(16, 185, 129, 0.1))',
                 borderLeft: '4px solid var(--primary)'
               }}
             >
-              <Sparkles size={18} color="var(--primary)" />
+              <Sparkles size={18} color={currentView === 'admin' ? 'white' : 'var(--primary)'} />
               <span style={{ fontWeight: 800 }}>Admin Paneli</span>
-            </button>
-            <button 
-              className="nav-item" 
-              onClick={() => nav('tus_admin')}
-              onMouseEnter={() => soundManager.playHover()}
-              style={{
-                background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.1), rgba(244, 63, 94, 0.05))',
-                borderLeft: '4px solid #f43f5e'
-              }}
-            >
-              <BookOpen size={18} color="#f43f5e" />
-              <span style={{ fontWeight: 800 }}>TUS Soru Yönetimi</span>
             </button>
           </>
         )}

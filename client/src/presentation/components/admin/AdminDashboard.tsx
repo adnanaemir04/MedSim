@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { 
   ShieldAlert, Users, Activity, UserPlus, BarChart3, Clock, 
   ShieldCheck, Cpu, Server, Database, AlertTriangle, Fingerprint, 
-  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2
+  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2, BookOpen, LineChart
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { soundManager } from '../../../utils/soundManager';
+import TusAdminPanel from '../tus/TusAdminPanel';
+import { AnalyticsDashboard } from './analytics/AnalyticsDashboard';
 
 interface UserStats {
   userId: string;
@@ -34,7 +36,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create' | 'tus' | 'analytics'>('analytics');
   const [stats, setStats] = useState<UserStats[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -228,9 +230,11 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         overflowX: 'auto'
       }}>
         {[
+          { id: 'analytics', label: 'Dashboard & Analytics', icon: LineChart },
           { id: 'stats', label: `Kullanıcı Veritabanı (${stats.length})`, icon: Database },
           { id: 'logs', label: `Sistem Logları (${logs.length})`, icon: Server },
           { id: 'create', label: 'Yeni Yönetici Ekle', icon: UserPlus },
+          { id: 'tus', label: 'TUS Soru Yönetimi', icon: BookOpen },
         ].map(t => {
           const active = activeTab === t.id;
           return (
@@ -266,6 +270,13 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         padding: '2rem',
         boxShadow: '0 12px 40px rgba(0,0,0,0.04)'
       }}>
+        
+        {/* TAB 0: ANALYTICS */}
+        {activeTab === 'analytics' && (
+          <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <AnalyticsDashboard isLight={isLight} />
+          </div>
+        )}
 
         {/* TAB 1: USERS STATS */}
         {activeTab === 'stats' && (
@@ -585,6 +596,13 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                 )}
               </form>
             </div>
+          </div>
+        )}
+
+        {/* TAB 4: TUS ADMIN */}
+        {activeTab === 'tus' && (
+          <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <TusAdminPanel onBack={() => setActiveTab('stats')} />
           </div>
         )}
 

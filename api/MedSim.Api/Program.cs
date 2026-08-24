@@ -13,7 +13,10 @@ using MedSim.Api.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddValidatorsFromAssembly(typeof(MedSim.Application.DTOs.RegisterDto).Assembly);
@@ -55,6 +58,7 @@ builder.Services.AddDbContext<MedSimDbContext>(options =>
 // Dependency Injection for Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITusRepository, TusRepository>();
+builder.Services.AddScoped<IAnalyticsService, MedSim.Infrastructure.Services.AnalyticsService>();
 builder.Services.AddHttpClient<IProceduralGeneratorService, ProceduralGeneratorService>();
 
 var app = builder.Build();

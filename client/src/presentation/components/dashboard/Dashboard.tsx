@@ -7,6 +7,8 @@ import { soundManager } from '../../../utils/soundManager';
 interface DashboardProps {
   userEmail: string;
   filterSubject?: string;
+  generatedCases: any[];
+  setGeneratedCases: React.Dispatch<React.SetStateAction<any[]>>;
   onStartCase: (subject: string, caseIndex: number, generatedCase?: any, initialAnswers?: number[]) => void;
 }
 
@@ -43,7 +45,7 @@ const SUBJECT_DESCRIPTIONS: Record<string, string> = {
   "Yoğun Bakım": "Hayati fonksiyonları tehlikede olan kritik hastaların yakın takibini ve organ destek tedavilerini üstlenen ileri uzmanlık."
 };
 
-export default function Dashboard({ userEmail, filterSubject, onStartCase }: DashboardProps) {
+export default function Dashboard({ userEmail, filterSubject, generatedCases, setGeneratedCases, onStartCase }: DashboardProps) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
@@ -59,7 +61,6 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
   const [genSubTopic, setGenSubTopic] = useState('');
   const [genDifficulty, setGenDifficulty] = useState('Orta');
   const [genCount, setGenCount] = useState(1);
-  const [generatedCases, setGeneratedCases] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
@@ -138,6 +139,8 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
           difficulty: c.difficulty,
           difficultyScore: c.difficultyScore,
           difficultyReason: c.difficultyReason,
+          topicName: genTopic,
+          subTopicName: genSubTopic
         }
       }));
       setGeneratedCases(prev => [...prev, ...mappedNewCases]);
@@ -154,30 +157,6 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
   const getYearForSubject = (subjectName: string) => {
     const dept = departments.find(d => d.name === subjectName);
     return dept ? `Dönem ${dept.year}` : 'Uzmanlık';
-  };
-
-  const yearBadgeStyle = {
-    padding: '0.35rem 0.85rem', 
-    background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05))', 
-    border: '1px solid rgba(14, 165, 233, 0.25)', 
-    color: '#0ea5e9', 
-    borderRadius: '20px', 
-    fontSize: '0.75rem', 
-    fontWeight: 800,
-    letterSpacing: '0.5px',
-    display: 'flex',
-    alignItems: 'center',
-    boxShadow: '0 2px 10px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255,255,255,0.1)'
-  };
-
-  const subjectBadgeStyle = {
-    padding: '0.35rem 0.85rem', 
-    background: 'linear-gradient(135deg, var(--primary), var(--secondary))', 
-    color: 'white', 
-    borderRadius: '20px', 
-    fontSize: '0.75rem', 
-    fontWeight: 700,
-    boxShadow: '0 4px 15px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.2)'
   };
 
   if (loading) {
@@ -275,57 +254,42 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
               {generatedList.map((c, index) => {
                 const solved = c.data?.id ? solvedCases.find(sc => sc.medicalCaseId === c.data.id) : undefined;
                 return (
-                  <div 
-                    key={`gen-${index}`} 
-                    style={{ 
-                      background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(6, 182, 212, 0.1))', 
-                      border: '1px solid var(--primary)',
-                      borderRadius: 'var(--radius-xl)', 
-                padding: '1.5rem',
-                boxShadow: '0 0 15px var(--primary-glow)',
-                display: 'flex', flexDirection: 'column', gap: '1rem',
-                transition: 'var(--transition)',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={() => soundManager.playHover()}
-              onClick={() => { soundManager.playClick(); onStartCase(c.subject, -1, c.data, undefined); }}
-            >
-              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <div style={yearBadgeStyle}>
-                  {getYearForSubject(c.subject)}
-                </div>
-                <div style={subjectBadgeStyle}>
-                  {c.subject}
-                </div>
-                {c.data?.subTopicName && (
-                  <div style={{...subjectBadgeStyle, background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))', color: '#10b981', borderColor: 'rgba(16,185,129,0.25)'}}>
-                    {c.data.subTopicName}
+                  <div key={`gen-${index}`} className="premium-card">
+                    <BrainCircuit size={120} color="#6366f1" style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.04, pointerEvents: 'none', transform: 'rotate(-15deg)' }} />
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                      <div className="premium-badge no-dot" style={{ background: 'transparent', padding: 0, border: 'none' }}>
+                        <Sparkles size={14} /> AI SİMÜLASYONU
+                      </div>
+                      {c.data?.difficulty && (
+                        <div className={`premium-badge ${c.data.difficulty === 'Zor' ? 'rose' : (c.data.difficulty === 'Orta' ? 'orange' : 'green')}`}>
+                          {c.data.difficulty} SEVİYE
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="premium-card-title">
+                      {c.title ? c.title.replace(/\s*-\s*Vaka\s*\d+/gi, '').trim() : (c.data?.text?.split('.')[0] || 'Yeni Vaka')}
+                    </h3>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+                      <span className="premium-badge blue">📅 Sınıf: {getYearForSubject(c.subject)}</span>
+                      <span className="premium-badge rose">🧬 Branş: {c.subject}</span>
+                      {c.data?.topicName && <span className="premium-badge orange">📚 Konu: {c.data.topicName}</span>}
+                      {c.data?.subTopicName && <span className="premium-badge green">📌 İçerik: {c.data.subTopicName}</span>}
+                    </div>
+
+                    <p className="premium-card-text">
+                      {c.data?.stages?.length || 0} aşamalı klinik değerlendirme ve teşhis süreci.
+                    </p>
+
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); soundManager.playClick(); onStartCase(c.subject, -1, c.data, undefined); }}
+                      className={`premium-button ${solved ? 'solved' : ''}`}
+                    >
+                      {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} fill="currentColor" /> Vakayı Çöz</>}
+                    </button>
                   </div>
-                )}
-                {c.data?.difficulty && (
-                  <div 
-                    title={c.data.difficultyReason || "Zorluk seviyesi bilgisi"}
-                    style={{
-                      padding: '0.2rem 0.8rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, cursor: 'help',
-                      background: c.data.difficulty === 'Zor' ? 'rgba(244,63,94,0.1)' : (c.data.difficulty === 'Orta' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'),
-                      color: c.data.difficulty === 'Zor' ? '#f43f5e' : (c.data.difficulty === 'Orta' ? '#f59e0b' : '#10b981')
-                    }}
-                  >
-                    {c.data.difficulty} Seviye
-                  </div>
-                )}
-              </div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{c.title || c.data?.text?.split('.')[0] || 'Yeni Vaka'}</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', flex: 1 }}>
-                Yapay zeka tarafından üretilmiş benzersiz vaka. {c.data?.stages?.length || 0} aşamadan oluşmaktadır.
-              </p>
-              <button 
-                onClick={(e) => { e.stopPropagation(); soundManager.playClick(); onStartCase(c.subject, -1, c.data, undefined); }}
-                className={solved ? "btn-review-case btn-full" : "btn-solve-case btn-full"}
-              >
-                {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} /> Vakayı Çöz</>}
-              </button>
-            </div>
           );
         })}
 
@@ -335,51 +299,34 @@ export default function Dashboard({ userEmail, filterSubject, onStartCase }: Das
           const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
 
           return (
-            <div 
-              key={`db-${c.id}`} 
-              style={{ 
-                background: 'var(--glass-bg)', 
-                border: '1px solid var(--glass-border)',
-                borderRadius: 'var(--radius-xl)', 
-                padding: '1.5rem',
-                boxShadow: 'var(--shadow-float)',
-                display: 'flex', flexDirection: 'column', gap: '1rem',
-                transition: 'var(--transition)',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={e => { soundManager.playHover(); e.currentTarget.style.transform = 'translateY(-5px)'; }}
-              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-              onClick={() => { soundManager.playClick(); onStartCase(subjName, index, mockData, undefined); }}
-            >
-              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <div style={yearBadgeStyle}>
-                  {getYearForSubject(subjName)}
-                </div>
-                <div style={subjectBadgeStyle}>
-                  {subjName}
+            <div key={`db-${c.id}`} className="premium-card db-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                <div className="premium-badge no-dot" style={{ background: 'transparent', padding: 0, border: 'none', color: '#0ea5e9' }}>
+                  <Activity size={14} /> STANDART VAKA
                 </div>
                 {c.difficulty && (
-                  <div 
-                    title={c.difficultyReason || "Zorluk seviyesi bilgisi"}
-                    style={{
-                      padding: '0.2rem 0.8rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, cursor: 'help',
-                      background: c.difficulty === 'Zor' ? 'rgba(244,63,94,0.1)' : (c.difficulty === 'Orta' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'),
-                      color: c.difficulty === 'Zor' ? '#f43f5e' : (c.difficulty === 'Orta' ? '#f59e0b' : '#10b981')
-                    }}
-                  >
-                    {c.difficulty} Seviye
+                  <div className={`premium-badge ${c.difficulty === 'Zor' ? 'rose' : (c.difficulty === 'Orta' ? 'orange' : 'green')}`}>
+                    {c.difficulty} SEVİYE
                   </div>
                 )}
               </div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{c.title}</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', flex: 1 }}>
+              
+              <h3 className="premium-card-title">{c.title ? c.title.replace(/\s*-\s*Vaka\s*\d+/gi, '').trim() : 'Yeni Vaka'}</h3>
+              
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+                <span className="premium-badge blue">📅 Sınıf: {getYearForSubject(subjName)}</span>
+                <span className="premium-badge rose">🧬 Branş: {subjName}</span>
+              </div>
+              
+              <p className="premium-card-text">
                 Bu vaka {c.stages.length} aşamadan oluşmaktadır. Doğru kararlar vererek hastayı kurtarın.
               </p>
+              
               <button 
                 onClick={(e) => { e.stopPropagation(); soundManager.playClick(); onStartCase(subjName, index, mockData, undefined); }}
-                className={solved ? "btn-review-case btn-full" : "btn-solve-case btn-full"}
+                className={`premium-button ${solved ? 'solved' : 'blue'}`}
               >
-                {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} /> Vakayı Çöz</>}
+                {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} fill="currentColor" /> Vakayı Çöz</>}
               </button>
             </div>
           );

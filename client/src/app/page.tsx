@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthForm from '../presentation/components/auth/AuthForm';
 import Sidebar from '../presentation/components/layout/Sidebar';
 import TopBar from '../presentation/components/layout/TopBar';
@@ -19,13 +19,14 @@ import AdminDashboard from '../presentation/components/admin/AdminDashboard';
 import { ArrowLeft } from 'lucide-react';
 import { updateUserProfile, solveCase } from '../infrastructure/api/simulationApi';
 
-type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_about' | 'tus_solve' | 'tus_admin' | 'admin';
+type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_about' | 'tus_solve' | 'admin';
 
 export default function Home() {
   const [isLanding, setIsLanding] = useState(true);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
+  const [activeGeneratedCases, setActiveGeneratedCases] = useState<any[]>([]);
   const [selectedCase, setSelectedCase] = useState<{subject: string, index: number, data?: any, initialAnswers?: number[], sourceView?: string} | null>(null);
   const [selectedTusSolve, setSelectedTusSolve] = useState<{subject: string, count: number, mode: 'classic' | 'ai', difficulty?: string} | null>(null);
   const [filterSubject, setFilterSubject] = useState<string | undefined>();
@@ -50,7 +51,27 @@ export default function Home() {
       solvedCases: [],
       role: 'User'
     });
+    setActiveGeneratedCases([]);
   };
+
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      const saved = localStorage.getItem(`medsim_generated_cases_${user.email}`);
+      if (saved) {
+        try {
+          setActiveGeneratedCases(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse saved cases", e);
+        }
+      }
+    }
+  }, [isAuthenticated, user?.email]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      localStorage.setItem(`medsim_generated_cases_${user.email}`, JSON.stringify(activeGeneratedCases));
+    }
+  }, [activeGeneratedCases, isAuthenticated, user?.email]);
 
   if (isLanding) {
     return (
@@ -100,6 +121,10 @@ export default function Home() {
                 }
               }
               setUser({ ...user, points: updatedPoints });
+
+              if (selectedCase.data?.id) {
+                setActiveGeneratedCases(prev => prev.filter(c => c.data?.id !== selectedCase.data.id));
+              }
             } catch (e) {
               console.error("Failed to save points or solved case", e);
             }
@@ -202,9 +227,10 @@ export default function Home() {
       <div className="app-layout">
         <Sidebar 
           user={user as any} 
+          currentView={currentView}
           onLogout={handleLogout}
           onNavigate={(view, subjectFilter) => {
-            setCurrentView(view);
+            setCurrentView(view as any);
             setFilterSubject(subjectFilter);
           }}
         />
@@ -214,6 +240,8 @@ export default function Home() {
             <Dashboard 
               userEmail={user.email}
               filterSubject={filterSubject}
+              generatedCases={activeGeneratedCases}
+              setGeneratedCases={setActiveGeneratedCases}
               onStartCase={(subject, index, data, initialAnswers) => {
                 setSelectedCase({ subject, index, data, initialAnswers, sourceView: 'dashboard' });
                 setCurrentView('simulation');
@@ -258,9 +286,7 @@ export default function Home() {
             />
           )}
 
-          {currentView === 'tus_admin' && (
-            <TusAdminPanel onBack={() => setCurrentView('tus')} />
-          )}
+
         </div>
       </div>
     </div>

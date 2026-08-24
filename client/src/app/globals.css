@@ -1283,3 +1283,194 @@ body:not(.dark) .btn-solve-case:hover {
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
 }
+
+/* ==========================================================================
+   PREMIUM CARD DESIGN (DASHBOARD)
+   ========================================================================== */
+
+.premium-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.premium-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 100%;
+  background: radial-gradient(circle at 80% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+  z-index: -1;
+  transition: all 0.5s ease;
+}
+
+.premium-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.premium-card:hover::before {
+  background: radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.3) 0%, transparent 60%);
+}
+
+.premium-card.db-card::before {
+  background: radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
+}
+.premium-card.db-card:hover {
+  box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+  border-color: rgba(14, 165, 233, 0.3);
+}
+.premium-card.db-card:hover::before {
+  background: radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.2) 0%, transparent 60%);
+}
+
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6366f1;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.premium-badge.blue {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.2);
+  color: #0ea5e9;
+}
+
+.premium-badge.green {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.premium-badge.orange {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.premium-badge.rose {
+  background: rgba(244, 63, 94, 0.08);
+  border-color: rgba(244, 63, 94, 0.2);
+  color: #f43f5e;
+}
+
+.premium-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.premium-badge.no-dot::before {
+  display: none;
+}
+
+.premium-card-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.4;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.premium-card-text {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+}
+
+.premium-button {
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 16px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.premium-button.blue {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.premium-button::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.premium-button.blue::after {
+  background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+}
+
+.premium-button:hover {
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.premium-button.blue:hover {
+  box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+}
+
+.premium-button:hover::after {
+  opacity: 1;
+}
+
+.premium-button.solved {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.premium-button.solved::after {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.premium-button.solved:hover {
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+  color: white;
+}
