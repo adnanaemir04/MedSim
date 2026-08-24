@@ -81,6 +81,12 @@ public class MedSimDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<TusQuestion>(entity =>
+        {
+            entity.HasIndex(e => e.Subject);
+            entity.HasIndex(e => new { e.IsClassic, e.IsApproved, e.Subject });
+        });
+
         modelBuilder.Entity<AuditLog>(entity =>
         {
             entity.HasKey(e => e.Id);
