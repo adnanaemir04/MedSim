@@ -76,7 +76,7 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
 
   return (
     <aside className="sidebar">
-      <div className="topbar-logo" style={{ padding: '0 0.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="topbar-logo" style={{ padding: '0 0.5rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div 
           onClick={() => nav('dashboard')}
           onMouseEnter={() => soundManager.playHover()}
@@ -152,13 +152,14 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
                       width: '100%', 
                       display: 'flex', 
                       flexDirection: 'column',
-                      padding: '0.8rem 1.2rem',
+                      padding: '0.6rem 1rem',
                       background: selectedClass === num ? 'linear-gradient(90deg, rgba(79, 70, 229, 0.25), rgba(6, 182, 212, 0.15))' : 'rgba(79, 70, 229, 0.05)',
                       border: selectedClass === num ? '1px solid rgba(6, 182, 212, 0.3)' : '1px solid rgba(255, 255, 255, 0.05)',
                       borderLeft: selectedClass === num ? '4px solid var(--secondary)' : '4px solid rgba(79, 70, 229, 0.4)',
                       borderRadius: '12px',
                       color: selectedClass === num ? 'var(--primary)' : 'var(--text-main)',
                       fontWeight: selectedClass === num ? 800 : 600,
+                      fontSize: '0.85rem',
                       boxShadow: selectedClass === num ? '0 0 20px rgba(6, 182, 212, 0.2)' : '0 2px 5px rgba(0,0,0,0.05)',
                       transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                       cursor: 'pointer',
