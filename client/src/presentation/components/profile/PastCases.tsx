@@ -22,6 +22,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [casesPageSize, setCasesPageSize] = useState(10);
   
   const [filterYear, setFilterYear] = useState<number | ''>('');
   const [filterSubject, setFilterSubject] = useState<string>('');
@@ -35,6 +36,8 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
   const [tusSortOrder, setTusSortOrder] = useState<string>('desc');
   const [tusPage, setTusPage] = useState(1);
   const [tusTotalPages, setTusTotalPages] = useState(1);
+  const [tusTotalCount, setTusTotalCount] = useState(0);
+  const [tusPageSize, setTusPageSize] = useState(10);
   const [loadingTus, setLoadingTus] = useState<boolean>(false);
   const [expandedTusIds, setExpandedTusIds] = useState<string[]>([]);
 
@@ -49,15 +52,16 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
   useEffect(() => {
     if (activeTab === 'tus') {
       setLoadingTus(true);
-      getSolvedTusQuestions(userEmail, filterTusSubject || undefined, tusPage, 6, filterTusDifficulty || undefined, tusSortOrder)
+      getSolvedTusQuestions(userEmail, filterTusSubject || undefined, tusPage, tusPageSize, filterTusDifficulty || undefined, tusSortOrder)
         .then(data => {
           setTusQuestions(data.items);
           setTusTotalPages(data.totalPages || 1);
+          setTusTotalCount(data.totalCount || 0);
         })
         .catch(err => console.error(err))
         .finally(() => setLoadingTus(false));
     }
-  }, [userEmail, activeTab, filterTusSubject, filterTusDifficulty, tusSortOrder, tusPage]);
+  }, [userEmail, activeTab, filterTusSubject, filterTusDifficulty, tusSortOrder, tusPage, tusPageSize]);
 
   useEffect(() => {
     getDepartments().then(data => setDepartments(data)).catch(console.error);
@@ -68,7 +72,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
     const fetchCases = async () => {
       setLoading(true);
       try {
-        const result = await getSolvedCases(userEmail, page, 6, filterSubject || undefined, filterYear !== '' ? Number(filterYear) : undefined, filterDifficulty || undefined, sortOrder);
+        const result = await getSolvedCases(userEmail, page, casesPageSize, filterSubject || undefined, filterYear !== '' ? Number(filterYear) : undefined, filterDifficulty || undefined, sortOrder);
         setCases(result.items);
         setTotalPages(result.totalPages || 1);
         setTotalCount(result.totalCount || 0);
@@ -79,7 +83,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
       }
     };
     fetchCases();
-  }, [userEmail, page, filterSubject, filterYear, filterDifficulty, sortOrder]);
+  }, [userEmail, page, casesPageSize, filterSubject, filterYear, filterDifficulty, sortOrder]);
 
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     soundManager.playClick();
@@ -633,14 +637,27 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                 </motion.div>
 
                 {/* Pagination */}
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem' }}>
-                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} disabled={page === 1} onClick={() => { soundManager.playClick(); setPage(p => Math.max(1, p - 1)); }} style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: page === 1 ? 'var(--text-muted)' : 'var(--text-main)', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>
-                    <ChevronLeft size={16} />
-                  </motion.button>
-                  <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.85rem' }}>Sayfa {page} / {Math.max(1, totalPages)}</span>
-                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} disabled={page >= totalPages} onClick={() => { soundManager.playClick(); setPage(p => Math.min(totalPages, p + 1)); }} style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: page >= totalPages ? 'var(--text-muted)' : 'var(--text-main)', cursor: page >= totalPages ? 'not-allowed' : 'pointer' }}>
-                    <ChevronRight size={16} />
-                  </motion.button>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                  <select 
+                    value={casesPageSize} 
+                    onChange={(e) => { soundManager.playClick(); setCasesPageSize(Number(e.target.value)); setPage(1); }}
+                    style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.8rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}
+                  >
+                    <option value={10} style={{ color: 'black' }}>10'lu Göster</option>
+                    <option value={20} style={{ color: 'black' }}>20'li Göster</option>
+                    <option value={50} style={{ color: 'black' }}>50'li Göster</option>
+                    <option value={100} style={{ color: 'black' }}>100'lü Göster</option>
+                  </select>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: '1px solid var(--glass-border)', paddingLeft: '1rem' }}>
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} disabled={page === 1} onClick={() => { soundManager.playClick(); setPage(p => Math.max(1, p - 1)); }} style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: page === 1 ? 'var(--text-muted)' : 'var(--text-main)', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>
+                      <ChevronLeft size={16} />
+                    </motion.button>
+                    <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.85rem' }}>Sayfa {page} / {Math.max(1, totalPages)}</span>
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} disabled={page >= totalPages} onClick={() => { soundManager.playClick(); setPage(p => Math.min(totalPages, p + 1)); }} style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: page >= totalPages ? 'var(--text-muted)' : 'var(--text-main)', cursor: page >= totalPages ? 'not-allowed' : 'pointer' }}>
+                      <ChevronRight size={16} />
+                    </motion.button>
+                  </div>
                 </div>
               </>
             )}
@@ -651,7 +668,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: isLight ? 'rgba(255,255,255,0.8)' : 'var(--glass-bg)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-float)' }}>
                 <BookOpen size={18} color="var(--primary)" />
                 <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  Toplam <span style={{ fontWeight: 900, color: 'var(--text-main)', fontSize: '1.1rem' }}>{tusQuestions.length}</span> TUS Sorusu Çözüldü
+                  Toplam <span style={{ fontWeight: 900, color: 'var(--text-main)', fontSize: '1.1rem' }}>{tusTotalCount}</span> TUS Sorusu Çözüldü
                 </span>
               </div>
               
@@ -741,14 +758,27 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                 </motion.div>
 
                 {/* TUS Pagination */}
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem' }}>
-                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} disabled={tusPage === 1} onClick={() => { soundManager.playClick(); setTusPage(p => Math.max(1, p - 1)); }} style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: tusPage === 1 ? 'var(--text-muted)' : 'var(--text-main)', cursor: tusPage === 1 ? 'not-allowed' : 'pointer' }}>
-                    <ChevronLeft size={16} />
-                  </motion.button>
-                  <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.85rem' }}>Sayfa {tusPage} / {Math.max(1, tusTotalPages)}</span>
-                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} disabled={tusPage >= tusTotalPages} onClick={() => { soundManager.playClick(); setTusPage(p => Math.min(tusTotalPages, p + 1)); }} style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: tusPage >= tusTotalPages ? 'var(--text-muted)' : 'var(--text-main)', cursor: tusPage >= tusTotalPages ? 'not-allowed' : 'pointer' }}>
-                    <ChevronRight size={16} />
-                  </motion.button>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                  <select 
+                    value={tusPageSize} 
+                    onChange={(e) => { soundManager.playClick(); setTusPageSize(Number(e.target.value)); setTusPage(1); }}
+                    style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.8rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}
+                  >
+                    <option value={10} style={{ color: 'black' }}>10'lu Göster</option>
+                    <option value={20} style={{ color: 'black' }}>20'li Göster</option>
+                    <option value={50} style={{ color: 'black' }}>50'li Göster</option>
+                    <option value={100} style={{ color: 'black' }}>100'lü Göster</option>
+                  </select>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: '1px solid var(--glass-border)', paddingLeft: '1rem' }}>
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} disabled={tusPage === 1} onClick={() => { soundManager.playClick(); setTusPage(p => Math.max(1, p - 1)); }} style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: tusPage === 1 ? 'var(--text-muted)' : 'var(--text-main)', cursor: tusPage === 1 ? 'not-allowed' : 'pointer' }}>
+                      <ChevronLeft size={16} />
+                    </motion.button>
+                    <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.85rem' }}>Sayfa {tusPage} / {Math.max(1, tusTotalPages)}</span>
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} disabled={tusPage >= tusTotalPages} onClick={() => { soundManager.playClick(); setTusPage(p => Math.min(tusTotalPages, p + 1)); }} style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: tusPage >= tusTotalPages ? 'var(--text-muted)' : 'var(--text-main)', cursor: tusPage >= tusTotalPages ? 'not-allowed' : 'pointer' }}>
+                      <ChevronRight size={16} />
+                    </motion.button>
+                  </div>
                 </div>
               </>
             )}

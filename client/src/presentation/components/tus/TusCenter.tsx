@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { Activity, Target, TrendingUp, Trophy, ArrowRight, BookOpen, Stethoscope, Loader2, Info, CheckCircle, ChevronRight, Sparkles, BrainCircuit } from 'lucide-react';
+import { Activity, Target, TrendingUp, Trophy, ArrowRight, BookOpen, Stethoscope, Loader2, Info, CheckCircle, ChevronRight, Sparkles, BrainCircuit, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getTusSubjects, TusSubjectDto, generateTusQuestions, getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simulationApi';
 import { soundManager } from '../../../utils/soundManager';
 import TusSolveView from './TusSolveView';
@@ -30,6 +31,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
   const [solveDifficulty, setSolveDifficulty] = useState<string | undefined>();
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [genericStats, setGenericStats] = useState<TusStatsDto | null>(null);
+  const [showPastActivityInfo, setShowPastActivityInfo] = useState(true);
   
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -146,6 +148,31 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
           <Info size={18} /> TUS Hakkında
         </button>
       </div>
+
+      {/* Info Message */}
+      <AnimatePresence>
+        {showPastActivityInfo && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0, padding: 0, overflow: 'hidden' }}
+            style={{ marginBottom: '2rem', padding: '0.6rem 1rem', background: isLight ? 'rgba(79, 70, 229, 0.05)' : 'rgba(79, 70, 229, 0.1)', border: '1px solid rgba(79, 70, 229, 0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Info size={18} color="var(--primary)" />
+              <p style={{ margin: 0, color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>
+                Çözdüğünüz TUS sorularını <span style={{ color: 'var(--primary)', fontWeight: 800 }}>Geçmiş Aktiviteler</span> sekmesinden inceleyebilirsiniz.
+              </p>
+            </div>
+            <button 
+              onClick={() => { soundManager.playClick(); setShowPastActivityInfo(false); }}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.background = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent'; }}
+            >
+              <X size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Global TUS Statistics */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
