@@ -310,7 +310,7 @@ public class TusController : ControllerBase
                 return new List<MedicalConcept>
                 {
                     new MedicalConcept {
-                        Name = "Kızamık (Rubeola)",
+                        Name = "Kızamık",
                         Subject = "Pediatri",
                         KeySymptoms = new[] { "3-4 gün süren yüksek ateş, öksürük, konjonktivit ve yanak mukozasında Koplik lekeleri", "kulak arkasından başlayıp gövdeye yayılan birleşik makülopapüler döküntü" },
                         DiagnosticTests = new[] { "Serumda Kızamık spesifik IgM antikor testi pozitifliği", "Klinik muayene ve Koplik lekelerinin tespiti" },
@@ -350,7 +350,7 @@ public class TusController : ControllerBase
                 return new List<MedicalConcept>
                 {
                     new MedicalConcept {
-                        Name = "Nervus Fibularis (Peroneus) Communis Hasarı",
+                        Name = "Nervus Fibularis Communis Hasarı",
                         Subject = "Anatomi",
                         KeySymptoms = new[] { "düşük ayak (steppage gait) tablosu ve ayak sırtında his kaybı", "yürürken ayağın yere takılması şikayeti" },
                         DiagnosticTests = new[] { "Fibula boynu seviyesinde sinir iletim çalışması (EMG)", "Klinik motor muayenede ayak eversiyon ve dorsifleksiyon kaybı" },
@@ -406,7 +406,7 @@ public class TusController : ControllerBase
                 return new List<MedicalConcept>
                 {
                     new MedicalConcept {
-                        Name = "Reed-Sternberg Hücresi (Hodgkin Lenfoma)",
+                        Name = "Reed-Sternberg Hücresi",
                         Subject = "Patoloji",
                         KeySymptoms = new[] { "ağrısız, lastik kıvamında servikal lenfadenopati ve gece terlemesi, ateş, kilo kaybı", "alkol aldıktan sonra lenf nodlarında ağrı hissedilmesi" },
                         DiagnosticTests = new[] { "Lenf nodu biyopsisinde 'baykuş gözü' nükleollü dev hücrelerin izlenmesi", "CD30 ve CD15 immünohistokimyasal pozitiflik" },
@@ -442,7 +442,7 @@ public class TusController : ControllerBase
                 return new List<MedicalConcept>
                 {
                     new MedicalConcept {
-                        Name = "Herediter Sferositoz (Eritrosit Hücre Membran Bozukluğu)",
+                        Name = "Herediter Sferositoz",
                         Subject = "Histoloji ve Embriyoloji",
                         KeySymptoms = new[] { "periferik yaymada mikrosferositler (yuvarlak küçük kırmızı kan hücreleri)", "splenomegali, sarılık ve hafif anemi bulguları" },
                         DiagnosticTests = new[] { "Osmotik frajilite testi pozitifliği ve ankirin/spektrin protein eksikliği tespiti", "Akış sitometrisi (EMA bağlama testi)" },
@@ -454,7 +454,7 @@ public class TusController : ControllerBase
                 return new List<MedicalConcept>
                 {
                     new MedicalConcept {
-                        Name = "Sedef Hastalığı (Psoriasis Vulgaris)",
+                        Name = "Sedef Hastalığı",
                         Subject = "Küçük Stajlar",
                         KeySymptoms = new[] { "vücudun ekstansör yüzlerinde gümüş rengi skamlarla kaplı eritemli plaklar", "dirsek ve dizlerde yerleşen lezyonlar ve Auspitz belirtisi" },
                         DiagnosticTests = new[] { "Klinik dermatolojik muayene ve Auspitz (noktasal kanama) belirtisi", "Deri biyopsisinde parakeratoz ve Munro mikroapseleri izlenmesi" },

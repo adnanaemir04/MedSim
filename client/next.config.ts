@@ -6,7 +6,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.BACKEND_URL || 'http://localhost:5211'}/api/:path*`,
+        destination: `${process.env.BACKEND_URL || 'http://127.0.0.1:5211'}/api/:path*`,
+      },
+      {
+        source: '/hub/:path*',
+        destination: `${process.env.BACKEND_URL || 'http://127.0.0.1:5211'}/hub/:path*`,
       },
     ];
   },

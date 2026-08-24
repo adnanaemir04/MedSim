@@ -158,6 +158,31 @@ export default function Home() {
     );
   }
 
+  if (currentView === 'admin') {
+    return (
+      <div style={{ width: '100vw', minHeight: '100vh', background: 'var(--bg-main)', padding: '3rem 1.5rem', overflowY: 'auto', position: 'relative' }}>
+        {/* Back Button */}
+        <div style={{ position: 'absolute', left: '2.5rem', top: '2rem' }}>
+          <button 
+            onClick={() => setCurrentView('dashboard')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '0.5rem', 
+              background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', 
+              color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.9rem', 
+              padding: '0.6rem 1.2rem', borderRadius: '30px', transition: 'all 0.2s', 
+              fontWeight: 600, backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+            }}
+          >
+            <ArrowLeft size={16} /> Geri Dön
+          </button>
+        </div>
+        <div style={{ marginTop: '2rem' }}>
+          <AdminDashboard userEmail={user.email} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <TopBar 
@@ -235,10 +260,6 @@ export default function Home() {
 
           {currentView === 'tus_admin' && (
             <TusAdminPanel onBack={() => setCurrentView('tus')} />
-          )}
-
-          {currentView === 'admin' && (
-            <AdminDashboard userEmail={user.email} />
           )}
         </div>
       </div>

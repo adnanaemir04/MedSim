@@ -25,7 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5211";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${apiUrl}/hub/medsim`)
       .withAutomaticReconnect()

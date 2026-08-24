@@ -266,18 +266,32 @@ export default function Sidebar({ user, onLogout, onNavigate }: SidebarProps) {
         </button>
 
         {(user?.role === 'Admin' || user?.role === 'SuperAdmin') && (
-          <button 
-            className="nav-item" 
-            onClick={() => nav('admin')}
-            onMouseEnter={() => soundManager.playHover()}
-            style={{
-              background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(16, 185, 129, 0.1))',
-              borderLeft: '4px solid var(--primary)'
-            }}
-          >
-            <Sparkles size={18} color="var(--primary)" />
-            <span style={{ fontWeight: 800 }}>Admin Paneli</span>
-          </button>
+          <>
+            <button 
+              className="nav-item" 
+              onClick={() => nav('admin')}
+              onMouseEnter={() => soundManager.playHover()}
+              style={{
+                background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(16, 185, 129, 0.1))',
+                borderLeft: '4px solid var(--primary)'
+              }}
+            >
+              <Sparkles size={18} color="var(--primary)" />
+              <span style={{ fontWeight: 800 }}>Admin Paneli</span>
+            </button>
+            <button 
+              className="nav-item" 
+              onClick={() => nav('tus_admin')}
+              onMouseEnter={() => soundManager.playHover()}
+              style={{
+                background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.1), rgba(244, 63, 94, 0.05))',
+                borderLeft: '4px solid #f43f5e'
+              }}
+            >
+              <BookOpen size={18} color="#f43f5e" />
+              <span style={{ fontWeight: 800 }}>TUS Soru Yönetimi</span>
+            </button>
+          </>
         )}
       </nav>
 

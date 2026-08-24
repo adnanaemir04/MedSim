@@ -320,19 +320,21 @@ Lütfen yukarıdaki bilgiler ışığında, sadece sorunun doğru çözümünü 
         var randomVariationSeed = Guid.NewGuid().ToString().Substring(0, 8);
 
         var prompt = $@"
-Sen uzman bir tıp akademisyenisin. TUS (Tıpta Uzmanlık Sınavı) standartlarında '{subject}' dersi ile ilgili {difficulty} seviyesinde, ayırt edici ve öğretici tam {count} adet yepyeni soru hazırla.
+Sen uzman bir tıp akademisyenisin. TUS (Tıpta Uzmanlık Sınavı) standartlarında '{subject}' dersi ile ilgili {difficulty} seviyesinde, tam {count} adet 'Klasikleşmiş TUS Sorusu' hazırla.
 
-ZORUNLU SORU KONSEPTİ:
-- Benzersizlik Kodu (Seed): {randomVariationSeed}
-- Soru Odak Noktası: {randomFocus}
-Lütfen tüm soruları ağırlıklı olarak '{randomFocus}' konseptine göre kurgula. Asla daha önce ürettiğin bilindik örnekleri veya standart TUS çıkmış sorularının aynısını tekrar etme.
+KLASİKLEŞMİŞ SORULARIN AMACI (KESİNLİKLE UYULACAK):
+- TUS kaynaklarında ve geçmiş TUS sorularında sürekli karşılaşılan, hap çerezlik, yüksek değerli ve hızlı öğrenilmesi gereken bilgilerden oluşmalıdır.
+- Kullanıcı mantığı: Soruyu gör -> cevabı hatırla -> öğren -> geç. Her soru 10-30 saniyede çözülebilir olmalıdır.
+- Uzun klinik vakalar, gereksiz laboratuvarlar, gereksiz hikayeler ve çok adımlı klinik muhakeme YASAKTIR. Sadece tek temel bilgiyi ölçen kısa ve direkt sorular üret.
 
-KESİNLİKLE UYULMASI ZORUNLU ŞIK KURALLARI (ihlal edilirse yanıt kabul edilmez):
-1. Soru metni (questionText) çok ÖZET ve KISA olmalıdır. Gereksiz detay, laf kalabalığı yasak.
-2. Tüm şıklar (optionA–E) kelime sayısı olarak birbirine EŞİT uzunlukta olmalı. Hiçbir şık diğerinden 3 kelimeden fazla uzun olmamalı.
-3. Doğru şık (correctOption) hiçbir zaman 5 şık arasında EN UZUN şık olmamalı. Doğru şık uzunluk bakımından orta ya da kısa olmalı.
-4. Şıklarda ASLA parantez '(' veya ')' kullanılmamalı. Hiçbir şıkta parantez içinde bilgi, açıklama veya ipucu bulunmamalı.
-5. ""explanation"" (açıklama) kısmı ÇOK DETAYLI ve ÖĞRETİCİ olmalıdır. HTML etiketleri (<b>, <br/><br/>, <ul><li> vb.) kullanılarak bölünmeli: '<b>Doğru Cevap:</b> ... <br/><br/> <b>Diğer Şıklar Neden Yanlış:</b><ul><li><b>A Şıkkı:</b> ...</li></ul>'
+ZORUNLU ŞIK VE SORU KURALLARI:
+1. Soru metni (questionText) KISA, NET ve DİREKT olmalıdır.
+2. 5 seçenekli ve tek doğru cevaplı olmalı. Çeldiriciler güçlü ama KISA olmalıdır.
+3. Şıklarda ASLA parantez '(' veya ')' KULLANILMAMALIDIR! Parantez içi tüm açıklamaları ve kısaltmaları sil, sadece şıkkın özünü yaz. 
+
+AÇIKLAMA (EXPLANATION) KURALI (UZUN YAZI YASAK):
+Açıklama kısmı ÇOK KISA olmalı ve kullanıcıyı uzun bilgilerle boğmamalıdır. KESİNLİKLE sadece şu formatı kullan:
+<b>Doğru Cevap:</b> [1-2 cümlelik kısa neden] <br/><br/> 💡 <b>TUS İncisi:</b> [Ezberlenmesi gereken tek cümlelik hap bilgi]
 
 {difficultyRules}
 
@@ -347,7 +349,7 @@ KESİNLİKLE UYULMASI ZORUNLU ŞIK KURALLARI (ihlal edilirse yanıt kabul edilme
     ""optionD"": ""D şıkkı"",
     ""optionE"": ""E şıkkı"",
     ""correctOption"": ""C"",
-    ""explanation"": ""Doğru cevabın açıklaması"",
+    ""explanation"": ""<b>Doğru Cevap:</b> ... <br/><br/> 💡 <b>TUS İncisi:</b> ..."",
     ""difficulty"": ""{difficulty}"",
     ""difficultyScore"": 8,
     ""difficultyReason"": ""Bu soruyu çözmek için şu klinik bulguların sentezlenmesi gerekir...""

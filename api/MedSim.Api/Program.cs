@@ -69,9 +69,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Use CORS to allow frontend connections
-var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:3000";
 app.UseCors(policy => policy
-    .WithOrigins(frontendUrl)
+    .SetIsOriginAllowed(origin => true)
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials());
