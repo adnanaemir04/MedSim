@@ -1,6 +1,13 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
+import { 
+  ShieldAlert, Users, Activity, UserPlus, BarChart3, Clock, 
+  ShieldCheck, Cpu, Server, Database, AlertTriangle, Fingerprint, 
+  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2
+} from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import { ShieldAlert, Users, Activity, UserPlus, CheckCircle, XCircle, BarChart3, Clock, ShieldCheck, PlusCircle } from 'lucide-react';
+import { soundManager } from '../../../utils/soundManager';
 
 interface UserStats {
   userId: string;
@@ -24,18 +31,21 @@ interface AuditLog {
 }
 
 export default function AdminDashboard({ userEmail }: { userEmail: string }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create'>('stats');
   const [stats, setStats] = useState<UserStats[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Create Admin Form
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [newAdminNickname, setNewAdminNickname] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [createMessage, setCreateMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5211/api';
 
@@ -44,11 +54,17 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
     fetchLogs();
   }, []);
 
+  const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('medsim_access_token') : null;
+    return {
+      'User-Email': userEmail,
+      'Authorization': `Bearer ${token}`
+    };
+  };
+
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/Admin/users-stats`, {
-        headers: { 'User-Email': userEmail }
-      });
+      const res = await fetch(`${API_BASE_URL}/Admin/users-stats`, { headers: getAuthHeaders() });
       if (res.ok) {
         const data = await res.json();
         setStats(data);
@@ -62,9 +78,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
 
   const fetchLogs = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/Admin/audit-logs`, {
-        headers: { 'User-Email': userEmail }
-      });
+      const res = await fetch(`${API_BASE_URL}/Admin/audit-logs`, { headers: getAuthHeaders() });
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
@@ -77,320 +91,495 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateMessage('');
+    setIsSubmitting(true);
+    soundManager.playClick();
     try {
       const res = await fetch(`${API_BASE_URL}/Admin/create-admin`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'User-Email': userEmail
-        },
-        body: JSON.stringify({
-          email: newAdminEmail,
-          nickname: newAdminNickname,
-          password: newAdminPassword
-        })
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({ email: newAdminEmail, nickname: newAdminNickname, password: newAdminPassword })
       });
-      
       const data = await res.json().catch(() => null);
       if (res.ok) {
-        setCreateMessage('Yönetici başarıyla oluşturuldu.');
-        setNewAdminEmail('');
-        setNewAdminNickname('');
+        soundManager.playSuccess();
+        setCreateMessage('Yönetici hesabı başarıyla oluşturuldu.');
+        setNewAdminEmail(''); 
+        setNewAdminNickname(''); 
         setNewAdminPassword('');
-        fetchStats(); // refresh stats
+        fetchStats(); 
       } else {
+        soundManager.playError();
         setCreateMessage(data?.message || 'Bir hata oluştu.');
       }
     } catch (err) {
-      console.error(err);
+      soundManager.playError();
       setCreateMessage('Sunucuya bağlanılamadı.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-indigo-400">
-      <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p className="font-semibold text-lg">Veriler Yükleniyor...</p>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '1.2rem' }}>
+      <Loader2 size={44} className="animate-spin" style={{ color: 'var(--primary)' }} />
+      <p style={{ fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.95rem', letterSpacing: '0.05em' }}>SİSTEM VERİLERİ YÜKLENİYOR...</p>
     </div>
   );
 
-  // Summary calculations
   const totalUsers = stats.length;
   const totalCases = stats.reduce((acc, s) => acc + s.totalCasesSolved, 0);
   const totalTus = stats.reduce((acc, s) => acc + s.totalTusSolved, 0);
+  const adminCount = stats.filter(s => s.role === 'Admin' || s.role === 'SuperAdmin').length;
+
+  const filteredStats = stats.filter(s => 
+    s.nickname.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    s.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const metrics = [
+    { title: "Toplam Kullanıcı", val: totalUsers, icon: Users, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)' },
+    { title: "Çözülen Vaka", val: totalCases, icon: Activity, color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
+    { title: "Çözülen Soru", val: totalTus, icon: BarChart3, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' },
+    { title: "Aktif Yönetici", val: adminCount, icon: ShieldAlert, color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.12)' },
+  ];
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto text-[var(--text-main)] ">
-      {/* Absolute subtle background glows to make it look premium */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+    <div style={{ padding: '1rem 0', maxWidth: '1250px', margin: '0 auto', animation: 'fadeIn 0.3s ease-out' }}>
       
-      {/* Header Section */}
-      <div className="flex items-center gap-4 mb-10 mt-2">
-        <div className="p-3 bg-gradient-to-br from-indigo-500 to-fuchsia-500 rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.4)] relative z-10">
-          <ShieldCheck className="w-10 h-10 text-[var(--text-main)]" />
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+          <div style={{ 
+            width: 54, height: 54, borderRadius: '16px', 
+            background: 'linear-gradient(135deg, var(--primary), var(--accent))', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            color: 'white', boxShadow: '0 6px 20px var(--primary-glow)' 
+          }}>
+            <Fingerprint size={28} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '2.2rem', fontWeight: 900, margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              Sistem Merkezi
+              <span style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', background: 'var(--primary)', color: 'white', borderRadius: '8px', fontWeight: 800, letterSpacing: '0.05em' }}>
+                SUPERADMIN
+              </span>
+            </h2>
+            <p style={{ color: 'var(--text-muted)', margin: '0.2rem 0 0 0', fontSize: '0.95rem', fontWeight: 500 }}>
+              Platform yönetim, performans analiz ve denetim matrisi.
+            </p>
+          </div>
         </div>
-        <div className="relative z-10">
-          <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">
-            Sistem Yönetimi
-          </h1>
-          <p className="text-[var(--text-muted)] font-medium mt-1">Platformun tüm verilerini, kullanıcılarını ve güvenliğini tek bir ekrandan yönetin.</p>
+
+        <div style={{ 
+          display: 'flex', alignItems: 'center', gap: '0.6rem', 
+          padding: '0.5rem 1.1rem', background: 'rgba(16, 185, 129, 0.1)', 
+          color: '#10b981', borderRadius: '30px', border: '1px solid rgba(16, 185, 129, 0.2)', 
+          fontWeight: 800, fontSize: '0.8rem', letterSpacing: '0.05em' 
+        }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981' }}></span>
+          SİSTEM AKTİF
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] p-6 rounded-3xl shadow-xl flex items-center justify-between hover:bg-white/10 transition-colors">
-          <div>
-            <p className="text-[var(--text-muted)] font-semibold mb-1">Toplam Kullanıcı</p>
-            <h3 className="text-4xl font-black text-[var(--text-main)]">{totalUsers}</h3>
+      {/* Metrics Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', marginBottom: '2rem' }}>
+        {metrics.map((m, i) => (
+          <div 
+            key={i} 
+            style={{ 
+              background: 'var(--glass-bg)', 
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)', 
+              borderRadius: '20px', 
+              padding: '1.4rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '1.2rem',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.03)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            }}
+          >
+            <div style={{ 
+              width: 52, height: 52, borderRadius: '15px', 
+              background: m.bg, color: m.color, 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1)' 
+            }}>
+              <m.icon size={26} />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {m.title}
+              </p>
+              <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.85rem', fontWeight: 900, color: 'var(--text-main)' }}>
+                {m.val}
+              </h3>
+            </div>
           </div>
-          <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
-            <Users className="w-7 h-7" />
-          </div>
-        </div>
-
-        <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] p-6 rounded-3xl shadow-xl flex items-center justify-between hover:bg-white/10 transition-colors">
-          <div>
-            <p className="text-[var(--text-muted)] font-semibold mb-1">Çözülen Vakalar</p>
-            <h3 className="text-4xl font-black text-[var(--text-main)]">{totalCases}</h3>
-          </div>
-          <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <Activity className="w-7 h-7" />
-          </div>
-        </div>
-
-        <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] p-6 rounded-3xl shadow-xl flex items-center justify-between hover:bg-white/10 transition-colors">
-          <div>
-            <p className="text-[var(--text-muted)] font-semibold mb-1">Çözülen TUS Sorusu</p>
-            <h3 className="text-4xl font-black text-[var(--text-main)]">{totalTus}</h3>
-          </div>
-          <div className="w-14 h-14 rounded-full bg-fuchsia-500/20 flex items-center justify-center text-fuchsia-400">
-            <BarChart3 className="w-7 h-7" />
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Modern Tabs */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8 bg-[var(--glass-bg)] p-2 rounded-2xl backdrop-blur-sm border border-[var(--glass-border)]">
-        <button 
-          onClick={() => setActiveTab('stats')}
-          className={`flex-1 flex flex-col items-center justify-center gap-2 px-4 py-4 rounded-xl transition-all duration-300 ${activeTab === 'stats' ? 'bg-[var(--primary)] text-white shadow-lg shadow-indigo-500/30' : 'hover:bg-[var(--glass-bg)]'}`}
-        >
-          <Users className={`w-6 h-6 ${activeTab === 'stats' ? 'text-[var(--text-main)]' : 'text-[var(--text-muted)]'}`} />
-          <div className="text-center">
-            <span className={`block font-bold ${activeTab === 'stats' ? 'text-[var(--text-main)]' : 'text-[var(--text-main)]'}`}>İstatistikler</span>
-            <span className={`text-xs ${activeTab === 'stats' ? 'text-white/80' : 'text-slate-500'}`}>Tüm kullanıcı başarı oranları</span>
-          </div>
-        </button>
-
-        <button 
-          onClick={() => setActiveTab('logs')}
-          className={`flex-1 flex flex-col items-center justify-center gap-2 px-4 py-4 rounded-xl transition-all duration-300 ${activeTab === 'logs' ? 'bg-[var(--primary)] text-white shadow-lg shadow-fuchsia-500/30' : 'hover:bg-[var(--glass-bg)]'}`}
-        >
-          <Clock className={`w-6 h-6 ${activeTab === 'logs' ? 'text-[var(--text-main)]' : 'text-[var(--text-muted)]'}`} />
-          <div className="text-center">
-            <span className={`block font-bold ${activeTab === 'logs' ? 'text-[var(--text-main)]' : 'text-[var(--text-main)]'}`}>Aktivite Logları</span>
-            <span className={`text-xs ${activeTab === 'logs' ? 'text-white/80' : 'text-slate-500'}`}>Sistemdeki tüm eylemler</span>
-          </div>
-        </button>
-
-        <button 
-          onClick={() => setActiveTab('create')}
-          className={`flex-1 flex flex-col items-center justify-center gap-2 px-4 py-4 rounded-xl transition-all duration-300 ${activeTab === 'create' ? 'bg-[var(--primary)] text-white shadow-lg shadow-emerald-500/30' : 'hover:bg-[var(--glass-bg)]'}`}
-        >
-          <UserPlus className={`w-6 h-6 ${activeTab === 'create' ? 'text-[var(--text-main)]' : 'text-[var(--text-muted)]'}`} />
-          <div className="text-center">
-            <span className={`block font-bold ${activeTab === 'create' ? 'text-[var(--text-main)]' : 'text-[var(--text-main)]'}`}>Yönetici Ekle</span>
-            <span className={`text-xs ${activeTab === 'create' ? 'text-white/80' : 'text-slate-500'}`}>Yeni sistem yetkilisi oluştur</span>
-          </div>
-        </button>
+      {/* Horizontal Tabs Navigation (Standard MedSim Tab Bar) */}
+      <div style={{ 
+        display: 'flex', gap: '0.8rem', 
+        borderBottom: '1px solid var(--glass-border)', 
+        paddingBottom: '1rem', marginBottom: '2rem',
+        overflowX: 'auto'
+      }}>
+        {[
+          { id: 'stats', label: `Kullanıcı Veritabanı (${stats.length})`, icon: Database },
+          { id: 'logs', label: `Sistem Logları (${logs.length})`, icon: Server },
+          { id: 'create', label: 'Yeni Yönetici Ekle', icon: UserPlus },
+        ].map(t => {
+          const active = activeTab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => { soundManager.playClick(); setActiveTab(t.id as any); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.6rem',
+                padding: '0.75rem 1.4rem', borderRadius: '14px',
+                background: active ? 'var(--primary)' : 'rgba(255, 255, 255, 0.03)',
+                color: active ? '#ffffff' : 'var(--text-muted)',
+                border: active ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
+                cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
+                transition: 'all 0.2s ease',
+                boxShadow: active ? '0 4px 15px var(--primary-glow)' : 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <t.icon size={18} />
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Main Content Area */}
-      <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-3xl overflow-hidden shadow-2xl">
-        
-        {/* STATS TAB */}
+      {/* Main Panel Content */}
+      <div style={{ 
+        background: 'var(--glass-bg)', 
+        backdropFilter: 'blur(30px)',
+        WebkitBackdropFilter: 'blur(30px)',
+        border: '1px solid var(--glass-border)', 
+        borderRadius: '24px', 
+        padding: '2rem',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.04)'
+      }}>
+
+        {/* TAB 1: USERS STATS */}
         {activeTab === 'stats' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[var(--glass-bg)] border-b border-[var(--glass-border)]">
-                <tr>
-                  <th className="p-5 font-semibold text-[var(--text-main)]">Kullanıcı</th>
-                  <th className="p-5 font-semibold text-[var(--text-main)] text-center">TUS Başarısı</th>
-                  <th className="p-5 font-semibold text-[var(--text-main)] text-center">Vaka Başarısı</th>
-                  <th className="p-5 font-semibold text-[var(--text-main)] text-right">Durum</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {stats.map(s => {
-                  const tusPercent = s.totalTusSolved > 0 ? Math.round((s.correctTus / s.totalTusSolved) * 100) : 0;
-                  const casePercent = s.totalCasesSolved > 0 ? Math.round((s.successfulCases / s.totalCasesSolved) * 100) : 0;
-                  
-                  return (
-                    <tr key={s.userId} className="hover:bg-[var(--glass-bg)] transition-colors">
-                      <td className="p-5">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-lg text-[var(--text-main)] shadow-lg">
-                            {s.nickname.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-bold text-[var(--text-main)] text-lg">{s.nickname}</div>
-                            <div className="text-sm text-[var(--text-muted)]">{s.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      
-                      <td className="p-5 align-middle">
-                        <div className="flex flex-col items-center">
-                          <div className="flex items-center justify-between w-full max-w-[200px] mb-1">
-                            <span className="text-xs font-semibold text-emerald-400">{s.correctTus} D</span>
-                            <span className="text-xs font-semibold text-rose-400">{s.incorrectTus} Y</span>
-                          </div>
-                          <div className="w-full max-w-[200px] bg-slate-800 rounded-full h-2.5 overflow-hidden flex">
-                            <div className="bg-emerald-500 h-full" style={{ width: `${tusPercent}%` }}></div>
-                            <div className="bg-rose-500 h-full" style={{ width: `${100 - tusPercent}%` }}></div>
-                          </div>
-                          <span className="text-xs text-slate-500 mt-1">Toplam: {s.totalTusSolved}</span>
-                        </div>
-                      </td>
-                      
-                      <td className="p-5 align-middle">
-                        <div className="flex flex-col items-center">
-                          <div className="flex items-center justify-between w-full max-w-[200px] mb-1">
-                            <span className="text-xs font-semibold text-emerald-400">{s.successfulCases} B</span>
-                            <span className="text-xs font-semibold text-rose-400">{s.failedCases} H</span>
-                          </div>
-                          <div className="w-full max-w-[200px] bg-slate-800 rounded-full h-2.5 overflow-hidden flex">
-                            <div className="bg-emerald-500 h-full" style={{ width: `${casePercent}%` }}></div>
-                            <div className="bg-rose-500 h-full" style={{ width: `${100 - casePercent}%` }}></div>
-                          </div>
-                          <span className="text-xs text-slate-500 mt-1">Toplam: {s.totalCasesSolved}</span>
-                        </div>
-                      </td>
-                      
-                      <td className="p-5 text-right">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${s.role === 'SuperAdmin' ? 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/30' : s.role === 'Admin' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' : 'bg-slate-500/10 text-[var(--text-muted)] border-slate-500/30'}`}>
-                          {s.role === 'SuperAdmin' && <ShieldAlert className="w-3.5 h-3.5" />}
-                          {s.role}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                  Kullanıcı Performans Matrisi
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                  Platformdaki tüm hekim ve yöneticilerin soru ve vaka istatistikleri.
+                </p>
+              </div>
 
-        {/* LOGS TAB */}
-        {activeTab === 'logs' && (
-          <div className="p-6">
-            <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-white/10 before:to-transparent">
-              {logs.map((l, idx) => (
-                <div key={l.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                  {/* Timeline Icon */}
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-fuchsia-500 text-[var(--text-main)] shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                    <Activity className="w-4 h-4" />
-                  </div>
-                  
-                  {/* Content Box */}
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-[var(--glass-bg)] backdrop-blur-sm p-4 rounded-2xl border border-[var(--glass-border)] shadow-lg group-hover:bg-white/10 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-[var(--text-main)] flex items-center gap-2">
-                        {l.userEmail}
-                      </span>
-                      <span className="text-xs font-medium text-fuchsia-400 bg-fuchsia-400/10 px-2 py-1 rounded-full">
-                        {l.action}
-                      </span>
-                    </div>
-                    <div className="text-[var(--text-main)] font-mono text-sm mb-3 bg-[var(--glass-bg)] p-2 rounded-lg border border-[var(--glass-border)]">
-                      {l.details}
-                    </div>
-                    <div className="text-xs text-slate-500 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {new Date(l.createdAt).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })}
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {/* Search input */}
+              <div style={{ 
+                display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                background: 'rgba(255, 255, 255, 0.05)', 
+                border: '1px solid var(--glass-border)', 
+                borderRadius: '12px', padding: '0.5rem 1rem', width: '280px' 
+              }}>
+                <Search size={16} color="var(--text-muted)" />
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Kullanıcı veya e-posta ara..."
+                  style={{
+                    background: 'transparent', border: 'none', 
+                    color: 'var(--text-main)', fontSize: '0.85rem', 
+                    outline: 'none', width: '100%'
+                  }}
+                />
+              </div>
+            </div>
 
-              {logs.length === 0 && (
-                <div className="text-center text-[var(--text-muted)] py-12">
-                  <Activity className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                  <p>Henüz sistemde kaydedilmiş bir log bulunmuyor.</p>
+            {/* List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              {filteredStats.map(s => {
+                const tusPercent = s.totalTusSolved > 0 ? Math.round((s.correctTus / s.totalTusSolved) * 100) : 0;
+                const casePercent = s.totalCasesSolved > 0 ? Math.round((s.successfulCases / s.totalCasesSolved) * 100) : 0;
+                const isAdmin = s.role === 'SuperAdmin' || s.role === 'Admin';
+
+                return (
+                  <div 
+                    key={s.userId}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+                      padding: '1.2rem 1.4rem', borderRadius: '18px',
+                      background: isAdmin ? 'rgba(244, 63, 94, 0.04)' : 'rgba(255, 255, 255, 0.02)',
+                      border: isAdmin ? '1px solid rgba(244, 63, 94, 0.2)' : '1px solid var(--glass-border)',
+                      gap: '1.5rem', flexWrap: 'wrap', transition: 'transform 0.15s ease'
+                    }}
+                  >
+                    {/* User Identity */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '260px', flex: 1 }}>
+                      <div style={{
+                        width: 46, height: 46, borderRadius: '50%',
+                        background: isAdmin ? 'linear-gradient(135deg, var(--primary), var(--accent))' : 'rgba(100, 116, 139, 0.2)',
+                        color: isAdmin ? '#ffffff' : 'var(--text-main)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 800, fontSize: '0.95rem', flexShrink: 0,
+                        boxShadow: isAdmin ? '0 4px 12px var(--primary-glow)' : 'none'
+                      }}>
+                        {s.nickname.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {s.nickname}
+                          </h4>
+                          {isAdmin && (
+                            <span style={{
+                              display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+                              padding: '0.15rem 0.5rem', borderRadius: '6px',
+                              background: 'rgba(244, 63, 94, 0.12)', color: '#f43f5e',
+                              fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.05em'
+                            }}>
+                              <ShieldCheck size={12} /> YÖNETİCİ
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {s.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Performance Progress */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flex: 2, minWidth: '320px', flexWrap: 'wrap' }}>
+                      {/* TUS Bar */}
+                      <div style={{ flex: 1, minWidth: '140px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>TUS Başarısı</span>
+                          <span style={{ color: 'var(--text-main)' }}>{tusPercent}%</span>
+                        </div>
+                        <div style={{ width: '100%', background: 'rgba(0,0,0,0.06)', height: '7px', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ 
+                            height: '100%', borderRadius: '4px', 
+                            background: tusPercent > 50 ? '#10b981' : '#f59e0b', 
+                            width: `${tusPercent}%`, transition: 'width 0.8s ease' 
+                          }}></div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', fontWeight: 600 }}>
+                          <span>{s.correctTus} D / {s.incorrectTus} Y</span>
+                          <span>{s.totalTusSolved} Soru</span>
+                        </div>
+                      </div>
+
+                      {/* Case Bar */}
+                      <div style={{ flex: 1, minWidth: '140px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Vaka Başarısı</span>
+                          <span style={{ color: 'var(--text-main)' }}>{casePercent}%</span>
+                        </div>
+                        <div style={{ width: '100%', background: 'rgba(0,0,0,0.06)', height: '7px', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ 
+                            height: '100%', borderRadius: '4px', 
+                            background: casePercent > 50 ? '#3b82f6' : '#f59e0b', 
+                            width: `${casePercent}%`, transition: 'width 0.8s ease' 
+                          }}></div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', fontWeight: 600 }}>
+                          <span>{s.successfulCases} Başarılı</span>
+                          <span>{s.totalCasesSolved} Vaka</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })}
+
+              {filteredStats.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
+                  Arama kriterlerine uygun kullanıcı bulunamadı.
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* CREATE TAB */}
-        {activeTab === 'create' && (
-          <div className="p-8 md:p-12">
-            <div className="max-w-xl mx-auto bg-[var(--glass-bg)] border border-[var(--glass-border)] p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-              {/* Decorative Glow */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/3"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -z-10 translate-y-1/3 -translate-x-1/3"></div>
-              
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
-                  <PlusCircle className="w-8 h-8" />
+        {/* TAB 2: AUDIT LOGS */}
+        {activeTab === 'logs' && (
+          <div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                Sistem ve Güvenlik Logları
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                Yönetici aktiviteleri, soru yükleme ve sistem olay kayıtları.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              {logs.map((l) => (
+                <div 
+                  key={l.id} 
+                  style={{
+                    display: 'flex', gap: '1rem', alignItems: 'flex-start',
+                    padding: '1.1rem 1.3rem', borderRadius: '16px',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid var(--glass-border)'
+                  }}
+                >
+                  <div style={{ 
+                    width: 38, height: 38, borderRadius: '10px', 
+                    background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                    flexShrink: 0, marginTop: '0.1rem' 
+                  }}>
+                    <Activity size={18} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {l.userEmail}
+                      </span>
+                      <span style={{ 
+                        fontSize: '0.68rem', fontWeight: 800, 
+                        background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', 
+                        padding: '0.2rem 0.5rem', borderRadius: '6px', 
+                        textTransform: 'uppercase', letterSpacing: '0.05em' 
+                      }}>
+                        {l.action}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0', lineHeight: 1.5 }}>
+                      {l.details}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 600 }}>
+                      <Clock size={12} />
+                      {new Date(l.createdAt).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' })}
+                    </div>
+                  </div>
                 </div>
-                <h2 className="text-2xl font-bold text-[var(--text-main)]">Yeni Yönetici Hesabı Oluştur</h2>
-                <p className="text-[var(--text-muted)] text-sm mt-2">Sisteme tam yetkili (Admin) bir hesap ekliyorsunuz.</p>
+              ))}
+
+              {logs.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+                  <Server size={40} color="var(--text-muted)" style={{ opacity: 0.3, marginBottom: '0.8rem' }} />
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, margin: 0 }}>
+                    Kayıtlı sistem logu bulunamadı.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: CREATE ADMIN */}
+        {activeTab === 'create' && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem 0' }}>
+            <div style={{ width: '100%', maxWidth: '440px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <div style={{ 
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', 
+                  width: 56, height: 56, borderRadius: '16px', 
+                  background: 'rgba(244, 63, 94, 0.12)', color: 'var(--primary)', 
+                  marginBottom: '1rem', boxShadow: '0 4px 15px var(--primary-glow)' 
+                }}>
+                  <UserPlus size={28} />
+                </div>
+                <h3 style={{ fontSize: '1.6rem', fontWeight: 900, margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                  Yeni Yönetici Yetkilendir
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: '0.3rem', margin: 0 }}>
+                  Sisteme tam yetkili yeni bir yönetici hesabı ekleyin.
+                </p>
               </div>
 
-              <form onSubmit={handleCreateAdmin} className="space-y-5">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-[var(--text-main)] ml-1">E-posta Adresi</label>
+              <form onSubmit={handleCreateAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    E-Posta Adresi
+                  </label>
                   <input 
                     type="email" 
                     required 
                     value={newAdminEmail}
                     onChange={e => setNewAdminEmail(e.target.value)}
                     placeholder="admin@medsim.com"
-                    className="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-4 py-3 text-[var(--text-main)] placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                    style={{ 
+                      width: '100%', background: 'rgba(255, 255, 255, 0.06)', 
+                      border: '1px solid var(--glass-border)', borderRadius: '12px', 
+                      padding: '0.8rem 1rem', fontSize: '0.9rem', color: 'var(--text-main)', 
+                      outline: 'none', transition: 'border-color 0.2s' 
+                    }} 
                   />
                 </div>
                 
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-[var(--text-main)] ml-1">Kullanıcı Adı (Nickname)</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Unvan & İsim
+                  </label>
                   <input 
                     type="text" 
                     required 
                     value={newAdminNickname}
                     onChange={e => setNewAdminNickname(e.target.value)}
-                    placeholder="Dr. Admin"
-                    className="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-4 py-3 text-[var(--text-main)] placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                    placeholder="Prof. Dr. XYZ"
+                    style={{ 
+                      width: '100%', background: 'rgba(255, 255, 255, 0.06)', 
+                      border: '1px solid var(--glass-border)', borderRadius: '12px', 
+                      padding: '0.8rem 1rem', fontSize: '0.9rem', color: 'var(--text-main)', 
+                      outline: 'none', transition: 'border-color 0.2s' 
+                    }} 
                   />
                 </div>
                 
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-[var(--text-main)] ml-1">Güvenli Şifre</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Geçici Şifre
+                  </label>
                   <input 
                     type="password" 
                     required 
                     value={newAdminPassword}
                     onChange={e => setNewAdminPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-4 py-3 text-[var(--text-main)] placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                    style={{ 
+                      width: '100%', background: 'rgba(255, 255, 255, 0.06)', 
+                      border: '1px solid var(--glass-border)', borderRadius: '12px', 
+                      padding: '0.8rem 1rem', fontSize: '0.9rem', color: 'var(--text-main)', 
+                      outline: 'none', transition: 'border-color 0.2s' 
+                    }} 
                   />
                 </div>
 
                 <button 
                   type="submit" 
-                  className="w-full mt-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-[var(--text-main)] rounded-xl px-4 py-3 font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transform hover:-translate-y-0.5"
+                  disabled={isSubmitting}
+                  style={{ 
+                    width: '100%', marginTop: '0.6rem', 
+                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))', 
+                    color: '#ffffff', border: 'none', borderRadius: '14px', 
+                    padding: '0.9rem', fontSize: '0.95rem', fontWeight: 800, 
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer', 
+                    opacity: isSubmitting ? 0.6 : 1,
+                    transition: 'all 0.2s ease', 
+                    boxShadow: '0 4px 20px var(--primary-glow)' 
+                  }}
                 >
-                  Hesabı Oluştur
+                  {isSubmitting ? 'Yetkilendiriliyor...' : 'Yönetici Hesabını Oluştur'}
                 </button>
 
                 {createMessage && (
-                  <div className={`mt-4 p-4 rounded-xl border font-medium text-center ${
-                    createMessage.includes('başarıyla') 
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
-                      : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-                  }`}>
+                  <div style={{
+                    marginTop: '1rem', padding: '0.85rem', borderRadius: '10px',
+                    fontSize: '0.85rem', fontWeight: 700, textAlign: 'center',
+                    background: createMessage.includes('başarıyla') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+                    color: createMessage.includes('başarıyla') ? '#10b981' : '#ef4444',
+                    border: createMessage.includes('başarıyla') ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(244, 63, 94, 0.2)',
+                  }}>
                     {createMessage}
                   </div>
                 )}

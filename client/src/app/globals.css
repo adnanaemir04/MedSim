@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source "../presentation/**/*.tsx";
+@source "../presentation/**/*.ts";
 
 /* 
   Ultra-Creative, Vibrant Glassmorphism Aesthetic
@@ -21,14 +23,14 @@
   /* Light Mode Backgrounds */
   --bg-color: #fff1f2; /* Soft warm pinkish-white */
   --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 1);
+  --glass-border: rgba(0, 0, 0, 0.08);
   --sidebar-bg: rgba(255, 255, 255, 0.65);
 
   --text-main: #0f172a;
   --text-muted: #64748b;
 
   --shadow-float: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-  --shadow-inner: inset 0 0 0 1px var(--glass-border);
+  --shadow-inner: inset 0 0 0 1px rgba(255, 255, 255, 1);
 
   --radius-xl: 24px;
   --radius-lg: 16px;
@@ -562,6 +564,16 @@ input[type=number] {
 .glass-panel {
   /* Internal components don't need double glass, just use clear styling */
   background: transparent;
+}
+
+.admin-glass {
+  background-color: var(--glass-bg) !important;
+  border-color: var(--glass-border) !important;
+}
+
+.admin-glass-strong {
+  background-color: var(--sidebar-bg) !important;
+  border-color: var(--glass-border) !important;
 }
 
 .main-content h2 {
