@@ -238,23 +238,23 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
       </div>
 
       {/* Daily Goal Card */}
-      <div className="glass-panel" 
-           style={{ 
-             padding: '1.5rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '1.2rem', justifyContent: 'space-between', marginBottom: '2.5rem',
-             background: isLight ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.15))' : 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))',
-             border: '1px solid rgba(245, 158, 11, 0.3)',
-           }}
-      >
-        <div>
-          <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: isLight ? '#b45309' : 'var(--warning)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            🎯 Klasikleşmiş Sorular – Bugünkü Hedef
-          </h3>
-          <p style={{ margin: '0.2rem 0 0 0', color: isLight ? '#92400e' : 'var(--text-muted)', fontSize: '0.9rem' }}>Klasik hap bilgileri çözerek günlük hedefinize ulaşın ve hafızanızı taze tutun.</p>
+      <div className="glass-panel" style={{ 
+        padding: '2rem', borderRadius: '24px', marginBottom: '2.5rem',
+        background: isLight ? 'linear-gradient(135deg, #ffffff, #fffbeb)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(245,158,11,0.03))',
+        border: '1px solid rgba(245,158,11,0.2)',
+        boxShadow: 'var(--shadow-float)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🎯 Klasikleşmiş Sorular – Bugünkü Hedef
+            </h3>
+            <p style={{ margin: '0.2rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Klasik hap bilgileri çözerek günlük hedefinize ulaşın ve hafızanızı taze tutun.</p>
+          </div>
+          <div style={{ padding: '0.5rem 1.2rem', background: 'var(--warning)', color: isLight ? '#78350f' : '#fff', borderRadius: '20px', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }}>
+            {Math.min(30, genericStats?.totalSolved || 0)} / 30
+          </div>
         </div>
-        <div style={{ padding: '0.5rem 1.2rem', background: 'var(--warning)', color: isLight ? '#ffffff' : '#fff', borderRadius: '20px', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(245,158,11,0.3)', textShadow: isLight ? '0 1px 2px rgba(0,0,0,0.2)' : 'none' }}>
-          {Math.min(30, genericStats?.totalSolved || 0)} / 30
-        </div>
-      </div>
 
       {/* Progress bars for some key courses */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>

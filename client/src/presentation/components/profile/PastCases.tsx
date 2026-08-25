@@ -601,7 +601,7 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                         <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
                           <span style={{ padding: '0.1rem 0.6rem', background: 'rgba(14, 165, 233, 0.1)', color: '#0ea5e9', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 800 }}>DÖNEM {c.departmentYear}</span>
-                          <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.75rem' }}>{c.departmentName}</span>
+                          <span style={{ padding: '0.1rem 0.6rem', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--primary)', borderRadius: '8px', fontWeight: 700, fontSize: '0.75rem' }}>{c.departmentName}</span>
                         </div>
                         <h4 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>{c.caseTitle ? c.caseTitle.replace(/\s*-\s*Vaka\s*\d+/gi, '').trim() : 'Yeni Vaka'}</h4>
                         <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
