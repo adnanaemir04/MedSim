@@ -255,6 +255,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
             {Math.min(30, genericStats?.totalSolved || 0)} / 30
           </div>
         </div>
+      </div>
 
       {/* Progress bars for some key courses */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
