@@ -2,6 +2,7 @@ using MedSim.Application.Interfaces;
 using MedSim.Application.Services;
 using MedSim.Infrastructure.Data;
 using MedSim.Infrastructure.Repositories;
+using MedSim.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +10,7 @@ using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MedSim.Api.Hubs;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +56,18 @@ builder.Services.AddDbContext<MedSimDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+// Configure Redis Connection & Cache Service
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection") 
+    ?? throw new InvalidOperationException("RedisConnection connection string is missing.");
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configurationOptions = ConfigurationOptions.Parse(redisConnectionString);
+    return ConnectionMultiplexer.Connect(configurationOptions);
+});
+
+builder.Services.AddSingleton<ICacheService, RedisCacheService>();
 
 // Dependency Injection for Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();

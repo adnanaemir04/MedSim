@@ -1,17 +1,17 @@
 using MedSim.Application.Interfaces;
+using MedSim.Application.Common;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace MedSim.Infrastructure.Repositories;
 
 public class TusRepository : ITusRepository
 {
     private readonly MedSimDbContext _context;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
 
-    public TusRepository(MedSimDbContext context, IMemoryCache cache)
+    public TusRepository(MedSimDbContext context, ICacheService cache)
     {
         _context = context;
         _cache = cache;
@@ -198,6 +198,9 @@ public class TusRepository : ITusRepository
 
         await _context.SaveChangesAsync();
 
+        await _cache.RemoveAsync(CacheKeys.TusLeaderboard);
+        await _cache.RemoveAsync(CacheKeys.UserLeaderboard);
+
         return new
         {
             isCorrect = isCorrect,
@@ -355,7 +358,8 @@ public class TusRepository : ITusRepository
 
     public async Task<IEnumerable<object>> GetLeaderboardAsync()
     {
-        if (!_cache.TryGetValue("tus_leaderboard", out IEnumerable<object>? leaderboard))
+        var leaderboard = await _cache.GetAsync<IEnumerable<object>>(CacheKeys.TusLeaderboard);
+        if (leaderboard == null)
         {
             leaderboard = await _context.Users
                 .AsNoTracking()
@@ -371,7 +375,7 @@ public class TusRepository : ITusRepository
                 .Take(50)
                 .ToListAsync();
             
-            _cache.Set("tus_leaderboard", leaderboard, TimeSpan.FromMinutes(1));
+            await _cache.SetAsync(CacheKeys.TusLeaderboard, leaderboard, TimeSpan.FromMinutes(5));
         }
         return leaderboard ?? new List<object>();
     }

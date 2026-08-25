@@ -1,11 +1,12 @@
 using MedSim.Application.DTOs;
 using MedSim.Application.Services;
+using MedSim.Application.Interfaces;
+using MedSim.Application.Common;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace MedSim.Api.Controllers;
 
@@ -16,9 +17,9 @@ public class SimulationController : ControllerBase
 {
     private readonly MedSimDbContext _context;
     private readonly IProceduralGeneratorService _generatorService;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
 
-    public SimulationController(MedSimDbContext context, IProceduralGeneratorService generatorService, IMemoryCache cache)
+    public SimulationController(MedSimDbContext context, IProceduralGeneratorService generatorService, ICacheService cache)
     {
         _context = context;
         _generatorService = generatorService;
@@ -28,7 +29,8 @@ public class SimulationController : ControllerBase
     [HttpGet("departments")]
     public async Task<ActionResult<List<DepartmentDto>>> GetDepartments()
     {
-        if (!_cache.TryGetValue("departments_cache", out List<DepartmentDto>? departments))
+        var departments = await _cache.GetAsync<List<DepartmentDto>>(CacheKeys.Departments);
+        if (departments == null)
         {
             departments = await _context.Departments
                 .AsNoTracking()
@@ -54,10 +56,7 @@ public class SimulationController : ControllerBase
                 })
                 .ToListAsync();
 
-            var cacheOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromHours(1));
-            
-            _cache.Set("departments_cache", departments, cacheOptions);
+            await _cache.SetAsync(CacheKeys.Departments, departments, TimeSpan.FromHours(1));
         }
 
         return Ok(departments);
@@ -66,7 +65,8 @@ public class SimulationController : ControllerBase
     [HttpGet("cases")]
     public async Task<ActionResult<List<MedicalCaseDto>>> GetCases()
     {
-        if (!_cache.TryGetValue("cases_cache", out List<MedicalCaseDto>? cases))
+        var cases = await _cache.GetAsync<List<MedicalCaseDto>>(CacheKeys.Cases);
+        if (cases == null)
         {
             cases = await _context.MedicalCases
                 .AsNoTracking()
@@ -102,10 +102,7 @@ public class SimulationController : ControllerBase
                 })
                 .ToListAsync();
 
-            var cacheOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
-            
-            _cache.Set("cases_cache", cases, cacheOptions);
+            await _cache.SetAsync(CacheKeys.Cases, cases, TimeSpan.FromMinutes(10));
         }
 
         return Ok(cases);
@@ -165,6 +162,8 @@ public class SimulationController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+
+        await _cache.RemoveAsync(CacheKeys.Cases);
 
         return Ok(generatedCases);
     }

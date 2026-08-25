@@ -1,4 +1,6 @@
 using MedSim.Application.DTOs;
+using MedSim.Application.Interfaces;
+using MedSim.Application.Common;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -17,11 +19,13 @@ public class ProfileController : ControllerBase
 {
     private readonly MedSimDbContext _context;
     private readonly IHubContext<MedSimHub> _hubContext;
+    private readonly ICacheService _cache;
 
-    public ProfileController(MedSimDbContext context, IHubContext<MedSimHub> hubContext)
+    public ProfileController(MedSimDbContext context, IHubContext<MedSimHub> hubContext, ICacheService cache)
     {
         _context = context;
         _hubContext = hubContext;
+        _cache = cache;
     }
 
     [HttpGet("solved-cases")]
@@ -209,6 +213,9 @@ public class ProfileController : ControllerBase
         _context.AuditLogs.Add(auditLog);
 
         await _context.SaveChangesAsync();
+
+        await _cache.RemoveAsync(CacheKeys.UserLeaderboard);
+        await _cache.RemoveAsync(CacheKeys.TusLeaderboard);
 
         await _hubContext.Clients.All.SendAsync("LeaderboardUpdated");
 

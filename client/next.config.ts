@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['frayed-subpar-circus.ngrok-free.dev'],
+  output: 'standalone',
   async rewrites() {
     return [
       {
