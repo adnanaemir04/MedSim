@@ -64,9 +64,26 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
     }
   };
 
+  const [returnToList, setReturnToList] = useState<boolean>(false);
+
   const handleSubjectClick = (subjectName: string) => {
     setActiveSubject(subjectName);
     setViewState('stats');
+  };
+
+  const handleDirectSolve = (e: React.MouseEvent, subjectName: string, mode: 'classic' | 'ai') => {
+    e.stopPropagation();
+    soundManager.playClick();
+    setActiveSubject(subjectName);
+    setSolveCount(10); // Varsayılan 10 soru
+    setSolveMode(mode);
+    setSolveDifficulty(undefined);
+    setReturnToList(true); // Buradan başlandığı için geri dönünce listeye dönsün
+    if (onNavigateToSolve) {
+      onNavigateToSolve(subjectName, 10, mode, undefined);
+    } else {
+      setViewState('solve');
+    }
   };
 
   if (viewState === 'stats' && activeSubject) {
@@ -78,6 +95,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
           setSolveCount(count);
           setSolveMode(mode);
           setSolveDifficulty(difficulty);
+          setReturnToList(false); // Stats'tan başlatıldığı için oraya dönecek
           if (onNavigateToSolve) {
             onNavigateToSolve(activeSubject as string, count, mode, difficulty);
           } else {
@@ -97,7 +115,10 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
         count={solveCount}
         mode={solveMode}
         difficulty={solveDifficulty}
-        onBack={() => { setViewState('stats'); fetchSubjects(); }} 
+        onBack={() => { 
+          setViewState(returnToList ? 'list' : 'stats'); 
+          fetchSubjects(); 
+        }} 
       />
     );
   }
@@ -322,9 +343,17 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
               <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <button 
                   className="btn-review-case btn-full"
+                  onClick={(e) => handleDirectSolve(e, subject.name, 'classic')}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                 >
-                  <BrainCircuit size={16} /> Ders İstatistikleri & Çözüm
+                  <BookOpen size={16} /> Klasik Çöz
+                </button>
+                <button 
+                  className="btn-review-case btn-full"
+                  onClick={(e) => handleDirectSolve(e, subject.name, 'ai')}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', border: '1px solid rgba(139, 92, 246, 0.3)' }}
+                >
+                  <Sparkles size={16} /> AI Destekli Çöz
                 </button>
               </div>
             </div>

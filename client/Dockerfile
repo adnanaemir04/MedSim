@@ -13,6 +13,7 @@ RUN npm ci
 COPY . .
 # Set environment variables for build time
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV BACKEND_URL=http://backend:8080
 RUN npm run build
 
 # Stage 2: Runner
