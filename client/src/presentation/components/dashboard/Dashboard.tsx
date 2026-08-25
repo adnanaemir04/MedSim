@@ -173,9 +173,9 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
           <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0 }}>
             {filterSubject ? `${filterSubject} Vakaları` : 'Tüm Vakalarım'}
           </h2>
-          {filterSubject && SUBJECT_DESCRIPTIONS[filterSubject] && (
+          {filterSubject && (
             <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: '0.5rem', maxWidth: '800px', lineHeight: 1.5 }}>
-              {SUBJECT_DESCRIPTIONS[filterSubject]}
+              {SUBJECT_DESCRIPTIONS[filterSubject] || `${filterSubject} branşı, tıp fakültesi müfredatında önemli bir yere sahip olan ve geleceğin hekimlerine kritik klinik/temel yetkinlikler kazandıran bir alandır.`}
             </p>
           )}
         </div>
@@ -196,7 +196,8 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
             display: 'flex',
             alignItems: 'center',
             gap: filterSubject ? '0.5rem' : '0.6rem',
-            animation: 'pulseGlow 2s infinite'
+            animation: 'pulseGlow 2s infinite',
+            whiteSpace: 'nowrap'
           }} 
           onMouseEnter={e => { 
             e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)'; 

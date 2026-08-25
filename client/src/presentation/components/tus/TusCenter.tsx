@@ -71,21 +71,6 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
     setViewState('stats');
   };
 
-  const handleDirectSolve = (e: React.MouseEvent, subjectName: string, mode: 'classic' | 'ai') => {
-    e.stopPropagation();
-    soundManager.playClick();
-    setActiveSubject(subjectName);
-    setSolveCount(10); // Varsayılan 10 soru
-    setSolveMode(mode);
-    setSolveDifficulty(undefined);
-    setReturnToList(true); // Buradan başlandığı için geri dönünce listeye dönsün
-    if (onNavigateToSolve) {
-      onNavigateToSolve(subjectName, 10, mode, undefined);
-    } else {
-      setViewState('solve');
-    }
-  };
-
   if (viewState === 'stats' && activeSubject) {
     return (
       <TusSubjectStatsView 
@@ -180,7 +165,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Info size={18} color="var(--primary)" />
               <p style={{ margin: 0, color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>
-                Çözdüğünüz TUS sorularını <span style={{ color: 'var(--primary)', fontWeight: 800 }}>Geçmiş Aktiviteler</span> sekmesinden inceleyebilirsiniz.
+                Çözdüğünüz TUS sorularını <span style={{ color: 'var(--primary)', fontWeight: 800 }}>Geçmiş Vakalar</span> sekmesinden inceleyebilirsiniz.
               </p>
             </div>
             <button 
@@ -253,42 +238,41 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
       </div>
 
       {/* Daily Goal Card */}
-      <div className="glass-panel" style={{ 
-        padding: '2rem', borderRadius: '24px', marginBottom: '2.5rem',
-        background: isLight ? 'linear-gradient(135deg, #ffffff, #fffbeb)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(245,158,11,0.03))',
-        border: '1px solid rgba(245,158,11,0.2)',
-        boxShadow: 'var(--shadow-float)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🎯 Klasikleşmiş Sorular – Bugünkü Hedef
-            </h3>
-            <p style={{ margin: '0.2rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Klasik hap bilgileri çözerek günlük hedefinize ulaşın ve hafızanızı taze tutun.</p>
-          </div>
-          <div style={{ padding: '0.5rem 1.2rem', background: 'var(--warning)', color: '#fff', borderRadius: '20px', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }}>
-            {Math.min(30, genericStats?.totalSolved || 0)} / 30
-          </div>
+      <div className="glass-panel" 
+           style={{ 
+             padding: '1.5rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '1.2rem', justifyContent: 'space-between', marginBottom: '2.5rem',
+             background: isLight ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.15))' : 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))',
+             border: '1px solid rgba(245, 158, 11, 0.3)',
+           }}
+      >
+        <div>
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: isLight ? '#b45309' : 'var(--warning)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            🎯 Klasikleşmiş Sorular – Bugünkü Hedef
+          </h3>
+          <p style={{ margin: '0.2rem 0 0 0', color: isLight ? '#92400e' : 'var(--text-muted)', fontSize: '0.9rem' }}>Klasik hap bilgileri çözerek günlük hedefinize ulaşın ve hafızanızı taze tutun.</p>
         </div>
+        <div style={{ padding: '0.5rem 1.2rem', background: 'var(--warning)', color: isLight ? '#ffffff' : '#fff', borderRadius: '20px', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(245,158,11,0.3)', textShadow: isLight ? '0 1px 2px rgba(0,0,0,0.2)' : 'none' }}>
+          {Math.min(30, genericStats?.totalSolved || 0)} / 30
+        </div>
+      </div>
 
-        {/* Progress bars for some key courses */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-          {[
-            { name: 'Farmakoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 8.2) % 40) + 60), color: '#ef4444' },
-            { name: 'Patoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 6.1) % 40) + 50), color: '#3b82f6' },
-            { name: 'Mikrobiyoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 9.1) % 30) + 70), color: '#10b981' }
-          ].map(course => (
-            <div key={course.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                <span>{course.name}</span>
-                <span>%{course.progress}</span>
-              </div>
-              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${course.progress}%`, height: '100%', background: course.color, borderRadius: '4px' }} />
-              </div>
+      {/* Progress bars for some key courses */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+        {[
+          { name: 'Farmakoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 8.2) % 40) + 60), color: '#ef4444' },
+          { name: 'Patoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 6.1) % 40) + 50), color: '#3b82f6' },
+          { name: 'Mikrobiyoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 9.1) % 30) + 70), color: '#10b981' }
+        ].map(course => (
+          <div key={course.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
+              <span>{course.name}</span>
+              <span>%{course.progress}</span>
             </div>
-          ))}
-        </div>
+            <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: `${course.progress}%`, height: '100%', background: course.color, borderRadius: '4px' }} />
+            </div>
+          </div>
+        ))}
       </div>
 
       {isLoading ? (
@@ -335,25 +319,31 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
                 </div>
               </div>
               
-              <div>
+              <div style={{ marginTop: 'auto' }}>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 0.2rem 0', color: 'var(--text-main)' }}>{subject.name}</h3>
                 <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Sistemde {subject.questionCount} soru var</p>
               </div>
 
-              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ marginTop: '1rem' }}>
                 <button 
-                  className="btn-review-case btn-full"
-                  onClick={(e) => handleDirectSolve(e, subject.name, 'classic')}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                  style={{ 
+                    width: '100%', padding: '0.7rem', borderRadius: '12px', 
+                    background: isLight ? 'rgba(79, 70, 229, 0.1)' : 'rgba(255, 255, 255, 0.05)', 
+                    color: isLight ? '#4f46e5' : 'white', 
+                    border: isLight ? '1px solid rgba(79, 70, 229, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)',
+                    fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                    cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'none'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.background = isLight ? 'rgba(79, 70, 229, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.background = isLight ? 'rgba(79, 70, 229, 0.1)' : 'rgba(255, 255, 255, 0.05)';
+                  }}
                 >
-                  <BookOpen size={16} /> Klasik Çöz
-                </button>
-                <button 
-                  className="btn-review-case btn-full"
-                  onClick={(e) => handleDirectSolve(e, subject.name, 'ai')}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', border: '1px solid rgba(139, 92, 246, 0.3)' }}
-                >
-                  <Sparkles size={16} /> AI Destekli Çöz
+                  İncele ve Çöz <ArrowRight size={16} />
                 </button>
               </div>
             </div>

@@ -16,12 +16,14 @@ import TusAboutView from '../presentation/components/tus/TusAboutView';
 import TusSolveView from '../presentation/components/tus/TusSolveView';
 import TusAdminPanel from '../presentation/components/tus/TusAdminPanel';
 import AdminDashboard from '../presentation/components/admin/AdminDashboard';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sun, Moon } from 'lucide-react';
 import { updateUserProfile, solveCase } from '../infrastructure/api/simulationApi';
+import { useTheme } from '../presentation/context/ThemeContext';
 
 type ViewState = 'dashboard' | 'simulation' | 'leaderboard' | 'profile' | 'past_cases' | 'subscription' | 'tus' | 'tus_about' | 'tus_solve' | 'admin';
 
 export default function Home() {
+  const { theme, toggleTheme } = useTheme();
   const [isLanding, setIsLanding] = useState(true);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -170,6 +172,25 @@ export default function Home() {
             <ArrowLeft size={16} /> Geri Dön
           </button>
         </div>
+
+        {/* Theme Toggle Button */}
+        <div style={{ position: 'absolute', right: '2.5rem', top: '2rem' }}>
+          <button 
+            className="theme-toggle" 
+            onClick={toggleTheme}
+            aria-label="Toggle Theme"
+            style={{
+              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
+              color: 'var(--text-main)', cursor: 'pointer',
+              padding: '0.6rem', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              backdropFilter: 'blur(8px)'
+            }}
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
+
         <SubscriptionPage />
       </div>
     );

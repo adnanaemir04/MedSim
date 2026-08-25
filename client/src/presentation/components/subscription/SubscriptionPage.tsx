@@ -50,6 +50,24 @@ export default function SubscriptionPage() {
         >
           Sınırları kaldırın, sınırsız simülasyonla daha iyi bir hekim olun.
         </motion.p>
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+          style={{
+            marginTop: '2rem',
+            padding: '1rem',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '12px',
+            color: '#10b981',
+            fontWeight: 500,
+            display: 'inline-block'
+          }}
+        >
+          🎉 Şimdilik abonelik sistemimiz bulunmamaktadır. Tüm özellikler tamamen ücretsiz yayındadır!
+        </motion.div>
       </div>
 
       <div className="pricing-grid">
