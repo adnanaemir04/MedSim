@@ -41,7 +41,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=medsim;Username=adnanemir;Password=123456789
       - ConnectionStrings__RedisConnection=redis:6379,abortConnect=false
-      - AI_API_KEY=${AI_API_KEY}
+    env_file:
+      - .env
     ports:
       - "5211:8080"
     depends_on:
