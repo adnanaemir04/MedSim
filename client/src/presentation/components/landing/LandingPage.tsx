@@ -88,6 +88,57 @@ function BloodParticles() {
     return arr;
   };
 
+  // Create a realistic biconcave erythrocyte geometry using LatheGeometry (revolving 2D profile)
+  const rbcGeometry = React.useMemo(() => {
+    const points = [];
+    // A realistic cross-section profile of a red blood cell (thin in middle, thick on rims)
+    points.push(new THREE.Vector2(0, 0.15));
+    points.push(new THREE.Vector2(0.2, 0.18));
+    points.push(new THREE.Vector2(0.5, 0.28));
+    points.push(new THREE.Vector2(0.8, 0.42)); // Outer thick rim top
+    points.push(new THREE.Vector2(0.95, 0.3));  // Outer edge curve
+    points.push(new THREE.Vector2(1.0, 0));     // Outer edge mid-point
+    points.push(new THREE.Vector2(0.95, -0.3));
+    points.push(new THREE.Vector2(0.8, -0.42)); // Outer thick rim bottom
+    points.push(new THREE.Vector2(0.5, -0.28));
+    points.push(new THREE.Vector2(0.2, -0.18));
+    points.push(new THREE.Vector2(0, -0.15));
+    return new THREE.LatheGeometry(points, 32);
+  }, []);
+
+  // Generate procedural microvilli (small hair-like bumps) for white blood cells
+  const wbcBumpTexture = React.useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 256, 256);
+    
+    // Draw 1000 tiny bumps to represent microvilli
+    for (let i = 0; i < 1000; i++) {
+      const x = Math.random() * 256;
+      const y = Math.random() * 256;
+      const radius = 2 + Math.random() * 3;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(1, '#808080');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(4, 4);
+    return texture;
+  }, []);
+
   const rbcs = React.useMemo(() => createParticles(rbcCount, 0.05, 0.2, 0.2), []);
   const wbcs = React.useMemo(() => createParticles(wbcCount, 0.03, 0.6, 0.3), []);
   const plats = React.useMemo(() => createParticles(platCount, 0.06, 0.05, 0.05), []);
@@ -133,16 +184,15 @@ function BloodParticles() {
       ref.current.instanceMatrix.needsUpdate = true;
     };
 
-    updateMesh(rbcRef, rbcs, 0.4); // Red blood cells are squashed (biconcave)
+    updateMesh(rbcRef, rbcs, 1.0); // RBC geometry is already biconcave, no extra squash needed
     updateMesh(wbcRef, wbcs, 1.0); // White blood cells are spherical
     updateMesh(platRef, plats, 0.6); // Platelets are small and slightly squashed
   });
 
   return (
     <>
-      {/* Red Blood Cells (Erythrocytes) - Beautiful realistic biconcave crimson cells with physical transmission */}
-      <instancedMesh ref={rbcRef} args={[undefined, undefined, rbcCount]}>
-        <sphereGeometry args={[1, 32, 32]} />
+      {/* Red Blood Cells (Erythrocytes) - Beautiful realistic biconcave shape with physical transmission */}
+      <instancedMesh ref={rbcRef} args={[rbcGeometry, undefined, rbcCount]}>
         <meshPhysicalMaterial 
           color="#be123c" 
           roughness={0.15} 
@@ -155,29 +205,28 @@ function BloodParticles() {
         />
       </instancedMesh>
 
-      {/* White Blood Cells (Leukocytes) - Translucent spherical cells */}
+      {/* White Blood Cells (Leukocytes) - Clean glowing spherical cells */}
       <instancedMesh ref={wbcRef} args={[undefined, undefined, wbcCount]}>
         <sphereGeometry args={[1, 32, 32]} />
         <meshPhysicalMaterial 
-          color="#f8fafc"
+          color="#ffffff"
+          emissive="#e0f2fe"
+          emissiveIntensity={0.3}
           roughness={0.4} 
           metalness={0.05}
-          transmission={0.7}
-          thickness={1.5}
-          ior={1.35}
-          clearcoat={0.3} 
+          clearcoat={0.8}
+          clearcoatRoughness={0.2}
         />
       </instancedMesh>
 
-      {/* Platelets (Thrombocytes) */}
+      {/* Platelets (Thrombocytes) - Clean small warm pinkish-white particles */}
       <instancedMesh ref={platRef} args={[undefined, undefined, platCount]}>
         <sphereGeometry args={[1, 16, 16]} />
         <meshPhysicalMaterial 
-          color="#fef08a" /* Pale biological yellow/white */
+          color="#fee2e2" 
           roughness={0.3} 
           metalness={0.1}
-          transmission={0.3}
-          thickness={0.5}
+          clearcoat={0.5}
         />
       </instancedMesh>
     </>
