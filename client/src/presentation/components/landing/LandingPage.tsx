@@ -140,29 +140,32 @@ function BloodParticles() {
 
   return (
     <>
-      {/* Red Blood Cells (Erythrocytes) */}
+      {/* Red Blood Cells (Erythrocytes) - Beautiful realistic biconcave crimson cells with physical transmission */}
       <instancedMesh ref={rbcRef} args={[undefined, undefined, rbcCount]}>
         <sphereGeometry args={[1, 32, 32]} />
         <meshPhysicalMaterial 
-          color="#ef4444" 
-          roughness={0.2} 
-          metalness={0.1}
-          clearcoat={1} 
+          color="#be123c" 
+          roughness={0.15} 
+          metalness={0.05}
+          transmission={0.45} /* Light passes through the cell membrane */
+          thickness={0.8}     /* Refraction thickness */
+          ior={1.38}          /* Index of refraction for organic cells */
+          clearcoat={0.6} 
           clearcoatRoughness={0.2}
         />
       </instancedMesh>
 
-      {/* White Blood Cells (Leukocytes) */}
+      {/* White Blood Cells (Leukocytes) - Translucent spherical cells */}
       <instancedMesh ref={wbcRef} args={[undefined, undefined, wbcCount]}>
         <sphereGeometry args={[1, 32, 32]} />
         <meshPhysicalMaterial 
           color="#f8fafc"
-          emissive="#e2e8f0"
-          emissiveIntensity={0.2}
-          roughness={0.8} 
-          metalness={0.1}
-          clearcoat={0.5} 
-          transmission={0.2}
+          roughness={0.4} 
+          metalness={0.05}
+          transmission={0.7}
+          thickness={1.5}
+          ior={1.35}
+          clearcoat={0.3} 
         />
       </instancedMesh>
 
@@ -170,10 +173,11 @@ function BloodParticles() {
       <instancedMesh ref={platRef} args={[undefined, undefined, platCount]}>
         <sphereGeometry args={[1, 16, 16]} />
         <meshPhysicalMaterial 
-          color="#fef08a" // Pale yellow/white (platelets)
+          color="#fef08a" /* Pale biological yellow/white */
           roughness={0.3} 
           metalness={0.1}
-          clearcoat={0.5}
+          transmission={0.3}
+          thickness={0.5}
         />
       </instancedMesh>
     </>
@@ -378,7 +382,7 @@ function QuoteCarousel() {
             textAlign: 'center',
             lineHeight: '1.6',
             margin: '0 auto',
-            maxWidth: '450px', // Forces quotes to span exactly 2 lines
+            maxWidth: '650px', // Increased width so it fits in a single line, and only wraps to the 2nd line if needed
             padding: '0 1rem'
           }}>
             &quot;{quotes[index]}&quot;
