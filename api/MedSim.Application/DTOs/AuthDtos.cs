@@ -35,6 +35,7 @@ public class UserResponseDto
     public int Points { get; set; }
     public string Avatar { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
+    public string FriendCode { get; set; } = string.Empty;
 }
 
 public class AuthResponseDto

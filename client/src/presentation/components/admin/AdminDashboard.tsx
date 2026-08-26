@@ -10,6 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { soundManager } from '../../../utils/soundManager';
 import TusAdminPanel from '../tus/TusAdminPanel';
 import { AnalyticsDashboard } from './analytics/AnalyticsDashboard';
+import ReportManager from './reports/ReportManager';
 
 interface UserStats {
   userId: string;
@@ -36,7 +37,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create' | 'tus' | 'analytics'>('analytics');
+  const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create' | 'tus' | 'analytics' | 'reports'>('analytics');
   const [stats, setStats] = useState<UserStats[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -235,6 +236,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
           { id: 'logs', label: `Sistem Logları (${logs.length})`, icon: Server },
           { id: 'create', label: 'Yeni Yönetici Ekle', icon: UserPlus },
           { id: 'tus', label: 'TUS Soru Yönetimi', icon: BookOpen },
+          { id: 'reports', label: 'Bildirimler', icon: AlertTriangle },
         ].map(t => {
           const active = activeTab === t.id;
           return (
@@ -603,6 +605,13 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         {activeTab === 'tus' && (
           <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <TusAdminPanel onBack={() => setActiveTab('stats')} />
+          </div>
+        )}
+
+        {/* TAB 5: REPORTS */}
+        {activeTab === 'reports' && (
+          <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <ReportManager />
           </div>
         )}
 

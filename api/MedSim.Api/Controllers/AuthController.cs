@@ -65,7 +65,8 @@ public class AuthController : ControllerBase
                 Nickname = user.Nickname,
                 Points = user.Points,
                 Avatar = user.Avatar,
-                Role = user.Role
+                Role = user.Role,
+                FriendCode = user.FriendCode
             }
         });
     }
@@ -99,7 +100,8 @@ public class AuthController : ControllerBase
                 Nickname = user.Nickname,
                 Points = user.Points,
                 Avatar = user.Avatar,
-                Role = user.Role
+                Role = user.Role,
+                FriendCode = user.FriendCode
             }
         });
     }
@@ -137,7 +139,8 @@ public class AuthController : ControllerBase
             Nickname = user.Nickname,
             Points = user.Points,
             Avatar = user.Avatar,
-            Role = user.Role
+            Role = user.Role,
+            FriendCode = user.FriendCode
         });
     }
 
@@ -164,7 +167,8 @@ public class AuthController : ControllerBase
             Nickname = u.Nickname,
             Points = u.Points,
             Avatar = u.Avatar,
-            Role = u.Role
+            Role = u.Role,
+            FriendCode = u.FriendCode
         }).ToList();
 
         return Ok(dtoList);
@@ -206,7 +210,8 @@ public class AuthController : ControllerBase
                 Nickname = user.Nickname,
                 Points = user.Points,
                 Avatar = user.Avatar,
-                Role = user.Role
+                Role = user.Role,
+                FriendCode = user.FriendCode
             }
         });
     }

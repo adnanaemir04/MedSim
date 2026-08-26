@@ -136,4 +136,101 @@ public static class DatabaseSeeder
             await context.SaveChangesAsync();
         }
     }
+
+    public static async Task CleanClassicQuestionsAsync(MedSimDbContext context)
+    {
+        var questions = await context.TusQuestions
+            .Where(q => q.IsClassic)
+            .ToListAsync();
+
+        int updatedCount = 0;
+
+        foreach (var q in questions)
+        {
+            bool modified = false;
+
+            var cleanedA = CleanParentheses(q.OptionA);
+            var cleanedB = CleanParentheses(q.OptionB);
+            var cleanedC = CleanParentheses(q.OptionC);
+            var cleanedD = CleanParentheses(q.OptionD);
+            var cleanedE = CleanParentheses(q.OptionE);
+
+            if (cleanedA != q.OptionA) { q.OptionA = cleanedA; modified = true; }
+            if (cleanedB != q.OptionB) { q.OptionB = cleanedB; modified = true; }
+            if (cleanedC != q.OptionC) { q.OptionC = cleanedC; modified = true; }
+            if (cleanedD != q.OptionD) { q.OptionD = cleanedD; modified = true; }
+            if (cleanedE != q.OptionE) { q.OptionE = cleanedE; modified = true; }
+
+            var options = new string[] { q.OptionA, q.OptionB, q.OptionC, q.OptionD, q.OptionE };
+            var correctOption = q.CorrectOption?.Trim().ToUpper();
+            int correctIdx = -1;
+            if (correctOption == "A") correctIdx = 0;
+            else if (correctOption == "B") correctIdx = 1;
+            else if (correctOption == "C") correctIdx = 2;
+            else if (correctOption == "D") correctIdx = 3;
+            else if (correctOption == "E") correctIdx = 4;
+
+            if (correctIdx >= 0 && correctIdx < 5)
+            {
+                var lengths = options.Select(o => o.Length).ToArray();
+                int maxLen = lengths.Max();
+                
+                if (lengths[correctIdx] == maxLen)
+                {
+                    var otherMax = lengths.Where((len, idx) => idx != correctIdx).Max();
+                    if (lengths[correctIdx] >= otherMax)
+                    {
+                        int targetIdx = correctIdx == 0 ? 1 : 0;
+                        int neededLen = lengths[correctIdx] - lengths[targetIdx] + 1;
+
+                        string suffix = GetFillerSuffix(neededLen, q.Subject);
+                        
+                        if (targetIdx == 0) q.OptionA += suffix;
+                        else if (targetIdx == 1) q.OptionB += suffix;
+                        else if (targetIdx == 2) q.OptionC += suffix;
+                        else if (targetIdx == 3) q.OptionD += suffix;
+                        else if (targetIdx == 4) q.OptionE += suffix;
+
+                        modified = true;
+                    }
+                }
+            }
+
+            if (modified)
+            {
+                updatedCount++;
+            }
+        }
+
+        if (updatedCount > 0)
+        {
+            await context.SaveChangesAsync();
+            Console.WriteLine($"[TusQuestionCleaner] Successfully cleaned {updatedCount} classic questions in the DB.");
+        }
+    }
+
+    private static string CleanParentheses(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        return System.Text.RegularExpressions.Regex.Replace(text, @"\s*\([^)]*\)", "").Trim();
+    }
+
+    private static string GetFillerSuffix(int neededLen, string subject)
+    {
+        string suffix = " ve ilişkili anatomik komşuluklar ile çevre dokular";
+        if (subject == "Farmakoloji")
+        {
+            suffix = " ve benzer etki mekanizmalı diğer farmakolojik ajanlar";
+        }
+        else if (subject != "Anatomi")
+        {
+            suffix = " ve klinik patolojiler ile ilişkili tanı kriterleri";
+        }
+
+        while (suffix.Length < neededLen)
+        {
+            suffix += " ve diğer klinik olarak önemli komşu yapılar";
+        }
+        return suffix;
+    }
 }

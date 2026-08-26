@@ -129,7 +129,6 @@ public class SimulationController : ControllerBase
             newCaseDto.Id = Guid.NewGuid();
             newCaseDto.DepartmentId = department.Id;
             newCaseDto.SubTopicId = subTopic?.Id;
-            newCaseDto.Title += $" - Vaka {DateTime.UtcNow.Ticks % 1000}";
             
             var newCase = new MedicalCase
             {

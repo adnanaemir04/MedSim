@@ -5,5 +5,6 @@ export interface User {
   points: number;
   avatar?: string;
   role?: string;
+  friendCode?: string;
   solvedCases: string[]; // array of Case IDs
 }

@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { User } from '../../../domain/entities/User';
-import { Camera, Settings, LogOut, Award, Target, Activity, Users, Star, Flame, Zap, Clock } from 'lucide-react';
+import { Camera, Settings, LogOut, Award, Target, Activity, Users, Star, Flame, Zap, Clock, Copy, CheckCircle2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';
-import { getFriendsList, getTusUserStats, addFriend, updateUserProfile, deleteUserAccount } from '../../../infrastructure/api/simulationApi';
+import { getFriendsList, getTusUserStats, addFriend, updateUserProfile, deleteUserAccount, getSolvedCases } from '../../../infrastructure/api/simulationApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { soundManager } from '../../../utils/soundManager';
 
@@ -24,8 +24,11 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
   const [message, setMessage] = useState('');
   
   const [friends, setFriends] = useState<any[]>([]);
-  const [friendNickname, setFriendNickname] = useState('');
+  const [friendCodeInput, setFriendCodeInput] = useState('');
   const [friendMsg, setFriendMsg] = useState('');
+  const [copied, setCopied] = useState(false);
+  
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme } = useTheme();
@@ -51,17 +54,35 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
     }
   };
 
+  const fetchActivities = async () => {
+    try {
+      const data = await getSolvedCases(user.email, 1, 5); // fetch top 5 recent
+      setRecentActivities(data.items || []);
+    } catch (err) {
+      console.error("Activities fetch error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchFriends();
     fetchTusStats();
+    fetchActivities();
   }, [user.email]);
 
+  const handleCopyCode = () => {
+    if (user.friendCode) {
+      navigator.clipboard.writeText(user.friendCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const handleAddFriend = async () => {
-    if (!friendNickname.trim()) return;
+    if (!friendCodeInput.trim()) return;
     try {
-      const data = await addFriend(user.email, friendNickname);
+      const data = await addFriend(user.email, friendCodeInput);
       setFriendMsg("Arkadaş eklendi!");
-      setFriendNickname('');
+      setFriendCodeInput('');
       fetchFriends();
     } catch (err: any) {
       const message = err.response?.data?.message || "Hata oluştu.";
@@ -166,12 +187,11 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
     { icon: <Activity color="#0ea5e9" size={20}/>, title: "Hayat Kurtaran", desc: "Zor seviye vaka tamamlandı." },
   ];
 
-  // Mock Recent Activities
-  const recentActivities = [
-    { text: "Zor seviye 'Akut Miyokard İnfarktüsü' vakası başarıyla çözüldü.", points: "+150", time: "2 saat önce" },
-    { text: "TUS Kardiyoloji Denemesi tamamlandı (%85 başarı).", points: "+50", time: "5 saat önce" },
-    { text: "Ahmet Yılmaz (Pratisyen Hekim) ile arkadaş olundu.", points: null, time: "1 gün önce" },
-  ];
+  // Mock Recent Activities are now fetched dynamically!
+  const formatDate = (dateString: string) => {
+    const d = new Date(dateString);
+    return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <motion.main 
@@ -230,6 +250,23 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
             </motion.div>
 
             <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.4rem 0', color: isLight ? '#0f172a' : 'white' }}>{nickname}</h3>
+            
+            {user.friendCode && (
+              <div 
+                onClick={handleCopyCode}
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '0.4rem', 
+                  marginBottom: '1rem', cursor: 'pointer',
+                  padding: '0.3rem 0.8rem', background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)',
+                  borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600, color: isLight ? '#475569' : '#cbd5e1',
+                  transition: 'all 0.2s'
+                }}
+                title="Arkadaş Ekleme ID'sini Kopyala"
+              >
+                <span>ID: {user.friendCode}</span>
+                {copied ? <CheckCircle2 size={14} color="#10b981" /> : <Copy size={14} />}
+              </div>
+            )}
             
             <div style={{ 
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
@@ -383,12 +420,17 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: isLight ? '#1e293b' : 'white' }}>Son Aktiviteler</h3>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              {recentActivities.length === 0 && (
+                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Henüz aktivite bulunmuyor.</div>
+              )}
               {recentActivities.map((act, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.8rem', background: isLight ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.03)', borderRadius: '12px', border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: act.points ? '#10b981' : '#3b82f6' }}></div>
-                  <div style={{ flex: 1, fontSize: '0.85rem', color: isLight ? '#334155' : 'var(--text-main)', fontWeight: 500 }}>{act.text}</div>
-                  {act.points && <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#10b981' }}>{act.points}</div>}
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{act.time}</div>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: act.earnedPoints > 0 ? '#10b981' : '#3b82f6' }}></div>
+                  <div style={{ flex: 1, fontSize: '0.85rem', color: isLight ? '#334155' : 'var(--text-main)', fontWeight: 500 }}>
+                    "{act.caseTitle}" ({act.departmentName}) vakası {act.isSolved ? 'çözüldü' : 'denendi'}.
+                  </div>
+                  {act.earnedPoints > 0 && <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#10b981' }}>+{act.earnedPoints}</div>}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(act.solvedAt)}</div>
                 </div>
               ))}
             </div>
@@ -409,9 +451,9 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
             <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '1.5rem' }}>
               <input 
                 type="text" 
-                placeholder="Arkadaşının kullanıcı adını yaz..." 
-                value={friendNickname}
-                onChange={e => setFriendNickname(e.target.value)}
+                placeholder="Arkadaşının ID'sini (Friend Code) yaz..." 
+                value={friendCodeInput}
+                onChange={e => setFriendCodeInput(e.target.value)}
                 style={inputStyle}
               />
               <motion.button 

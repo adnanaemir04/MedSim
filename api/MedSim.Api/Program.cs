@@ -106,6 +106,9 @@ using (var scope = app.Services.CreateScope())
 
     // Seed Data
     DatabaseSeeder.SeedAsync(db).GetAwaiter().GetResult();
+
+    // Clean all classic TUS questions in the database
+    DatabaseSeeder.CleanClassicQuestionsAsync(db).GetAwaiter().GetResult();
 }
 
 app.Run();

@@ -9,6 +9,7 @@ public class User
     public int Points { get; set; } = 20;
     public string Avatar { get; set; } = "👨‍⚕️";
     public string Role { get; set; } = "User"; // "SuperAdmin", "Admin", "User"
+    public string FriendCode { get; set; } = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }

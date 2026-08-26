@@ -3,6 +3,7 @@ using System;
 using MedSim.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedSim.Infrastructure.Migrations
 {
     [DbContext(typeof(MedSimDbContext))]
-    partial class MedSimDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826051604_AddFriendCodeToUser")]
+    partial class AddFriendCodeToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,57 +100,6 @@ namespace MedSim.Infrastructure.Migrations
                     b.HasIndex("MedicalCaseId");
 
                     b.ToTable("CaseStages");
-                });
-
-            modelBuilder.Entity("MedSim.Domain.Entities.ContentReport", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AdminNote")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ContentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReportType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ReporterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ResolvedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReporterId");
-
-                    b.HasIndex("ContentType", "ContentId");
-
-                    b.ToTable("ContentReports");
                 });
 
             modelBuilder.Entity("MedSim.Domain.Entities.Department", b =>
@@ -588,17 +540,6 @@ namespace MedSim.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("MedicalCase");
-                });
-
-            modelBuilder.Entity("MedSim.Domain.Entities.ContentReport", b =>
-                {
-                    b.HasOne("MedSim.Domain.Entities.User", "Reporter")
-                        .WithMany()
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Reporter");
                 });
 
             modelBuilder.Entity("MedSim.Domain.Entities.MedicalCase", b =>

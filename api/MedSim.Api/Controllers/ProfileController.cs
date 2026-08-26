@@ -228,8 +228,8 @@ public class ProfileController : ControllerBase
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.UserEmail);
         if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
-        var friend = await _context.Users.FirstOrDefaultAsync(u => u.Nickname == request.FriendNickname);
-        if (friend == null) return NotFound("Arkadaş bulunamadı.");
+        var friend = await _context.Users.FirstOrDefaultAsync(u => u.FriendCode == request.FriendCode);
+        if (friend == null) return NotFound("Geçersiz Arkadaş ID'si.");
 
         if (user.Id == friend.Id) return BadRequest("Kendinizi ekleyemezsiniz.");
 
@@ -255,8 +255,8 @@ public class ProfileController : ControllerBase
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.UserEmail);
         if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
-        var friend = await _context.Users.FirstOrDefaultAsync(u => u.Nickname == request.FriendNickname);
-        if (friend == null) return NotFound("Arkadaş bulunamadı.");
+        var friend = await _context.Users.FirstOrDefaultAsync(u => u.FriendCode == request.FriendCode);
+        if (friend == null) return NotFound("Geçersiz Arkadaş ID'si.");
 
         var userFriend = await _context.UserFriends
             .FirstOrDefaultAsync(f => f.UserId == user.Id && f.FriendId == friend.Id);
@@ -284,6 +284,7 @@ public class ProfileController : ControllerBase
         var friends = user.Friends.Select(f => new
         {
             Nickname = f.Friend.Nickname,
+            FriendCode = f.Friend.FriendCode,
             Avatar = f.Friend.Avatar,
             Points = f.Friend.Points,
             AddedAt = f.AddedAt
@@ -304,5 +305,5 @@ public class SolveCaseRequest
 public class FriendRequest
 {
     public string UserEmail { get; set; } = string.Empty;
-    public string FriendNickname { get; set; } = string.Empty;
+    public string FriendCode { get; set; } = string.Empty;
 }

@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { medCasesData } from '../../../infrastructure/data/casesData';
-import { CheckCircle, XCircle, ArrowRight, ArrowLeft, HeartPulse, Activity, User, FileText, Stethoscope } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, ArrowLeft, HeartPulse, Activity, User, FileText, Stethoscope, AlertTriangle } from 'lucide-react';
 import { soundManager } from '../../../utils/soundManager';
+import ReportModal from '../common/ReportModal';
 
 interface SimulationViewProps {
   subject: string;
@@ -47,6 +48,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
   const [hasWrongAnswer, setHasWrongAnswer] = useState(false);
   const [givenAnswers, setGivenAnswers] = useState<number[]>([]);
   const [isFinished, setIsFinished] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const clinicalPhases = ["Anamnez", "Fizik Muayene", "Tetkik", "Tanı", "Tedavi", "İzlem"];
   const currentPhaseName = clinicalPhases[Math.min(currentStage, clinicalPhases.length - 1)];
@@ -167,6 +169,22 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
           )}
           <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>{caseTitle}</h2>
         </div>
+        
+        {caseData?.id && (
+          <button 
+            onClick={() => setIsReportModalOpen(true)}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '0.4rem', 
+              background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', 
+              color: '#ef4444', cursor: 'pointer', fontSize: '0.85rem', 
+              padding: '0.5rem 1rem', borderRadius: '12px', transition: 'all 0.2s', fontWeight: 600
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+          >
+            <AlertTriangle size={16} /> Hatalı Vaka Bildir
+          </button>
+        )}
       </div>
 
       <div style={{ 
@@ -547,6 +565,16 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
           )}
         </div>
       </div>
+
+      {caseData?.id && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          contentId={caseData.id}
+          contentType="MedicalCase"
+          contentSnippet={caseTitle}
+        />
+      )}
     </main>
   );
 }

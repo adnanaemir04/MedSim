@@ -326,8 +326,8 @@ export const getFriendsList = async (email: string): Promise<any[]> => {
     return response.data;
 };
 
-export const addFriend = async (userEmail: string, friendNickname: string): Promise<{ message?: string }> => {
-    const response = await apiClient.post('/Profile/add-friend', { userEmail, friendNickname });
+export const addFriend = async (userEmail: string, friendCode: string): Promise<{ message?: string }> => {
+    const response = await apiClient.post('/Profile/add-friend', { userEmail, friendCode });
     return response.data;
 };
 
@@ -381,5 +381,35 @@ export const toggleActiveQuestion = async (id: string): Promise<any> => {
 
 export const generateClassicPipeline = async (subject: string, topicName: string, subTopicName: string): Promise<any> => {
     const response = await apiClient.post('/TusAdmin/generate-classic-pipeline', { subject, topicName, subTopicName });
+    return response.data;
+};
+
+// ── REPORT APIs ──
+
+export const createReport = async (contentId: string, contentType: string, reportType: string, description?: string): Promise<any> => {
+    const response = await apiClient.post('/Report', { contentId, contentType, reportType, description });
+    return response.data;
+};
+
+export const getAdminReports = async (status?: string, contentType?: string): Promise<any[]> => {
+    let url = '/Report/admin?';
+    if (status) url += `status=${encodeURIComponent(status)}&`;
+    if (contentType) url += `contentType=${encodeURIComponent(contentType)}`;
+    const response = await apiClient.get<any[]>(url);
+    return response.data;
+};
+
+export const getAdminReportStats = async (): Promise<any> => {
+    const response = await apiClient.get('/Report/admin/stats');
+    return response.data;
+};
+
+export const getAdminReportDetail = async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/Report/admin/${id}`);
+    return response.data;
+};
+
+export const updateAdminReportStatus = async (id: string, status: string, adminNote?: string): Promise<any> => {
+    const response = await apiClient.put(`/Report/admin/${id}/status`, { status, adminNote });
     return response.data;
 };

@@ -57,12 +57,14 @@ export default function SubscriptionPage() {
           transition={{ delay: 0.4 }}
           style={{
             marginTop: '2rem',
-            padding: '1rem',
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '12px',
-            color: '#10b981',
-            fontWeight: 500,
+            padding: '1.25rem 2rem',
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)',
+            border: 'none',
+            borderRadius: '16px',
+            color: 'white',
+            fontWeight: 600,
+            fontSize: '1.15rem',
             display: 'inline-block'
           }}
         >

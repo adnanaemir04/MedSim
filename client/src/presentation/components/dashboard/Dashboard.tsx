@@ -173,9 +173,13 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
           <h2 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0 }}>
             {filterSubject ? `${filterSubject} Vakaları` : 'Tüm Vakalarım'}
           </h2>
-          {filterSubject && (
+          {filterSubject ? (
             <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: '0.5rem', maxWidth: '800px', lineHeight: 1.5 }}>
               {SUBJECT_DESCRIPTIONS[filterSubject] || `${filterSubject} branşı, tıp fakültesi müfredatında önemli bir yere sahip olan ve geleceğin hekimlerine kritik klinik/temel yetkinlikler kazandıran bir alandır.`}
+            </p>
+          ) : (
+            <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: '0.5rem', maxWidth: '800px', lineHeight: 1.5 }}>
+              Platformda yer alan tüm vakaları bu ekrandan görüntüleyebilirsin. Yetkinliklerini geliştirmek istediğin herhangi bir vaka seçerek klinik muhakeme becerilerini sınayabilirsin.
             </p>
           )}
         </div>

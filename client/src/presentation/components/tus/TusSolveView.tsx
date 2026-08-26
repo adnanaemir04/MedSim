@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { ArrowRight, ArrowLeft, CheckCircle, XCircle, BrainCircuit, RefreshCw, LogOut, Loader2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, XCircle, BrainCircuit, RefreshCw, LogOut, Loader2, AlertTriangle } from 'lucide-react';
 import { getTusConceptExplanation, getTusQuestions, submitTusAnswer, generateTusQuestions } from '../../../infrastructure/api/simulationApi';
 import { soundManager } from '../../../utils/soundManager';
+import ReportModal from '../common/ReportModal';
 
 interface TusQuestion {
   id: string;
@@ -50,6 +51,7 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -321,6 +323,22 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
             </div>
           )}
         </div>
+        
+        {questions.length > 0 && currentQ && (
+          <button 
+            onClick={() => setIsReportModalOpen(true)}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '0.4rem', 
+              background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', 
+              color: '#ef4444', cursor: 'pointer', fontSize: '0.85rem', 
+              padding: '0.5rem 1rem', borderRadius: '12px', transition: 'all 0.2s', fontWeight: 600
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+          >
+            <AlertTriangle size={16} /> Hatalı Soru Bildir
+          </button>
+        )}
       </div>
 
 
@@ -557,6 +575,16 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
           )}
         </div>
       </div>
+
+      {currentQ && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          contentId={currentQ.id}
+          contentType="TusQuestion"
+          contentSnippet={currentQ.questionText.length > 80 ? currentQ.questionText.substring(0, 80) + '...' : currentQ.questionText}
+        />
+      )}
 
       <style jsx>{`
         @keyframes fadeIn {
