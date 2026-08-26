@@ -184,50 +184,12 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', marginBottom: '2rem' }}>
-        {metrics.map((m, i) => (
-          <div 
-            key={i} 
-            style={{ 
-              background: 'var(--glass-bg)', 
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)', 
-              borderRadius: '20px', 
-              padding: '1.4rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '1.2rem',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.03)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-            }}
-          >
-            <div style={{ 
-              width: 52, height: 52, borderRadius: '15px', 
-              background: m.bg, color: m.color, 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1)' 
-            }}>
-              <m.icon size={26} />
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {m.title}
-              </p>
-              <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.85rem', fontWeight: 900, color: 'var(--text-main)' }}>
-                {m.val}
-              </h3>
-            </div>
-          </div>
-        ))}
-      </div>
-
+      {/* Metrics Grid removed as per user request - moved to AnalyticsOverview */}
       {/* Horizontal Tabs Navigation (Standard MedSim Tab Bar) */}
       <div style={{ 
-        display: 'flex', gap: '0.8rem', 
+        display: 'flex', gap: '0.6rem', 
         borderBottom: '1px solid var(--glass-border)', 
-        paddingBottom: '1rem', marginBottom: '2rem',
+        paddingBottom: '0.8rem', marginBottom: '1.5rem',
         overflowX: 'auto'
       }}>
         {[
@@ -244,18 +206,18 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
               key={t.id}
               onClick={() => { soundManager.playClick(); setActiveTab(t.id as any); }}
               style={{
-                display: 'flex', alignItems: 'center', gap: '0.6rem',
-                padding: '0.75rem 1.4rem', borderRadius: '14px',
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.5rem 1rem', borderRadius: '12px',
                 background: active ? 'var(--primary)' : 'rgba(255, 255, 255, 0.03)',
                 color: active ? '#ffffff' : 'var(--text-muted)',
                 border: active ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
-                cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
+                cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem',
                 transition: 'all 0.2s ease',
                 boxShadow: active ? '0 4px 15px var(--primary-glow)' : 'none',
                 whiteSpace: 'nowrap'
               }}
             >
-              <t.icon size={18} />
+              <t.icon size={16} />
               {t.label}
             </button>
           );
@@ -276,7 +238,13 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         {/* TAB 0: ANALYTICS */}
         {activeTab === 'analytics' && (
           <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
-            <AnalyticsDashboard isLight={isLight} />
+            <AnalyticsDashboard 
+              isLight={isLight} 
+              totalUsers={totalUsers}
+              totalCases={totalCases}
+              totalTus={totalTus}
+              adminCount={adminCount}
+            />
           </div>
         )}
 

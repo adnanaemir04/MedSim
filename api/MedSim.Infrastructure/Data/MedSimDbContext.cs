@@ -36,6 +36,7 @@ public class MedSimDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Nickname).IsUnique();
+            entity.HasIndex(e => e.FriendCode).IsUnique();
         });
 
         modelBuilder.Entity<SolvedCase>(entity =>

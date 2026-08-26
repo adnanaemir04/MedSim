@@ -538,6 +538,14 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
               {/* Filters */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', alignItems: 'center' }}>
                 <select 
+                  value={sortOrder} 
+                  onChange={(e) => { soundManager.playClick(); setSortOrder(e.target.value); setPage(1); }}
+                  style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}
+                >
+                  <option value="desc" style={{ color: 'black' }}>En Yeniden Eskiye</option>
+                  <option value="asc" style={{ color: 'black' }}>En Eskiden Yeniye</option>
+                </select>
+                <select 
                   value={filterYear} onChange={handleYearChange}
                   style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}
                 >
@@ -673,6 +681,14 @@ export default function PastCases({ userEmail, onStartCase }: PastCasesProps) {
               </div>
               
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', alignItems: 'center' }}>
+                <select 
+                  value={tusSortOrder} 
+                  onChange={(e) => { soundManager.playClick(); setTusSortOrder(e.target.value); setTusPage(1); }}
+                  style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}
+                >
+                  <option value="desc" style={{ color: 'black' }}>En Yeniden Eskiye</option>
+                  <option value="asc" style={{ color: 'black' }}>En Eskiden Yeniye</option>
+                </select>
                 <select value={filterTusSubject} onChange={(e) => { soundManager.playClick(); setFilterTusSubject(e.target.value); setTusPage(1); }} style={{ background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.7)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: 600, outline: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', transition: 'all 0.2s', maxWidth: '180px' }}>
                   <option value="" style={{ color: 'black' }}>Tüm TUS Dersleri</option>
                   {["Anatomi", "Fizyoloji", "Biyokimya", "Patoloji", "Farmakoloji", "Dahiliye", "Pediatri", "Genel Cerrahi", "Kadın Hastalıkları", "Küçük Stajlar"].map(subj => ( <option key={subj} value={subj} style={{ color: 'black' }}>{subj}</option> ))}

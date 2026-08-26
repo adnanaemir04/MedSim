@@ -123,41 +123,54 @@ public class SimulationController : ControllerBase
 
         var generatedCases = new List<MedicalCaseDto>();
 
-        for (int i = 0; i < request.Count; i++)
-        {
-            var newCaseDto = await _generatorService.GenerateCaseAsync(department.Name, request.TopicName, request.SubTopicName, request.Difficulty);
-            newCaseDto.Id = Guid.NewGuid();
-            newCaseDto.DepartmentId = department.Id;
-            newCaseDto.SubTopicId = subTopic?.Id;
-            
-            var newCase = new MedicalCase
-            {
-                Id = newCaseDto.Id,
-                DepartmentId = newCaseDto.DepartmentId,
-                SubTopicId = newCaseDto.SubTopicId,
-                Title = newCaseDto.Title,
-                InitialText = newCaseDto.InitialText,
-                IsProcedural = newCaseDto.IsProcedural,
-                Difficulty = newCaseDto.Difficulty,
-                DifficultyScore = newCaseDto.DifficultyScore,
-                DifficultyReason = newCaseDto.DifficultyReason,
-                Stages = newCaseDto.Stages.Select(s => new CaseStage
-                {
-                    Id = s.Id,
-                    OrderIndex = s.OrderIndex,
-                    Text = s.Text,
-                    Options = s.Options.Select(o => new CaseOption
-                    {
-                        Id = o.Id,
-                        Text = o.Text,
-                        IsCorrect = o.IsCorrect,
-                        Feedback = o.Feedback
-                    }).ToList()
-                }).ToList()
-            };
+        int successfulCount = 0;
+        int maxAttempts = request.Count * 2;
+        int attempts = 0;
 
-            _context.MedicalCases.Add(newCase);
-            generatedCases.Add(newCaseDto);
+        while (successfulCount < request.Count && attempts < maxAttempts)
+        {
+            attempts++;
+            try
+            {
+                var newCaseDto = await _generatorService.GenerateCaseAsync(department.Name, request.TopicName, request.SubTopicName, request.Difficulty);
+                newCaseDto.Id = Guid.NewGuid();
+                newCaseDto.DepartmentId = department.Id;
+                newCaseDto.SubTopicId = subTopic?.Id;
+                
+                var newCase = new MedicalCase
+                {
+                    Id = newCaseDto.Id,
+                    DepartmentId = newCaseDto.DepartmentId,
+                    SubTopicId = newCaseDto.SubTopicId,
+                    Title = newCaseDto.Title,
+                    InitialText = newCaseDto.InitialText,
+                    IsProcedural = newCaseDto.IsProcedural,
+                    Difficulty = newCaseDto.Difficulty,
+                    DifficultyScore = newCaseDto.DifficultyScore,
+                    DifficultyReason = newCaseDto.DifficultyReason,
+                    Stages = newCaseDto.Stages.Select(s => new CaseStage
+                    {
+                        Id = s.Id,
+                        OrderIndex = s.OrderIndex,
+                        Text = s.Text,
+                        Options = s.Options.Select(o => new CaseOption
+                        {
+                            Id = o.Id,
+                            Text = o.Text,
+                            IsCorrect = o.IsCorrect,
+                            Feedback = o.Feedback
+                        }).ToList()
+                    }).ToList()
+                };
+
+                _context.MedicalCases.Add(newCase);
+                generatedCases.Add(newCaseDto);
+                successfulCount++;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Case generation attempt {attempts} failed: {ex.Message}");
+            }
         }
 
         await _context.SaveChangesAsync();

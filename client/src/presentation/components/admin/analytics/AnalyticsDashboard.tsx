@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { analyticsApi, KpiData, ChartDataPoint, SubjectRankingData, GeminiVsClassicData } from '../../../../infrastructure/api/analyticsApi';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
-import { TrendingUp, Users, CheckCircle, BrainCircuit, Clock, Target, Calendar, AlertCircle, BarChart3, Database } from 'lucide-react';
+import { TrendingUp, Users, CheckCircle, BrainCircuit, Clock, Target, Calendar, AlertCircle, BarChart3, Database, Activity, ShieldAlert } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
   isLight: boolean;
+  totalUsers?: number;
+  totalCases?: number;
+  totalTus?: number;
+  adminCount?: number;
 }
 
-export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ isLight }) => {
+export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ isLight, totalUsers, totalCases, totalTus, adminCount }) => {
   const [days, setDays] = useState(30);
   const [loading, setLoading] = useState(true);
   
@@ -124,12 +128,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ isLight 
         <>
           {/* KPI GRID */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            <KpiCard title="Toplam Kullanıcı" value={kpis?.totalUsers || 0} icon={<Users size={24} />} gradient="linear-gradient(135deg, #3b82f6, #2563eb)" />
-            <KpiCard title="Günlük Aktif Kullanıcı (DAU)" value={kpis?.dailyActiveUsers || 0} icon={<TrendingUp size={24} />} gradient="linear-gradient(135deg, #10b981, #059669)" change={12.4} />
-            <KpiCard title="Çözülen Soru" value={kpis?.totalSolvedQuestions || 0} icon={<CheckCircle size={24} />} gradient="linear-gradient(135deg, #f59e0b, #d97706)" />
-            <KpiCard title="Ortalama Başarı Oranı" value={`%${kpis?.averageAccuracy || 0}`} icon={<Target size={24} />} gradient="linear-gradient(135deg, #8b5cf6, #6d28d9)" />
-            <KpiCard title="Ortalama Çözüm Süresi" value={`${kpis?.averageSolveTimeSeconds || 0} sn`} icon={<Clock size={24} />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
-            <KpiCard title="Gemini Yapay Zeka Soruları" value={kpis?.geminiQuestionCount || 0} icon={<BrainCircuit size={24} />} gradient="linear-gradient(135deg, #6366f1, #4f46e5)" />
+            <KpiCard title="Toplam Kullanıcı" value={totalUsers ?? (kpis?.totalUsers || 0)} icon={<Users size={24} />} gradient="linear-gradient(135deg, #3b82f6, #2563eb)" />
+            <KpiCard title="Çözülen Vaka" value={totalCases ?? 0} icon={<Activity size={24} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
+            <KpiCard title="Çözülen Soru" value={totalTus ?? (kpis?.totalSolvedQuestions || 0)} icon={<CheckCircle size={24} />} gradient="linear-gradient(135deg, #f59e0b, #d97706)" />
+            <KpiCard title="Aktif Yönetici" value={adminCount ?? 0} icon={<ShieldAlert size={24} />} gradient="linear-gradient(135deg, #8b5cf6, #6d28d9)" />
+            <KpiCard title="Ortalama Başarı Oranı" value={`%${kpis?.averageAccuracy || 0}`} icon={<Target size={24} />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
+            <KpiCard title="Gemini AI Soruları" value={kpis?.geminiQuestionCount || 0} icon={<BrainCircuit size={24} />} gradient="linear-gradient(135deg, #6366f1, #4f46e5)" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
