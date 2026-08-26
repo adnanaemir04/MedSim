@@ -238,6 +238,9 @@ export default function Home() {
             return;
           }
           if (view === 'subscription' || view === 'dashboard') {
+            if (view !== 'dashboard') {
+              setActiveGeneratedCases(prev => prev.map(c => c.isNew ? { ...c, isNew: false } : c));
+            }
             setCurrentView(view as any);
             if (view === 'dashboard') {
               setFilterSubject(undefined);
@@ -251,6 +254,9 @@ export default function Home() {
           currentView={currentView}
           onLogout={handleLogout}
           onNavigate={(view, subjectFilter) => {
+            if (view !== 'dashboard') {
+              setActiveGeneratedCases(prev => prev.map(c => c.isNew ? { ...c, isNew: false } : c));
+            }
             setCurrentView(view as any);
             setFilterSubject(subjectFilter);
           }}
@@ -265,6 +271,7 @@ export default function Home() {
               setGeneratedCases={setActiveGeneratedCases}
               onStartCase={(subject, index, data, initialAnswers) => {
                 setSelectedCase({ subject, index, data, initialAnswers, sourceView: 'dashboard' });
+                setActiveGeneratedCases(prev => prev.map(c => c.isNew ? { ...c, isNew: false } : c));
                 setCurrentView('simulation');
               }} 
             />

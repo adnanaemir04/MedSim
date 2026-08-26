@@ -32,6 +32,11 @@ public class UserRepository : IUserRepository
         return await _context.Users.FirstOrDefaultAsync(u => u.Nickname.ToLower() == nickname.ToLower());
     }
 
+    public async Task<User?> GetByFriendCodeAsync(string friendCode)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.FriendCode.ToUpper() == friendCode.ToUpper());
+    }
+
     public async Task<IEnumerable<User>> GetAllAsync()
     {
         return await _context.Users.AsNoTracking().ToListAsync();

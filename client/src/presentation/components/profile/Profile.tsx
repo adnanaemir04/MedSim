@@ -134,7 +134,7 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
   const rank = getUserRank(user.points);
 
   const containerStyle = {
-    padding: '2rem', maxWidth: '1250px', margin: isLight ? '2rem auto' : '1rem auto',
+    padding: '2rem', maxWidth: '1250px', margin: '0.5rem auto',
     background: isLight 
       ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1))'
       : 'var(--bg-panel)',
@@ -251,22 +251,24 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
 
             <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.4rem 0', color: isLight ? '#0f172a' : 'white' }}>{nickname}</h3>
             
-            {user.friendCode && (
-              <div 
-                onClick={handleCopyCode}
-                style={{ 
-                  display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                  marginBottom: '1rem', cursor: 'pointer',
-                  padding: '0.3rem 0.8rem', background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)',
-                  borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600, color: isLight ? '#475569' : '#cbd5e1',
-                  transition: 'all 0.2s'
-                }}
-                title="Arkadaş Ekleme ID'sini Kopyala"
-              >
-                <span>ID: {user.friendCode}</span>
-                {copied ? <CheckCircle2 size={14} color="#10b981" /> : <Copy size={14} />}
-              </div>
-            )}
+            {/* Arkadaşlık ID Alanı Her Zaman Görünür */}
+            <div 
+              onClick={handleCopyCode}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                marginBottom: '1rem', cursor: 'pointer',
+                padding: '0.6rem 1rem', background: isLight ? 'rgba(79, 70, 229, 0.08)' : 'rgba(79, 70, 229, 0.15)',
+                borderRadius: '12px', fontSize: '0.9rem', fontWeight: 600, color: isLight ? '#4f46e5' : '#818cf8',
+                border: isLight ? '1px solid rgba(79, 70, 229, 0.2)' : '1px solid rgba(79, 70, 229, 0.3)',
+                transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.02)'
+              }}
+              title="Arkadaş Ekleme ID'sini Kopyala"
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 15px rgba(79, 70, 229, 0.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)'; }}
+            >
+              <span>Arkadaşlık ID: <strong style={{ letterSpacing: '0.05em' }}>{user.friendCode || "Bulunamadı"}</strong></span>
+              {copied ? <CheckCircle2 size={16} color="#10b981" /> : <Copy size={16} />}
+            </div>
             
             <div style={{ 
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem',

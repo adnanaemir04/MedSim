@@ -35,13 +35,25 @@ public class AuthController : ControllerBase
         var existingNickname = await _userRepository.GetByNicknameAsync(dto.Nickname);
         if (existingNickname != null) return BadRequest("Bu nickname zaten alınmış.");
 
+        string newFriendCode;
+        while (true)
+        {
+            newFriendCode = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+            var existingWithCode = await _userRepository.GetByFriendCodeAsync(newFriendCode);
+            if (existingWithCode == null)
+            {
+                break;
+            }
+        }
+
         var user = new User
         {
             Email = dto.Email,
             Nickname = dto.Nickname,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Points = 20,
-            Avatar = "👨‍⚕️"
+            Avatar = "👨‍⚕️",
+            FriendCode = newFriendCode
         };
 
         await _userRepository.AddAsync(user);

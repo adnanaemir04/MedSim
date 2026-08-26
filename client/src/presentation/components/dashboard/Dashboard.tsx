@@ -223,11 +223,16 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
         
         {(() => {
-          const generatedList = generatedCases.filter(c => !filterSubject || c.subject === filterSubject);
+          const generatedList = generatedCases.filter(c => {
+            if (filterSubject && c.subject !== filterSubject) return false;
+            const solved = c.data?.id ? solvedCases.find(sc => sc.medicalCaseId === c.data.id) : undefined;
+            if (solved) return false; // Hide solved cases completely
+            return true;
+          });
           const dbList = dbCases.filter(c => {
             const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
             const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
-            if (solved && !filterSubject) return false;
+            if (solved) return false; // Hide solved cases completely
             if (filterSubject && subjName !== filterSubject) return false;
             return true;
           });
@@ -258,8 +263,13 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
             <>
               {generatedList.map((c, index) => {
                 const solved = c.data?.id ? solvedCases.find(sc => sc.medicalCaseId === c.data.id) : undefined;
+                const difficultyColor = c.data?.difficulty === 'Zor' ? 'rgba(244, 63, 94, 0.8)' : (c.data?.difficulty === 'Kolay' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(245, 158, 11, 0.8)');
+                
                 return (
-                  <div key={`gen-${index}`} className="premium-card">
+                  <div key={`gen-${index}`} className="premium-card" style={{ border: `2px solid ${difficultyColor}`, boxShadow: `0 8px 30px ${difficultyColor.replace('0.8', '0.15')}` }}>
+                    {c.isNew && (
+                      <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#f43f5e', color: 'white', padding: '0.3rem 0.8rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, letterSpacing: '1px', boxShadow: '0 4px 12px rgba(244,63,94,0.6)', zIndex: 10, animation: 'pulse 2s infinite' }}>YENİ</div>
+                    )}
                     <BrainCircuit size={120} color="#6366f1" style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.04, pointerEvents: 'none', transform: 'rotate(-15deg)' }} />
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
@@ -302,9 +312,10 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
           const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
           const mockData = { id: c.id, title: c.title, text: c.initialText, stages: c.stages, patientInfo: c.patientInfo, difficulty: c.difficulty, difficultyScore: c.difficultyScore, difficultyReason: c.difficultyReason };
           const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
+          const difficultyColor = c.difficulty === 'Zor' ? 'rgba(244, 63, 94, 0.8)' : (c.difficulty === 'Kolay' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(245, 158, 11, 0.8)');
 
           return (
-            <div key={`db-${c.id}`} className="premium-card db-card">
+            <div key={`db-${c.id}`} className="premium-card db-card" style={{ border: `2px solid ${difficultyColor}`, boxShadow: `0 8px 30px ${difficultyColor.replace('0.8', '0.15')}` }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
                 <div className="premium-badge no-dot" style={{ background: 'transparent', padding: 0, border: 'none', color: '#0ea5e9' }}>
                   <Activity size={14} /> STANDART VAKA
