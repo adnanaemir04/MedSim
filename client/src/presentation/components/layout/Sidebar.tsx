@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { User } from '../../../domain/entities/User';
 import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { soundManager } from '../../../utils/soundManager';
-import { getDepartments } from '../../../infrastructure/api/simulationApi';
+import { getDepartments, DepartmentDto } from '../../../infrastructure/api/simulationApi';
+import { useTheme } from '../../context/ThemeContext';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Anatomi': <UserIcon size={14} />,
@@ -46,9 +47,14 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ user, onLogout, onNavigate, currentView }: SidebarProps) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [isClassExpanded, setIsClassExpanded] = useState(false);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [departments, setDepartments] = useState<DepartmentDto[]>([]);
+  const [hoveredSubject, setHoveredSubject] = useState<string | null>(null);
+  const [hoverPosition, setHoverPosition] = useState({ top: 0, right: 0 });
   const [deptsByYear, setDeptsByYear] = useState<Record<number, string[]>>({
     1: ["Anatomi", "Histoloji ve Embriyoloji", "Tıbbi Biyokimya", "Fizyoloji", "Tıbbi Biyoloji ve Genetik", "Biyoistatistik"],
     2: ["Anatomi", "Fizyoloji", "Mikrobiyoloji", "İmmünoloji", "Patoloji", "Farmakoloji"],
@@ -64,6 +70,7 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
       try {
         const data = await getDepartments();
         if (data && data.length > 0) {
+          setDepartments(data);
           const grouped: Record<number, string[]> = {};
           data.forEach(d => {
             if (!grouped[d.year]) grouped[d.year] = [];
@@ -250,6 +257,14 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
                             e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
                             e.currentTarget.style.boxShadow = '0 8px 15px rgba(79, 70, 229, 0.4)';
                             e.currentTarget.style.borderColor = 'transparent';
+                            
+                            // Calculate popover position
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHoverPosition({
+                              top: rect.top,
+                              right: window.innerWidth - rect.left + 10
+                            });
+                            setHoveredSubject(dept);
                           }} 
                           onMouseLeave={e => {
                             e.currentTarget.style.background = 'rgba(79, 70, 229, 0.08)';
@@ -257,6 +272,7 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
                             e.currentTarget.style.transform = 'translateY(0) scale(1)';
                             e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
                             e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.3)';
+                            setHoveredSubject(null);
                           }}
                         >
                           <div style={{ color: 'var(--primary)', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))' }}>
@@ -330,6 +346,44 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
           <span>Çıkış Yap</span>
         </button>
       </div>
+
+      {hoveredSubject && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: hoverPosition.top - 10,
+            left: '260px', // Just outside the sidebar width
+            width: '280px',
+            background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.95)',
+            border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+            padding: '1.2rem',
+            zIndex: 99999,
+            pointerEvents: 'none'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.8rem', borderBottom: '1px solid rgba(128,128,128,0.2)', paddingBottom: '0.5rem' }}>
+            <span style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center' }}>
+              {iconMap[hoveredSubject] || <BookOpen size={16} />}
+            </span>
+            <span style={{ fontWeight: 800, fontSize: '0.95rem', color: isLight ? '#0f172a' : 'white' }}>{hoveredSubject}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Alt Konular:</span>
+            {departments.find(d => d.name === hoveredSubject)?.topics?.flatMap((t: any) => t.subTopics)?.length ? (
+              departments.find(d => d.name === hoveredSubject)?.topics?.flatMap((t: any) => t.subTopics).map((sub: any) => (
+                <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-main)', fontWeight: 500 }}>
+                  <span style={{ color: 'var(--secondary)' }}>•</span>
+                  <span>{sub.name}</span>
+                </div>
+              ))
+            ) : (
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Konu içeriği yükleniyor...</div>
+            )}
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

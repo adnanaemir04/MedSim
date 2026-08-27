@@ -69,6 +69,7 @@ public class SimulationController : ControllerBase
         if (cases == null)
         {
             cases = await _context.MedicalCases
+                .Where(c => c.IsProcedural)
                 .AsNoTracking()
                 .Include(c => c.Stages)
                     .ThenInclude(s => s.Options)

@@ -280,7 +280,7 @@ export default function Home() {
 
 
           {currentView === 'leaderboard' && (
-            <Leaderboard />
+            <Leaderboard user={user} />
           )}
 
           {currentView === 'past_cases' && (

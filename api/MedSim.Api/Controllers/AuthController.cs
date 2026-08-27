@@ -88,7 +88,27 @@ public class AuthController : ControllerBase
     {
         var user = await _userRepository.GetByEmailAsync(dto.Email);
         
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        bool isPasswordValid = false;
+        if (user != null)
+        {
+            if (user.PasswordHash.StartsWith("$2a$") || user.PasswordHash.StartsWith("$2b$") || user.PasswordHash.StartsWith("$2y$"))
+            {
+                try
+                {
+                    isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+                }
+                catch
+                {
+                    isPasswordValid = user.PasswordHash == dto.Password;
+                }
+            }
+            else
+            {
+                isPasswordValid = user.PasswordHash == dto.Password;
+            }
+        }
+
+        if (user == null || !isPasswordValid)
         {
             return Unauthorized("Hatalı e-posta veya şifre.");
         }

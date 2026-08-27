@@ -230,6 +230,7 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
             return true;
           });
           const dbList = dbCases.filter(c => {
+            if (!c.isProcedural) return false;
             const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
             const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
             if (solved) return false; // Hide solved cases completely

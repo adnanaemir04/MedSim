@@ -5,7 +5,7 @@ import { User } from '../../../domain/entities/User';
 import { Camera, Settings, LogOut, Award, Target, Activity, Users, Star, Flame, Zap, Clock, Copy, CheckCircle2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';
-import { getFriendsList, getTusUserStats, addFriend, updateUserProfile, deleteUserAccount, getSolvedCases } from '../../../infrastructure/api/simulationApi';
+import { getFriendsList, getTusUserStats, addFriend, updateUserProfile, deleteUserAccount, getSolvedCases, getSolvedTusQuestions } from '../../../infrastructure/api/simulationApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { soundManager } from '../../../utils/soundManager';
 
@@ -29,6 +29,7 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
   const [copied, setCopied] = useState(false);
   
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [solvedCases, setSolvedCases] = useState<any[]>([]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme } = useTheme();
@@ -54,19 +55,87 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
     }
   };
 
-  const fetchActivities = async () => {
+  const formatRelativeTime = (dateStr: string) => {
     try {
-      const data = await getSolvedCases(user.email, 1, 5); // fetch top 5 recent
-      setRecentActivities(data.items || []);
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return "Az önce";
+      if (diffMins < 60) return `${diffMins} dakika önce`;
+      if (diffHours < 24) return `${diffHours} saat önce`;
+      if (diffDays === 1) return "Dün";
+      if (diffDays < 7) return `${diffDays} gün önce`;
+      
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch {
+      return "Yakın zamanda";
+    }
+  };
+
+  const fetchActivitiesAndCases = async () => {
+    try {
+      const [casesData, tusQuestionsData, friendsList] = await Promise.all([
+        getSolvedCases(user.email, 1, 100),
+        getSolvedTusQuestions(user.email),
+        getFriendsList(user.email)
+      ]);
+
+      const cases = casesData?.items || [];
+      setSolvedCases(cases);
+
+      const activities: any[] = [];
+
+      // 1. Solved Cases
+      cases.forEach((c: any) => {
+        if (c.isSolved) {
+          activities.push({
+            text: `${c.difficulty || 'Orta'} seviye '${c.title || 'Tanısız'}' vakası başarıyla çözüldü.`,
+            points: `+${c.pointsAwarded || 100} Puan`,
+            time: c.solvedAt || new Date().toISOString(),
+            icon: <Activity size={16} color="var(--primary)" />
+          });
+        }
+      });
+
+      // 2. Solved TUS Questions
+      const tusSolved = tusQuestionsData?.items || [];
+      tusSolved.forEach((q: any) => {
+        activities.push({
+          text: `TUS sorusu yanıtlandı: ${q.subject || 'Genel'} (${q.isCorrect ? 'Doğru' : 'Yanlış'}).`,
+          points: q.isCorrect ? "+10 Puan" : "+2 Puan",
+          time: q.solvedAt || new Date().toISOString(),
+          icon: <Target size={16} color={q.isCorrect ? '#10b981' : '#f43f5e'} />
+        });
+      });
+
+      // 3. Friends
+      const friendsData = friendsList || [];
+      friendsData.forEach((f: any) => {
+        activities.push({
+          text: `${f.nickname || 'Meslektaş'} ile arkadaş olundu.`,
+          points: null,
+          time: f.createdAt || new Date().toISOString(),
+          icon: <Users size={16} color="#3b82f6" />
+        });
+      });
+
+      // Sort activities by time descending
+      activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+
+      setRecentActivities(activities.slice(0, 5));
     } catch (err) {
-      console.error("Activities fetch error:", err);
+      console.error("Activities/Cases fetch error:", err);
     }
   };
 
   useEffect(() => {
     fetchFriends();
     fetchTusStats();
-    fetchActivities();
+    fetchActivitiesAndCases();
   }, [user.email]);
 
   const handleCopyCode = () => {
@@ -177,15 +246,17 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
     show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100 } }
   };
 
-  // Mock Achievements
-  const achievements = [
-    { icon: <Flame color="#f97316" size={20}/>, title: "İlk Kan", desc: "İlk vakanı çözdün." },
-    { icon: <Target color="#ef4444" size={20}/>, title: "TUS Canavarı", desc: "TUS'ta %80 başarı." },
-    { icon: <Zap color="#eab308" size={20}/>, title: "Seri Katil", desc: "Arka arkaya 5 doğru tanı." },
-    { icon: <Star color="#8b5cf6" size={20}/>, title: "Mükemmeliyet", desc: "Tüm TUS soruları çözüldü." },
-    { icon: <Award color="#10b981" size={20}/>, title: "Uzman Hekim", desc: "10.000 puana ulaştın." },
-    { icon: <Activity color="#0ea5e9" size={20}/>, title: "Hayat Kurtaran", desc: "Zor seviye vaka tamamlandı." },
+  // Dynamic Achievements
+  const allAchievements = [
+    { icon: <Flame color="#f97316" size={20}/>, title: "İlk Kan", desc: "İlk vakanı çözdün.", isUnlocked: solvedCases.length > 0 },
+    { icon: <Target color="#ef4444" size={20}/>, title: "TUS Canavarı", desc: "TUS'ta %80 başarı.", isUnlocked: tusStats.totalSolved >= 5 && (tusStats.correctCount / tusStats.totalSolved) >= 0.8 },
+    { icon: <Zap color="#eab308" size={20}/>, title: "Seri Katil", desc: "En az 5 vaka çözüldü.", isUnlocked: solvedCases.length >= 5 },
+    { icon: <Star color="#8b5cf6" size={20}/>, title: "Mükemmeliyet", desc: "10 TUS sorusu çözüldü.", isUnlocked: tusStats.totalSolved >= 10 },
+    { icon: <Award color="#10b981" size={20}/>, title: "Uzman Hekim", desc: "10.000 puana ulaştın.", isUnlocked: user.points >= 10000 },
+    { icon: <Activity color="#0ea5e9" size={20}/>, title: "Hayat Kurtaran", desc: "Zor seviye vaka tamamlandı.", isUnlocked: solvedCases.some(c => c.difficulty === 'Zor' && c.isSolved) },
   ];
+
+  const achievements = allAchievements.filter(ach => ach.isUnlocked);
 
   // Mock Recent Activities are now fetched dynamically!
   const formatDate = (dateString: string) => {
@@ -402,17 +473,23 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
               <Award size={20} color={isLight ? '#f59e0b' : '#fbbf24'} />
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: isLight ? '#1e293b' : 'white' }}>Başarımlar</h3>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem' }}>
-              {achievements.map((ach, i) => (
-                <motion.div key={i} whileHover={{ scale: 1.05 }} style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '14px', textAlign: 'center', border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ display: 'inline-block', padding: '0.6rem', background: isLight ? 'white' : 'rgba(255,255,255,0.1)', borderRadius: '50%', marginBottom: '0.4rem', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
-                    {ach.icon}
-                  </div>
-                  <div style={{ fontWeight: 800, fontSize: '0.9rem', color: isLight ? '#334155' : 'white', marginBottom: '0.2rem' }}>{ach.title}</div>
-                  <div style={{ fontSize: '0.75rem', color: isLight ? '#64748b' : '#94a3b8', lineHeight: '1.3' }}>{ach.desc}</div>
-                </motion.div>
-              ))}
-            </div>
+            {achievements.length === 0 ? (
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600, background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.01)', borderRadius: '16px', border: isLight ? '1px dashed rgba(0,0,0,0.1)' : '1px dashed rgba(255,255,255,0.05)' }}>
+                🏆 Henüz kazandığınız bir başarım yok. Vaka çözerek veya TUS sorularını doğru yanıtlayarak ilk başarımınızı kazanabilirsiniz!
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem' }}>
+                {achievements.map((ach, i) => (
+                  <motion.div key={i} whileHover={{ scale: 1.05 }} style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '14px', textAlign: 'center', border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'inline-block', padding: '0.6rem', background: isLight ? 'white' : 'rgba(255,255,255,0.1)', borderRadius: '50%', marginBottom: '0.4rem', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
+                      {ach.icon}
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: isLight ? '#334155' : 'white', marginBottom: '0.2rem' }}>{ach.title}</div>
+                    <div style={{ fontSize: '0.75rem', color: isLight ? '#64748b' : '#94a3b8', lineHeight: '1.3' }}>{ach.desc}</div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Aktiviteler Section */}
@@ -423,16 +500,18 @@ export default function Profile({ user, onUpdate, onLogout }: ProfileProps) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {recentActivities.length === 0 && (
-                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Henüz aktivite bulunmuyor.</div>
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600, background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.01)', borderRadius: '12px' }}>Henüz aktivite bulunmuyor.</div>
               )}
               {recentActivities.map((act, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.8rem', background: isLight ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.03)', borderRadius: '12px', border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: act.earnedPoints > 0 ? '#10b981' : '#3b82f6' }}></div>
-                  <div style={{ flex: 1, fontSize: '0.85rem', color: isLight ? '#334155' : 'var(--text-main)', fontWeight: 500 }}>
-                    "{act.caseTitle}" ({act.departmentName}) vakası {act.isSolved ? 'çözüldü' : 'denendi'}.
+                  <div style={{ padding: '0.4rem', background: isLight ? 'white' : 'rgba(255,255,255,0.05)', borderRadius: '50%' }}>
+                    {act.icon}
                   </div>
-                  {act.earnedPoints > 0 && <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#10b981' }}>+{act.earnedPoints}</div>}
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(act.solvedAt)}</div>
+                  <div style={{ flex: 1, fontSize: '0.85rem', color: isLight ? '#334155' : 'var(--text-main)', fontWeight: 600 }}>
+                    {act.text}
+                  </div>
+                  {act.points && <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#10b981' }}>{act.points}</div>}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{formatRelativeTime(act.time)}</div>
                 </div>
               ))}
             </div>

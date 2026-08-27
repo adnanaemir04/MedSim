@@ -52,7 +52,7 @@ public class ProfileController : ControllerBase
             .AsNoTracking()
             .Include(sc => sc.MedicalCase)
             .ThenInclude(mc => mc.Department)
-            .Where(sc => sc.UserId == user.Id)
+            .Where(sc => sc.UserId == user.Id && sc.MedicalCase.IsProcedural)
             .AsQueryable();
 
         if (!string.IsNullOrEmpty(subject))
