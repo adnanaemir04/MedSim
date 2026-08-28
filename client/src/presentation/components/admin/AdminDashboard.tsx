@@ -43,6 +43,22 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
+  // User Stats Filters
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('tusDesc');
+  const [tusSuccessFilter, setTusSuccessFilter] = useState<number>(0);
+  const [caseSuccessFilter, setCaseSuccessFilter] = useState<number>(0);
+
+  // Log Filters
+  const [logSearchQuery, setLogSearchQuery] = useState('');
+  const [logActionFilter, setLogActionFilter] = useState<string>('all');
+  const [logDateFilter, setLogDateFilter] = useState<string>('all');
+  const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
+
+  const toggleLogExpand = (id: string) => {
+    setExpandedLogs(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+  
   // Create Admin Form
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [newAdminNickname, setNewAdminNickname] = useState('');
@@ -134,10 +150,44 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const totalTus = stats.reduce((acc, s) => acc + s.totalTusSolved, 0);
   const adminCount = stats.filter(s => s.role === 'Admin' || s.role === 'SuperAdmin').length;
 
-  const filteredStats = stats.filter(s => 
-    s.nickname.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  let filteredStats = stats.filter(s => {
+    const matchesSearch = s.nickname.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          s.email.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    let matchesRole = true;
+    if (roleFilter !== 'all') {
+      if (roleFilter === 'Admin') matchesRole = (s.role === 'Admin' || s.role === 'SuperAdmin');
+      else if (roleFilter === 'SuperAdmin') matchesRole = s.role === 'SuperAdmin';
+      else if (roleFilter === 'User') matchesRole = (s.role !== 'Admin' && s.role !== 'SuperAdmin');
+    }
+
+    const tusPercent = s.totalTusSolved > 0 ? Math.round((s.correctTus / s.totalTusSolved) * 100) : 0;
+    const casePercent = s.totalCasesSolved > 0 ? Math.round((s.successfulCases / s.totalCasesSolved) * 100) : 0;
+    
+    const matchesTusSuccess = tusPercent >= tusSuccessFilter;
+    const matchesCaseSuccess = casePercent >= caseSuccessFilter;
+
+    return matchesSearch && matchesRole && matchesTusSuccess && matchesCaseSuccess;
+  });
+
+  filteredStats.sort((a, b) => {
+    if (sortBy === 'nameAsc') return a.nickname.localeCompare(b.nickname);
+    if (sortBy === 'nameDesc') return b.nickname.localeCompare(a.nickname);
+    if (sortBy === 'tusDesc') return b.totalTusSolved - a.totalTusSolved;
+    if (sortBy === 'casesDesc') return b.totalCasesSolved - a.totalCasesSolved;
+    if (sortBy === 'tusSuccess') {
+      const aTus = a.totalTusSolved > 0 ? Math.round((a.correctTus / a.totalTusSolved) * 100) : 0;
+      const bTus = b.totalTusSolved > 0 ? Math.round((b.correctTus / b.totalTusSolved) * 100) : 0;
+      return bTus - aTus;
+    }
+    if (sortBy === 'caseSuccess') {
+      const aCase = a.totalCasesSolved > 0 ? Math.round((a.successfulCases / a.totalCasesSolved) * 100) : 0;
+      const bCase = b.totalCasesSolved > 0 ? Math.round((b.successfulCases / b.totalCasesSolved) * 100) : 0;
+      return bCase - aCase;
+    }
+    return 0;
+  });
+
 
   const metrics = [
     { title: "Toplam Kullanıcı", val: totalUsers, icon: Users, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)' },
@@ -262,24 +312,94 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
               </div>
 
               {/* Search input */}
-              <div style={{ 
-                display: 'flex', alignItems: 'center', gap: '0.6rem', 
-                background: 'rgba(255, 255, 255, 0.05)', 
-                border: '1px solid var(--glass-border)', 
-                borderRadius: '12px', padding: '0.5rem 1rem', width: '280px' 
-              }}>
-                <Search size={16} color="var(--text-muted)" />
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Kullanıcı veya e-posta ara..."
+              <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
+                <div style={{ 
+                  display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                  background: 'rgba(255, 255, 255, 0.05)', 
+                  border: '1px solid var(--glass-border)', 
+                  borderRadius: '12px', padding: '0.5rem 1rem', minWidth: '220px', flex: 1, maxWidth: '300px'
+                }}>
+                  <Search size={16} color="var(--text-muted)" />
+                  <input 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Kullanıcı veya e-posta ara..."
+                    style={{
+                      background: 'transparent', border: 'none', 
+                      color: 'var(--text-main)', fontSize: '0.85rem', 
+                      outline: 'none', width: '100%'
+                    }}
+                  />
+                </div>
+                <select 
+                  value={roleFilter} 
+                  onChange={e => setRoleFilter(e.target.value)}
                   style={{
-                    background: 'transparent', border: 'none', 
-                    color: 'var(--text-main)', fontSize: '0.85rem', 
-                    outline: 'none', width: '100%'
+                    background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
                   }}
-                />
+                >
+                  <option value="all" style={{background: 'var(--bg-main)'}}>Tüm Roller</option>
+                  <option value="Admin" style={{background: 'var(--bg-main)'}}>Yöneticiler</option>
+                  <option value="SuperAdmin" style={{background: 'var(--bg-main)'}}>Süper Adminler</option>
+                  <option value="User" style={{background: 'var(--bg-main)'}}>Hekimler</option>
+                </select>
+                <select 
+                  value={sortBy} 
+                  onChange={e => setSortBy(e.target.value)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                  }}
+                >
+                  <option value="tusDesc" style={{background: 'var(--bg-main)'}}>TUS Çözüm (Çoktan Aza)</option>
+                  <option value="casesDesc" style={{background: 'var(--bg-main)'}}>Vaka Çözüm (Çoktan Aza)</option>
+                  <option value="tusSuccess" style={{background: 'var(--bg-main)'}}>TUS Başarı (%)</option>
+                  <option value="caseSuccess" style={{background: 'var(--bg-main)'}}>Vaka Başarı (%)</option>
+                  <option value="nameAsc" style={{background: 'var(--bg-main)'}}>İsim (A-Z)</option>
+                  <option value="nameDesc" style={{background: 'var(--bg-main)'}}>İsim (Z-A)</option>
+                </select>
+                <select 
+                  value={tusSuccessFilter} 
+                  onChange={e => setTusSuccessFilter(Number(e.target.value))}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                  }}
+                >
+                  <option value={0} style={{background: 'var(--bg-main)'}}>TUS Başarısı Tümü</option>
+                  <option value={50} style={{background: 'var(--bg-main)'}}>Min %50 TUS</option>
+                  <option value={80} style={{background: 'var(--bg-main)'}}>Min %80 TUS</option>
+                </select>
+                <select 
+                  value={caseSuccessFilter} 
+                  onChange={e => setCaseSuccessFilter(Number(e.target.value))}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                  }}
+                >
+                  <option value={0} style={{background: 'var(--bg-main)'}}>Vaka Başarısı Tümü</option>
+                  <option value={50} style={{background: 'var(--bg-main)'}}>Min %50 Vaka</option>
+                  <option value={80} style={{background: 'var(--bg-main)'}}>Min %80 Vaka</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Filtered Summary Panel */}
+            <div style={{
+              display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap',
+              background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)',
+              padding: '1rem', borderRadius: '16px', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                <Activity color="#10b981" size={20}/>
+                <span style={{color: 'var(--text-main)', fontWeight: 600}}>Filtrelenmiş Sonuçlar: <b style={{color: '#10b981'}}>{filteredStats.length} Kullanıcı</b></span>
+              </div>
+              <div style={{display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem'}}>
+                <span>Top. TUS Çözüm: <b style={{color: 'var(--text-main)'}}>{filteredStats.reduce((acc, s) => acc + s.totalTusSolved, 0)}</b></span>
+                <span>Top. Vaka Çözüm: <b style={{color: 'var(--text-main)'}}>{filteredStats.reduce((acc, s) => acc + s.totalCasesSolved, 0)}</b></span>
               </div>
             </div>
 
@@ -390,72 +510,191 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         )}
 
         {/* TAB 2: AUDIT LOGS */}
-        {activeTab === 'logs' && (
-          <div>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
-                Sistem ve Güvenlik Logları
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                Yönetici aktiviteleri, soru yükleme ve sistem olay kayıtları.
-              </p>
-            </div>
+        {activeTab === 'logs' && (() => {
+          const now = new Date();
+          const filteredLogs = logs.filter(l => {
+            const matchesSearch = l.userEmail.toLowerCase().includes(logSearchQuery.toLowerCase()) || 
+                                  l.details.toLowerCase().includes(logSearchQuery.toLowerCase()) ||
+                                  l.action.toLowerCase().includes(logSearchQuery.toLowerCase());
+            
+            const matchesAction = logActionFilter === 'all' || l.action.includes(logActionFilter);
+            
+            let matchesDate = true;
+            if (logDateFilter !== 'all') {
+              const logDate = new Date(l.createdAt);
+              const diffMs = now.getTime() - logDate.getTime();
+              const diffHours = diffMs / (1000 * 60 * 60);
+              if (logDateFilter === '24h') matchesDate = diffHours <= 24;
+              else if (logDateFilter === '7d') matchesDate = diffHours <= (24 * 7);
+              else if (logDateFilter === '30d') matchesDate = diffHours <= (24 * 30);
+            }
+            return matchesSearch && matchesAction && matchesDate;
+          });
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              {logs.map((l) => (
-                <div 
-                  key={l.id} 
-                  style={{
-                    display: 'flex', gap: '1rem', alignItems: 'flex-start',
-                    padding: '1.1rem 1.3rem', borderRadius: '16px',
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid var(--glass-border)'
-                  }}
-                >
-                  <div style={{ 
-                    width: 38, height: 38, borderRadius: '10px', 
-                    background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    flexShrink: 0, marginTop: '0.1rem' 
-                  }}>
-                    <Activity size={18} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {l.userEmail}
-                      </span>
-                      <span style={{ 
-                        fontSize: '0.68rem', fontWeight: 800, 
-                        background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', 
-                        padding: '0.2rem 0.5rem', borderRadius: '6px', 
-                        textTransform: 'uppercase', letterSpacing: '0.05em' 
-                      }}>
-                        {l.action}
-                      </span>
-                    </div>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0', lineHeight: 1.5 }}>
-                      {l.details}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 600 }}>
-                      <Clock size={12} />
-                      {new Date(l.createdAt).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {logs.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-                  <Server size={40} color="var(--text-muted)" style={{ opacity: 0.3, marginBottom: '0.8rem' }} />
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, margin: 0 }}>
-                    Kayıtlı sistem logu bulunamadı.
+          return (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                    Sistem ve Güvenlik Logları
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                    Yönetici aktiviteleri, soru yükleme ve sistem olay kayıtları.
                   </p>
                 </div>
-              )}
+                
+                <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
+                  <div style={{ 
+                    display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                    background: 'rgba(255, 255, 255, 0.05)', 
+                    border: '1px solid var(--glass-border)', 
+                    borderRadius: '12px', padding: '0.5rem 1rem', minWidth: '220px', flex: 1, maxWidth: '300px'
+                  }}>
+                    <Search size={16} color="var(--text-muted)" />
+                    <input 
+                      type="text" 
+                      value={logSearchQuery}
+                      onChange={e => setLogSearchQuery(e.target.value)}
+                      placeholder="E-posta veya detay ara..."
+                      style={{
+                        background: 'transparent', border: 'none', 
+                        color: 'var(--text-main)', fontSize: '0.85rem', 
+                        outline: 'none', width: '100%'
+                      }}
+                    />
+                  </div>
+                  <select 
+                    value={logActionFilter} 
+                    onChange={e => setLogActionFilter(e.target.value)}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                    }}
+                  >
+                    <option value="all" style={{background: 'var(--bg-main)'}}>Tüm İşlemler</option>
+                    <option value="LOGIN" style={{background: 'var(--bg-main)'}}>Giriş İşlemleri</option>
+                    <option value="CREATE_ADMIN" style={{background: 'var(--bg-main)'}}>Yönetici Ekleme</option>
+                    <option value="GENERATE_CASE" style={{background: 'var(--bg-main)'}}>Vaka Oluşturma</option>
+                    <option value="CREATE_QUESTION" style={{background: 'var(--bg-main)'}}>Soru Ekleme</option>
+                  </select>
+                  <select 
+                    value={logDateFilter} 
+                    onChange={e => setLogDateFilter(e.target.value)}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                    }}
+                  >
+                    <option value="all" style={{background: 'var(--bg-main)'}}>Tüm Zamanlar</option>
+                    <option value="24h" style={{background: 'var(--bg-main)'}}>Son 24 Saat</option>
+                    <option value="7d" style={{background: 'var(--bg-main)'}}>Son 7 Gün</option>
+                    <option value="30d" style={{background: 'var(--bg-main)'}}>Son 30 Gün</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                {filteredLogs.map((l) => {
+                  let LogIcon = Activity;
+                  let color = '#3b82f6';
+                  let bg = 'rgba(59, 130, 246, 0.1)';
+                  
+                  if (l.action.includes('CREATE_ADMIN') || l.action.includes('DELETE')) {
+                    LogIcon = ShieldAlert;
+                    color = '#ef4444';
+                    bg = 'rgba(239, 68, 68, 0.1)';
+                  } else if (l.action.includes('LOGIN') || l.action.includes('AUTH')) {
+                    LogIcon = ShieldCheck;
+                    color = '#10b981';
+                    bg = 'rgba(16, 185, 129, 0.1)';
+                  } else if (l.action.includes('GENERATE_CASE') || l.action.includes('CREATE_QUESTION')) {
+                    LogIcon = BookOpen;
+                    color = '#8b5cf6';
+                    bg = 'rgba(139, 92, 246, 0.1)';
+                  } else if (l.action.includes('UPDATE')) {
+                    LogIcon = Server; // Replaced Settings with Server to fix TS error
+                    color = '#f59e0b';
+                    bg = 'rgba(245, 158, 11, 0.1)';
+                  }
+
+                  const isExpanded = !!expandedLogs[l.id];
+
+                  return (
+                    <div 
+                      key={l.id} 
+                      onClick={() => toggleLogExpand(l.id)}
+                      style={{
+                        display: 'flex', gap: '1rem', alignItems: 'flex-start',
+                        padding: '1.2rem', borderRadius: '16px',
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid var(--glass-border)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: isExpanded ? `0 0 0 1px ${color}` : 'none'
+                      }}
+                    >
+                      <div style={{ 
+                        width: 42, height: 42, borderRadius: '12px', 
+                        background: bg, color: color, 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        flexShrink: 0 
+                      }}>
+                        <LogIcon size={20} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {l.userEmail}
+                          </span>
+                          <span style={{ 
+                            fontSize: '0.7rem', fontWeight: 800, 
+                            background: bg, color: color, 
+                            padding: '0.25rem 0.6rem', borderRadius: '8px', 
+                            textTransform: 'uppercase', letterSpacing: '0.05em' 
+                          }}>
+                            {l.action}
+                          </span>
+                        </div>
+                        <p style={{ 
+                          fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0', lineHeight: 1.5,
+                          display: '-webkit-box', WebkitLineClamp: isExpanded ? 'unset' : 1, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+                        }}>
+                          {l.details}
+                        </p>
+                        
+                        {isExpanded && (
+                          <div style={{ 
+                            marginTop: '1rem', padding: '1rem', 
+                            background: 'rgba(0,0,0,0.2)', borderRadius: '12px', 
+                            fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)',
+                            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                            borderLeft: `3px solid ${color}`
+                          }}>
+                            {l.details}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.8rem', fontWeight: 600 }}>
+                          <Clock size={14} />
+                          {new Date(l.createdAt).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {filteredLogs.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+                    <Server size={40} color="var(--text-muted)" style={{ opacity: 0.3, marginBottom: '0.8rem' }} />
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, margin: 0 }}>
+                      Kayıtlı sistem logu bulunamadı.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* TAB 3: CREATE ADMIN */}
         {activeTab === 'create' && (
