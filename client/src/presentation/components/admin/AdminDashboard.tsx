@@ -384,6 +384,30 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                   <option value={50} style={{background: 'var(--bg-main)'}}>Min %50 Vaka</option>
                   <option value={80} style={{background: 'var(--bg-main)'}}>Min %80 Vaka</option>
                 </select>
+                {(searchQuery !== '' || roleFilter !== 'all' || sortBy !== 'tusDesc' || tusSuccessFilter !== 0 || caseSuccessFilter !== 0) && (
+                  <button 
+                    onClick={() => {
+                      setSearchQuery('');
+                      setRoleFilter('all');
+                      setSortBy('tusDesc');
+                      setTusSuccessFilter(0);
+                      setCaseSuccessFilter(0);
+                      soundManager.playClick();
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.4rem',
+                      background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444',
+                      border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.5rem 1rem', 
+                      borderRadius: '12px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                  >
+                    <XCircle size={16} />
+                    Temizle
+                  </button>
+                )}
               </div>
             </div>
 
@@ -590,6 +614,28 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                     <option value="7d" style={{background: 'var(--bg-main)'}}>Son 7 Gün</option>
                     <option value="30d" style={{background: 'var(--bg-main)'}}>Son 30 Gün</option>
                   </select>
+                  {(logSearchQuery !== '' || logActionFilter !== 'all' || logDateFilter !== 'all') && (
+                    <button 
+                      onClick={() => {
+                        setLogSearchQuery('');
+                        setLogActionFilter('all');
+                        setLogDateFilter('all');
+                        soundManager.playClick();
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                        background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444',
+                        border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.5rem 1rem', 
+                        borderRadius: '12px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                    >
+                      <XCircle size={16} />
+                      Temizle
+                    </button>
+                  )}
                 </div>
               </div>
 
