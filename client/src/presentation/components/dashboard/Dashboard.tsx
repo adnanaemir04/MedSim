@@ -229,16 +229,8 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
             if (solved) return false; // Hide solved cases completely
             return true;
           });
-          const dbList = dbCases.filter(c => {
-            if (!c.isProcedural) return false;
-            const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
-            const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
-            if (solved) return false; // Hide solved cases completely
-            if (filterSubject && subjName !== filterSubject) return false;
-            return true;
-          });
           
-          if (generatedList.length === 0 && dbList.length === 0) {
+          if (generatedList.length === 0) {
             return (
               <div style={{ gridColumn: '1 / -1', padding: '4rem 2rem', textAlign: 'center', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-xl)' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>🩺</div>
@@ -306,46 +298,7 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
                       {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} fill="currentColor" /> Vakayı Çöz</>}
                     </button>
                   </div>
-          );
-        })}
-
-        {dbList.map((c, index) => {
-          const subjName = departments.find(d => d.id === c.departmentId)?.name || 'Bilinmiyor';
-          const mockData = { id: c.id, title: c.title, text: c.initialText, stages: c.stages, patientInfo: c.patientInfo, difficulty: c.difficulty, difficultyScore: c.difficultyScore, difficultyReason: c.difficultyReason };
-          const solved = solvedCases.find(sc => sc.medicalCaseId === c.id);
-          const difficultyColor = c.difficulty === 'Zor' ? 'rgba(244, 63, 94, 0.8)' : (c.difficulty === 'Kolay' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(245, 158, 11, 0.8)');
-
-          return (
-            <div key={`db-${c.id}`} className="premium-card db-card" style={{ border: `2px solid ${difficultyColor}`, boxShadow: `0 8px 30px ${difficultyColor.replace('0.8', '0.15')}` }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                <div className="premium-badge no-dot" style={{ background: 'transparent', padding: 0, border: 'none', color: '#0ea5e9' }}>
-                  <Activity size={14} /> STANDART VAKA
-                </div>
-                {c.difficulty && (
-                  <div className={`premium-badge ${c.difficulty === 'Zor' ? 'rose' : (c.difficulty === 'Orta' ? 'orange' : 'green')}`}>
-                    {c.difficulty} SEVİYE
                   </div>
-                )}
-              </div>
-              
-              <h3 className="premium-card-title">{c.title ? c.title.replace(/\s*-\s*Vaka\s*\d+/gi, '').trim() : 'Yeni Vaka'}</h3>
-              
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
-                <span className="premium-badge blue">📅 Sınıf: {getYearForSubject(subjName)}</span>
-                <span className="premium-badge rose">🧬 Branş: {subjName}</span>
-              </div>
-              
-              <p className="premium-card-text">
-                Bu vaka {c.stages.length} aşamadan oluşmaktadır. Doğru kararlar vererek hastayı kurtarın.
-              </p>
-              
-              <button 
-                onClick={(e) => { e.stopPropagation(); soundManager.playClick(); onStartCase(subjName, index, mockData, undefined); }}
-                className={`premium-button ${solved ? 'solved' : 'blue'}`}
-              >
-                {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} fill="currentColor" /> Vakayı Çöz</>}
-              </button>
-            </div>
           );
         })}
             </>
