@@ -128,47 +128,50 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ isLight,
         <>
           {/* SYSTEM HEALTH & TELEMETRY */}
           <div style={{
-            background: isLight ? 'linear-gradient(135deg, #1e293b, #0f172a)' : 'linear-gradient(135deg, #0f172a, #020617)',
-            borderRadius: '24px', padding: '1.5rem 2rem', color: 'white', marginBottom: '1.5rem',
+            background: isLight ? 'linear-gradient(135deg, #ffffff, #f1f5f9)' : 'linear-gradient(135deg, #0f172a, #020617)',
+            borderRadius: '24px', padding: '1.5rem 2rem', 
+            color: isLight ? '#0f172a' : 'white', 
+            marginBottom: '1.5rem',
             display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
+            boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.05)' : '0 10px 30px rgba(0,0,0,0.25)',
+            border: isLight ? '1px solid #e2e8f0' : '1px solid #1e293b'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ position: 'relative' }}>
                 <Server size={32} color="#10b981" />
-                <span style={{ position: 'absolute', top: -4, right: -4, width: 12, height: 12, background: '#10b981', borderRadius: '50%', border: '2px solid #1e293b', animation: 'pulse 2s infinite' }}></span>
+                <span style={{ position: 'absolute', top: -4, right: -4, width: 12, height: 12, background: '#10b981', borderRadius: '50%', border: `2px solid ${isLight ? '#ffffff' : '#0f172a'}`, animation: 'pulse 2s infinite' }}></span>
               </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>Live Telemetry</h3>
-                <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem' }}>Core System Health</p>
+                <p style={{ margin: 0, color: isLight ? '#64748b' : '#94a3b8', fontSize: '0.85rem' }}>Core System Health</p>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ color: isLight ? '#64748b' : '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Cpu size={14} color="#3b82f6" /> CPU Load
                 </span>
                 <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>24%</span>
-                <div style={{ width: '100px', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px' }}>
+                <div style={{ width: '100px', height: '4px', background: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)', borderRadius: '2px' }}>
                   <div style={{ width: '24%', height: '100%', background: '#3b82f6', borderRadius: '2px' }}></div>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ color: isLight ? '#64748b' : '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Database size={14} color="#f59e0b" /> Memory
                 </span>
-                <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>1.2 <span style={{fontSize: '0.8rem', color: '#94a3b8'}}>GB</span></span>
-                <div style={{ width: '100px', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px' }}>
+                <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>1.2 <span style={{fontSize: '0.8rem', color: isLight ? '#64748b' : '#94a3b8'}}>GB</span></span>
+                <div style={{ width: '100px', height: '4px', background: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)', borderRadius: '2px' }}>
                   <div style={{ width: '60%', height: '100%', background: '#f59e0b', borderRadius: '2px' }}></div>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ color: isLight ? '#64748b' : '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Zap size={14} color="#10b981" /> API Latency
                 </span>
-                <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>84 <span style={{fontSize: '0.8rem', color: '#94a3b8'}}>ms</span></span>
-                <div style={{ width: '100px', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px' }}>
+                <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>84 <span style={{fontSize: '0.8rem', color: isLight ? '#64748b' : '#94a3b8'}}>ms</span></span>
+                <div style={{ width: '100px', height: '4px', background: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)', borderRadius: '2px' }}>
                   <div style={{ width: '15%', height: '100%', background: '#10b981', borderRadius: '2px' }}></div>
                 </div>
               </div>
