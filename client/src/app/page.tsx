@@ -16,7 +16,7 @@ import TusAboutView from '../presentation/components/tus/TusAboutView';
 import TusSolveView from '../presentation/components/tus/TusSolveView';
 import TusAdminPanel from '../presentation/components/tus/TusAdminPanel';
 import AdminDashboard from '../presentation/components/admin/AdminDashboard';
-import { ArrowLeft, Sun, Moon } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Loader2 } from 'lucide-react';
 import { updateUserProfile, solveCase } from '../infrastructure/api/simulationApi';
 import { useTheme } from '../presentation/context/ThemeContext';
 
@@ -32,6 +32,7 @@ export default function Home() {
   const [selectedCase, setSelectedCase] = useState<{subject: string, index: number, data?: any, initialAnswers?: number[], sourceView?: string} | null>(null);
   const [selectedTusSolve, setSelectedTusSolve] = useState<{subject: string, count: number, mode: 'classic' | 'ai', difficulty?: string} | null>(null);
   const [filterSubject, setFilterSubject] = useState<string | undefined>();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Added for initial load
   
   const [user, setUser] = useState<any>({
     email: '',
@@ -41,6 +42,24 @@ export default function Home() {
     solvedCases: [],
     role: 'User'
   });
+
+  useEffect(() => {
+    // Check local storage for persisted user session
+    const storedUser = localStorage.getItem('medsim_user');
+    const token = localStorage.getItem('medsim_access_token');
+    
+    if (storedUser && token) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+        setIsLanding(false);
+      } catch (e) {
+        console.error("Failed to parse user from local storage", e);
+      }
+    }
+    setIsCheckingAuth(false);
+  }, []);
 
   const handleLogout = () => {
     setIsAuthenticated(false);
@@ -54,6 +73,9 @@ export default function Home() {
       role: 'User'
     });
     setActiveGeneratedCases([]);
+    localStorage.removeItem('medsim_user');
+    localStorage.removeItem('medsim_access_token');
+    localStorage.removeItem('medsim_refresh_token');
   };
 
   useEffect(() => {
@@ -74,6 +96,14 @@ export default function Home() {
       localStorage.setItem(`medsim_generated_cases_${user.email}`, JSON.stringify(activeGeneratedCases));
     }
   }, [activeGeneratedCases, isAuthenticated, user?.email]);
+
+  if (isCheckingAuth) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-main)' }}>
+        <Loader2 className="animate-spin" size={40} color="var(--primary)" />
+      </div>
+    );
+  }
 
   if (isLanding) {
     return (
@@ -98,6 +128,7 @@ export default function Home() {
         onLoginSuccess={(loggedInUser) => {
           setUser(loggedInUser);
           setIsAuthenticated(true);
+          localStorage.setItem('medsim_user', JSON.stringify(loggedInUser));
         }} 
         onBackToLanding={() => setIsLanding(true)}
       />
@@ -296,7 +327,11 @@ export default function Home() {
           {currentView === 'profile' && (
             <Profile 
               user={user} 
-              onUpdate={(updatedUser) => setUser({ ...user, ...updatedUser })} 
+              onUpdate={(updatedUser) => {
+                const newUser = { ...user, ...updatedUser };
+                setUser(newUser);
+                localStorage.setItem('medsim_user', JSON.stringify(newUser));
+              }} 
               onLogout={handleLogout} 
             />
           )}
