@@ -299,7 +299,12 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         )}
 
         {/* TAB 1: USERS STATS */}
-        {activeTab === 'stats' && (
+        {activeTab === 'stats' && (() => {
+          const inputBg = isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.05)';
+          const inputBorder = isLight ? 'rgba(0, 0, 0, 0.1)' : 'var(--glass-border)';
+          const optionBg = isLight ? '#ffffff' : 'var(--bg-main)';
+
+          return (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
@@ -315,9 +320,10 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
               <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
                 <div style={{ 
                   display: 'flex', alignItems: 'center', gap: '0.6rem', 
-                  background: 'rgba(255, 255, 255, 0.05)', 
-                  border: '1px solid var(--glass-border)', 
-                  borderRadius: '12px', padding: '0.5rem 1rem', minWidth: '220px', flex: 1, maxWidth: '300px'
+                  background: inputBg, 
+                  border: `1px solid ${inputBorder}`, 
+                  borderRadius: '12px', padding: '0.5rem 1rem', minWidth: '220px', flex: 1, maxWidth: '300px',
+                  transition: 'all 0.2s'
                 }}>
                   <Search size={16} color="var(--text-muted)" />
                   <input 
@@ -336,53 +342,53 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                   value={roleFilter} 
                   onChange={e => setRoleFilter(e.target.value)}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
-                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                    background: inputBg, border: `1px solid ${inputBorder}`,
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
                   }}
                 >
-                  <option value="all" style={{background: 'var(--bg-main)'}}>Tüm Roller</option>
-                  <option value="Admin" style={{background: 'var(--bg-main)'}}>Yöneticiler</option>
-                  <option value="SuperAdmin" style={{background: 'var(--bg-main)'}}>Süper Adminler</option>
-                  <option value="User" style={{background: 'var(--bg-main)'}}>Hekimler</option>
+                  <option value="all" style={{background: optionBg}}>Tüm Roller</option>
+                  <option value="Admin" style={{background: optionBg}}>Yöneticiler</option>
+                  <option value="SuperAdmin" style={{background: optionBg}}>Süper Adminler</option>
+                  <option value="User" style={{background: optionBg}}>Hekimler</option>
                 </select>
                 <select 
                   value={sortBy} 
                   onChange={e => setSortBy(e.target.value)}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
-                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                    background: inputBg, border: `1px solid ${inputBorder}`,
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
                   }}
                 >
-                  <option value="tusDesc" style={{background: 'var(--bg-main)'}}>TUS Çözüm (Çoktan Aza)</option>
-                  <option value="casesDesc" style={{background: 'var(--bg-main)'}}>Vaka Çözüm (Çoktan Aza)</option>
-                  <option value="tusSuccess" style={{background: 'var(--bg-main)'}}>TUS Başarı (%)</option>
-                  <option value="caseSuccess" style={{background: 'var(--bg-main)'}}>Vaka Başarı (%)</option>
-                  <option value="nameAsc" style={{background: 'var(--bg-main)'}}>İsim (A-Z)</option>
-                  <option value="nameDesc" style={{background: 'var(--bg-main)'}}>İsim (Z-A)</option>
+                  <option value="tusDesc" style={{background: optionBg}}>TUS Çözüm (Çoktan Aza)</option>
+                  <option value="casesDesc" style={{background: optionBg}}>Vaka Çözüm (Çoktan Aza)</option>
+                  <option value="tusSuccess" style={{background: optionBg}}>TUS Başarı (%)</option>
+                  <option value="caseSuccess" style={{background: optionBg}}>Vaka Başarı (%)</option>
+                  <option value="nameAsc" style={{background: optionBg}}>İsim (A-Z)</option>
+                  <option value="nameDesc" style={{background: optionBg}}>İsim (Z-A)</option>
                 </select>
                 <select 
                   value={tusSuccessFilter} 
                   onChange={e => setTusSuccessFilter(Number(e.target.value))}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
-                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                    background: inputBg, border: `1px solid ${inputBorder}`,
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
                   }}
                 >
-                  <option value={0} style={{background: 'var(--bg-main)'}}>TUS Başarısı Tümü</option>
-                  <option value={50} style={{background: 'var(--bg-main)'}}>Min %50 TUS</option>
-                  <option value={80} style={{background: 'var(--bg-main)'}}>Min %80 TUS</option>
+                  <option value={0} style={{background: optionBg}}>TUS Başarısı Tümü</option>
+                  <option value={50} style={{background: optionBg}}>Min %50 TUS</option>
+                  <option value={80} style={{background: optionBg}}>Min %80 TUS</option>
                 </select>
                 <select 
                   value={caseSuccessFilter} 
                   onChange={e => setCaseSuccessFilter(Number(e.target.value))}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
-                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                    background: inputBg, border: `1px solid ${inputBorder}`,
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
                   }}
                 >
-                  <option value={0} style={{background: 'var(--bg-main)'}}>Vaka Başarısı Tümü</option>
-                  <option value={50} style={{background: 'var(--bg-main)'}}>Min %50 Vaka</option>
-                  <option value={80} style={{background: 'var(--bg-main)'}}>Min %80 Vaka</option>
+                  <option value={0} style={{background: optionBg}}>Vaka Başarısı Tümü</option>
+                  <option value={50} style={{background: optionBg}}>Min %50 Vaka</option>
+                  <option value={80} style={{background: optionBg}}>Min %80 Vaka</option>
                 </select>
                 {(searchQuery !== '' || roleFilter !== 'all' || sortBy !== 'tusDesc' || tusSuccessFilter !== 0 || caseSuccessFilter !== 0) && (
                   <button 
@@ -531,11 +537,17 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
               )}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* TAB 2: AUDIT LOGS */}
         {activeTab === 'logs' && (() => {
           const now = new Date();
+          const inputBg = isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.05)';
+          const inputBorder = isLight ? 'rgba(0, 0, 0, 0.1)' : 'var(--glass-border)';
+          const optionBg = isLight ? '#ffffff' : 'var(--bg-main)';
+          const cardBgHover = isLight ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)';
+
           const filteredLogs = logs.filter(l => {
             const matchesSearch = l.userEmail.toLowerCase().includes(logSearchQuery.toLowerCase()) || 
                                   l.details.toLowerCase().includes(logSearchQuery.toLowerCase()) ||
@@ -570,9 +582,10 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                 <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
                   <div style={{ 
                     display: 'flex', alignItems: 'center', gap: '0.6rem', 
-                    background: 'rgba(255, 255, 255, 0.05)', 
-                    border: '1px solid var(--glass-border)', 
-                    borderRadius: '12px', padding: '0.5rem 1rem', minWidth: '220px', flex: 1, maxWidth: '300px'
+                    background: inputBg, 
+                    border: `1px solid ${inputBorder}`, 
+                    borderRadius: '12px', padding: '0.5rem 1rem', minWidth: '220px', flex: 1, maxWidth: '300px',
+                    transition: 'all 0.2s'
                   }}>
                     <Search size={16} color="var(--text-muted)" />
                     <input 
@@ -591,28 +604,28 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                     value={logActionFilter} 
                     onChange={e => setLogActionFilter(e.target.value)}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
-                      color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                      background: inputBg, border: `1px solid ${inputBorder}`,
+                      color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
                     }}
                   >
-                    <option value="all" style={{background: 'var(--bg-main)'}}>Tüm İşlemler</option>
-                    <option value="LOGIN" style={{background: 'var(--bg-main)'}}>Giriş İşlemleri</option>
-                    <option value="CREATE_ADMIN" style={{background: 'var(--bg-main)'}}>Yönetici Ekleme</option>
-                    <option value="GENERATE_CASE" style={{background: 'var(--bg-main)'}}>Vaka Oluşturma</option>
-                    <option value="CREATE_QUESTION" style={{background: 'var(--bg-main)'}}>Soru Ekleme</option>
+                    <option value="all" style={{background: optionBg}}>Tüm İşlemler</option>
+                    <option value="LOGIN" style={{background: optionBg}}>Giriş İşlemleri</option>
+                    <option value="CREATE_ADMIN" style={{background: optionBg}}>Yönetici Ekleme</option>
+                    <option value="GENERATE_CASE" style={{background: optionBg}}>Vaka Oluşturma</option>
+                    <option value="CREATE_QUESTION" style={{background: optionBg}}>Soru Ekleme</option>
                   </select>
                   <select 
                     value={logDateFilter} 
                     onChange={e => setLogDateFilter(e.target.value)}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)',
-                      color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none'
+                      background: inputBg, border: `1px solid ${inputBorder}`,
+                      color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
                     }}
                   >
-                    <option value="all" style={{background: 'var(--bg-main)'}}>Tüm Zamanlar</option>
-                    <option value="24h" style={{background: 'var(--bg-main)'}}>Son 24 Saat</option>
-                    <option value="7d" style={{background: 'var(--bg-main)'}}>Son 7 Gün</option>
-                    <option value="30d" style={{background: 'var(--bg-main)'}}>Son 30 Gün</option>
+                    <option value="all" style={{background: optionBg}}>Tüm Zamanlar</option>
+                    <option value="24h" style={{background: optionBg}}>Son 24 Saat</option>
+                    <option value="7d" style={{background: optionBg}}>Son 7 Gün</option>
+                    <option value="30d" style={{background: optionBg}}>Son 30 Gün</option>
                   </select>
                   {(logSearchQuery !== '' || logActionFilter !== 'all' || logDateFilter !== 'all') && (
                     <button 
@@ -672,12 +685,14 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                       style={{
                         display: 'flex', gap: '1rem', alignItems: 'flex-start',
                         padding: '1.2rem', borderRadius: '16px',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid var(--glass-border)',
+                        background: isExpanded ? cardBgHover : 'transparent',
+                        border: `1px solid ${inputBorder}`,
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
                         boxShadow: isExpanded ? `0 0 0 1px ${color}` : 'none'
                       }}
+                      onMouseEnter={e => { if(!isExpanded) e.currentTarget.style.background = cardBgHover; }}
+                      onMouseLeave={e => { if(!isExpanded) e.currentTarget.style.background = 'transparent'; }}
                     >
                       <div style={{ 
                         width: 42, height: 42, borderRadius: '12px', 
