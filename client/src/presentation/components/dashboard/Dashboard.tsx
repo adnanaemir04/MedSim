@@ -298,7 +298,6 @@ export default function Dashboard({ userEmail, filterSubject, generatedCases, se
                       {solved ? <><Search size={16} /> Tekrar İncele</> : <><Play size={16} fill="currentColor" /> Vakayı Çöz</>}
                     </button>
                   </div>
-                  </div>
           );
         })}
             </>
