@@ -453,7 +453,7 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
                 exit={{ scale: 0.9, opacity: 0 }}
                 style={{
                   background: isLight ? '#ffffff' : '#1e293b',
-                  padding: '2.5rem', borderRadius: '24px', width: '90vw', maxWidth: '600px',
+                  padding: '2.5rem', borderRadius: '24px', width: '90vw', maxWidth: '850px',
                   maxHeight: '90vh', overflowY: 'auto',
                   position: 'relative',
                   boxShadow: isLight ? '0 25px 50px rgba(0,0,0,0.1)' : '0 25px 50px rgba(0,0,0,0.5)',
@@ -484,55 +484,60 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
                       <br /><br /><strong>Admin AEK teşekkürlerini sunar...</strong>
                     </p>
 
-                    <div style={{ 
-                      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', 
-                      marginBottom: '1.5rem', padding: '1.2rem', 
-                      background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '16px' 
-                    }}>
-                      {[
-                        { key: 'teaching', label: 'Öğreticilik' },
-                        { key: 'usability', label: 'Kullanılabilirlik' },
-                        { key: 'easeOfUse', label: 'Uygulama Kullanım Kolaylığı' },
-                        { key: 'realLife', label: 'Gerçek Hayat Uyumu' },
-                        { key: 'analysis', label: 'Analiz Yeterliliği' },
-                        { key: 'speed', label: 'Hız' },
-                        { key: 'detail', label: 'Detaycılık' }
-                      ].map((metric) => (
-                        <div key={metric.key} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                          <span style={{ fontWeight: 600, color: isLight ? '#0f172a' : 'white', fontSize: '0.8rem' }}>{metric.label}</span>
-                          <div style={{ display: 'flex', gap: '0.2rem' }}>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={`${metric.key}-${star}`}
-                                onClick={() => setRatings(prev => ({ ...prev, [metric.key]: star }))}
-                                style={{
-                                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                                  color: star <= (ratings as any)[metric.key] ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569'),
-                                  transition: 'color 0.2s, transform 0.1s'
-                                }}
-                                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.2)' }}
-                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
-                              >
-                                <Star fill={star <= (ratings as any)[metric.key] ? '#fbbf24' : 'transparent'} size={18} />
-                              </button>
-                            ))}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                      {/* Sol: Metrikler */}
+                      <div style={{ 
+                        flex: '1 1 350px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', 
+                        padding: '1.2rem', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '16px' 
+                      }}>
+                        {[
+                          { key: 'teaching', label: 'Öğreticilik' },
+                          { key: 'usability', label: 'Kullanılabilirlik' },
+                          { key: 'easeOfUse', label: 'Uygulama Kullanım Kolaylığı' },
+                          { key: 'realLife', label: 'Gerçek Hayat Uyumu' },
+                          { key: 'analysis', label: 'Analiz Yeterliliği' },
+                          { key: 'speed', label: 'Hız' },
+                          { key: 'detail', label: 'Detaycılık' }
+                        ].map((metric) => (
+                          <div key={metric.key} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                            <span style={{ fontWeight: 600, color: isLight ? '#0f172a' : 'white', fontSize: '0.8rem' }}>{metric.label}</span>
+                            <div style={{ display: 'flex', gap: '0.2rem' }}>
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={`${metric.key}-${star}`}
+                                  onClick={() => setRatings(prev => ({ ...prev, [metric.key]: star }))}
+                                  style={{
+                                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                                    color: star <= (ratings as any)[metric.key] ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569'),
+                                    transition: 'color 0.2s, transform 0.1s'
+                                  }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.2)' }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
+                                >
+                                  <Star fill={star <= (ratings as any)[metric.key] ? '#fbbf24' : 'transparent'} size={18} />
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
 
-                    <textarea
-                      value={feedbackText}
-                      onChange={(e) => setFeedbackText(e.target.value)}
-                      placeholder="Fikirlerinizi detaylıca buraya yazabilirsiniz..."
-                      style={{
-                        width: '100%', height: '120px', padding: '1rem', borderRadius: '16px',
-                        border: isLight ? '2px solid rgba(0,0,0,0.1)' : '2px solid rgba(255,255,255,0.1)',
-                        background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)',
-                        color: isLight ? '#0f172a' : 'white', fontSize: '1rem',
-                        resize: 'none', outline: 'none', marginBottom: '1.5rem', fontFamily: 'inherit'
-                      }}
-                    />
+                      {/* Sağ: Metin Alanı */}
+                      <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column' }}>
+                        <textarea
+                          value={feedbackText}
+                          onChange={(e) => setFeedbackText(e.target.value)}
+                          placeholder="Fikirlerinizi detaylıca buraya yazabilirsiniz..."
+                          style={{
+                            width: '100%', flex: '1', minHeight: '150px', padding: '1rem', borderRadius: '16px',
+                            border: isLight ? '2px solid rgba(0,0,0,0.1)' : '2px solid rgba(255,255,255,0.1)',
+                            background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)',
+                            color: isLight ? '#0f172a' : 'white', fontSize: '1rem',
+                            resize: 'none', outline: 'none', fontFamily: 'inherit'
+                          }}
+                        />
+                      </div>
+                    </div>
 
                     <motion.button
                       whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
