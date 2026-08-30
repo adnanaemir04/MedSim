@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { User } from '../../../domain/entities/User';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX, Sparkles, MessageSquare, Send, X } from 'lucide-react';
+import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX, Sparkles, MessageSquare, Send, X, Star } from 'lucide-react';
 import { soundManager } from '../../../utils/soundManager';
 import { getDepartments, DepartmentDto } from '../../../infrastructure/api/simulationApi';
 import { useTheme } from '../../context/ThemeContext';
@@ -68,6 +68,8 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
 
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
+  const [teachingRating, setTeachingRating] = useState(0);
+  const [usabilityRating, setUsabilityRating] = useState(0);
 
   const handleSubmitFeedback = () => {
     if (!feedbackText.trim()) return;
@@ -77,10 +79,14 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
       userEmail: user?.email || 'Anonim',
       nickname: user?.nickname || 'Anonim',
       message: feedbackText,
+      teachingRating,
+      usabilityRating,
       createdAt: new Date().toISOString()
     });
     localStorage.setItem('medsim_user_feedbacks', JSON.stringify(existing));
     setFeedbackText('');
+    setTeachingRating(0);
+    setUsabilityRating(0);
     setShowFeedbackModal(false);
     alert("Fikriniz başarıyla iletildi! Geri bildiriminiz bizim için çok değerli.");
   };
@@ -461,10 +467,50 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
                   <X size={20} />
                 </motion.button>
 
-                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.8rem', color: isLight ? '#0f172a' : 'white', fontWeight: 800 }}>Fikirlerini Paylaş</h3>
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.8rem', color: isLight ? '#0f172a' : 'white', fontWeight: 800 }}>Mesajın?</h3>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem', lineHeight: '1.5' }}>
-                  MedSim hakkındaki düşüncelerin, geliştirme önerilerin veya bulduğun hatalar bizim için çok değerli. Lütfen aşağıya detaylıca yaz!
+                  Merhaba, MedSim'i ben sadece tıp fakültesi öğrencilerine bir şeyler katabilir miyim umuduyla geliştiriyorum. Lütfen her konudaki fikrini buraya detaylıca yazıp uygulamayı geliştirmeme yardımcı olur musun? Bu benim için gerçekten önemli, umuyorum ki bir gün bu uygulama gerçekten tıp fakültesi öğrencileri başta olmak üzere çalışan ve emek veren herkese fayda sağlayacak. <br /><br /><strong>Admin Emir teşekkürlerini sunar...</strong>
                 </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 600, color: isLight ? '#0f172a' : 'white', fontSize: '0.95rem' }}>Öğreticilik</span>
+                    <div style={{ display: 'flex', gap: '0.3rem' }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={`teaching-${star}`}
+                          onClick={() => setTeachingRating(star)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                            color: star <= teachingRating ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569'),
+                            transition: 'color 0.2s'
+                          }}
+                        >
+                          <Star fill={star <= teachingRating ? '#fbbf24' : 'transparent'} size={24} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 600, color: isLight ? '#0f172a' : 'white', fontSize: '0.95rem' }}>Kullanılabilirlik</span>
+                    <div style={{ display: 'flex', gap: '0.3rem' }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={`usability-${star}`}
+                          onClick={() => setUsabilityRating(star)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                            color: star <= usabilityRating ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569'),
+                            transition: 'color 0.2s'
+                          }}
+                        >
+                          <Star fill={star <= usabilityRating ? '#fbbf24' : 'transparent'} size={24} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
                 <textarea
                   value={feedbackText}
@@ -472,7 +518,7 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
                   placeholder="Buraya yazabilirsin..."
                   style={{
                     width: '100%',
-                    height: '200px',
+                    height: '140px',
                     padding: '1rem',
                     borderRadius: '16px',
                     border: isLight ? '2px solid rgba(0,0,0,0.1)' : '2px solid rgba(255,255,255,0.1)',

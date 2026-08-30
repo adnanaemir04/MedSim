@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   ShieldAlert, Users, Activity, UserPlus, BarChart3, Clock, 
   ShieldCheck, Cpu, Server, Database, AlertTriangle, Fingerprint, 
-  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2, BookOpen, LineChart, MessageSquare, Trash2
+  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2, BookOpen, LineChart, MessageSquare, Trash2, Star
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { soundManager } from '../../../utils/soundManager';
@@ -935,6 +935,32 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                           {new Date(fb.createdAt).toLocaleDateString('tr-TR')}
                         </div>
                       </div>
+
+                      {(fb.teachingRating > 0 || fb.usabilityRating > 0) && (
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', padding: '0.8rem', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
+                          {fb.teachingRating > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Öğreticilik</span>
+                              <div style={{ display: 'flex', gap: '0.1rem' }}>
+                                {[1, 2, 3, 4, 5].map(s => (
+                                  <Star key={s} size={14} fill={s <= fb.teachingRating ? '#fbbf24' : 'transparent'} color={s <= fb.teachingRating ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569')} />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {fb.usabilityRating > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Kullanılabilirlik</span>
+                              <div style={{ display: 'flex', gap: '0.1rem' }}>
+                                {[1, 2, 3, 4, 5].map(s => (
+                                  <Star key={s} size={14} fill={s <= fb.usabilityRating ? '#fbbf24' : 'transparent'} color={s <= fb.usabilityRating ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569')} />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <p style={{ fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
                         {fb.message}
                       </p>
