@@ -454,6 +454,7 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
                 style={{
                   background: isLight ? '#ffffff' : '#1e293b',
                   padding: '2.5rem', borderRadius: '24px', width: '90vw', maxWidth: '600px',
+                  maxHeight: '90vh', overflowY: 'auto',
                   position: 'relative',
                   boxShadow: isLight ? '0 25px 50px rgba(0,0,0,0.1)' : '0 25px 50px rgba(0,0,0,0.5)',
                   border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)'
