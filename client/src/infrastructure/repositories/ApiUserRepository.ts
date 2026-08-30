@@ -1,7 +1,7 @@
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { User } from '../../domain/entities/User';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || (typeof window !== 'undefined' ? `http://${window.location.hostname}:5211/api` : 'http://localhost:5211/api');
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || '/api';
 
 export class ApiUserRepository implements IUserRepository {
   async save(user: User): Promise<void> {

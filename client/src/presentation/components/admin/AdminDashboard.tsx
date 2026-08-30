@@ -66,7 +66,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const [createMessage, setCreateMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || (typeof window !== 'undefined' ? `http://${window.location.hostname}:5211/api` : 'http://localhost:5211/api');
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || '/api';
 
   useEffect(() => {
     fetchStats();
