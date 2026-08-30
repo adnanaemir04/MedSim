@@ -880,7 +880,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         {/* TAB: REPORTS */}
         {activeTab === 'reports' && (
           <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
-            <ReportManager userEmail={userEmail} isLight={isLight} />
+            <ReportManager />
           </div>
         )}
 
