@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { User } from '../../../domain/entities/User';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX, Sparkles, MessageSquare, Send, X, Star } from 'lucide-react';
+import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, FlaskConical, Bug, Stethoscope, Baby, Scissors, HeartPulse, Wind, Biohazard, Brain, BrainCircuit, Activity, Ambulance, ChevronDown, ChevronRight, GraduationCap, BookOpen, Volume2, VolumeX, Sparkles, MessageSquare, Send, X, Star, CheckCircle2 } from 'lucide-react';
 import { soundManager } from '../../../utils/soundManager';
 import { getDepartments, DepartmentDto } from '../../../infrastructure/api/simulationApi';
 import { useTheme } from '../../context/ThemeContext';
@@ -68,27 +68,33 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
 
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
-  const [teachingRating, setTeachingRating] = useState(0);
-  const [usabilityRating, setUsabilityRating] = useState(0);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [ratings, setRatings] = useState({
+    teaching: 0, usability: 0, easeOfUse: 0, realLife: 0, analysis: 0, speed: 0, detail: 0
+  });
 
   const handleSubmitFeedback = () => {
-    if (!feedbackText.trim()) return;
+    if (!feedbackText.trim() && Object.values(ratings).every(r => r === 0)) return;
     const existing = JSON.parse(localStorage.getItem('medsim_user_feedbacks') || '[]');
     existing.push({
       id: Date.now().toString(),
       userEmail: user?.email || 'Anonim',
       nickname: user?.nickname || 'Anonim',
       message: feedbackText,
-      teachingRating,
-      usabilityRating,
+      ratings: ratings,
       createdAt: new Date().toISOString()
     });
     localStorage.setItem('medsim_user_feedbacks', JSON.stringify(existing));
-    setFeedbackText('');
-    setTeachingRating(0);
-    setUsabilityRating(0);
-    setShowFeedbackModal(false);
-    alert("Fikriniz başarıyla iletildi! Geri bildiriminiz bizim için çok değerli.");
+    
+    setIsSubmitted(true);
+    setTimeout(() => {
+      setShowFeedbackModal(false);
+      setTimeout(() => {
+        setFeedbackText('');
+        setRatings({ teaching: 0, usability: 0, easeOfUse: 0, realLife: 0, analysis: 0, speed: 0, detail: 0 });
+        setIsSubmitted(false);
+      }, 300);
+    }, 2500);
   };
 
   useEffect(() => {
@@ -467,94 +473,94 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
                   <X size={20} />
                 </motion.button>
 
-                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.8rem', color: isLight ? '#0f172a' : 'white', fontWeight: 800 }}>Mesajın?</h3>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem', lineHeight: '1.5' }}>
-                  Merhaba, MedSim'i ben sadece tıp fakültesi öğrencilerine bir şeyler katabilir miyim umuduyla geliştiriyorum. Lütfen her konudaki fikrini buraya detaylıca yazıp uygulamayı geliştirmeme yardımcı olur musun? Bu benim için gerçekten önemli, umuyorum ki bir gün bu uygulama gerçekten tıp fakültesi öğrencileri başta olmak üzere çalışan ve emek veren herkese fayda sağlayacak. <br /><br /><strong>Admin Emir teşekkürlerini sunar...</strong>
-                </p>
+                {!isSubmitted ? (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.8rem', color: isLight ? '#0f172a' : 'white', fontWeight: 800 }}>Mesajın?</h3>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                      Merhaba, MedSim'i ben sadece <em>"Tıp fakültesi öğrencilerine bir şeyler katabilir miyim?"</em> umuduyla geliştiriyorum. 
+                      <br />Lütfen her konudaki fikrini buraya detaylıca yazıp uygulamayı geliştirmeme yardımcı olur musun? 
+                      <br />Bu benim için gerçekten önemli, umuyorum ki bir gün bu uygulama gerçekten tıp fakültesi öğrencileri başta olmak üzere çalışan ve emek veren herkese fayda sağlayacak. 
+                      <br /><br /><strong>Admin AEK teşekkürlerini sunar...</strong>
+                    </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 600, color: isLight ? '#0f172a' : 'white', fontSize: '0.95rem' }}>Öğreticilik</span>
-                    <div style={{ display: 'flex', gap: '0.3rem' }}>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={`teaching-${star}`}
-                          onClick={() => setTeachingRating(star)}
-                          style={{
-                            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                            color: star <= teachingRating ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569'),
-                            transition: 'color 0.2s'
-                          }}
-                        >
-                          <Star fill={star <= teachingRating ? '#fbbf24' : 'transparent'} size={24} />
-                        </button>
+                    <div style={{ 
+                      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', 
+                      marginBottom: '1.5rem', padding: '1.2rem', 
+                      background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '16px' 
+                    }}>
+                      {[
+                        { key: 'teaching', label: 'Öğreticilik' },
+                        { key: 'usability', label: 'Kullanılabilirlik' },
+                        { key: 'easeOfUse', label: 'Uygulama Kullanım Kolaylığı' },
+                        { key: 'realLife', label: 'Gerçek Hayat Uyumu' },
+                        { key: 'analysis', label: 'Analiz Yeterliliği' },
+                        { key: 'speed', label: 'Hız' },
+                        { key: 'detail', label: 'Detaycılık' }
+                      ].map((metric) => (
+                        <div key={metric.key} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                          <span style={{ fontWeight: 600, color: isLight ? '#0f172a' : 'white', fontSize: '0.8rem' }}>{metric.label}</span>
+                          <div style={{ display: 'flex', gap: '0.2rem' }}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={`${metric.key}-${star}`}
+                                onClick={() => setRatings(prev => ({ ...prev, [metric.key]: star }))}
+                                style={{
+                                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                                  color: star <= (ratings as any)[metric.key] ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569'),
+                                  transition: 'color 0.2s, transform 0.1s'
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.2)' }}
+                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
+                              >
+                                <Star fill={star <= (ratings as any)[metric.key] ? '#fbbf24' : 'transparent'} size={18} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 600, color: isLight ? '#0f172a' : 'white', fontSize: '0.95rem' }}>Kullanılabilirlik</span>
-                    <div style={{ display: 'flex', gap: '0.3rem' }}>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={`usability-${star}`}
-                          onClick={() => setUsabilityRating(star)}
-                          style={{
-                            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                            color: star <= usabilityRating ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569'),
-                            transition: 'color 0.2s'
-                          }}
-                        >
-                          <Star fill={star <= usabilityRating ? '#fbbf24' : 'transparent'} size={24} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
 
-                <textarea
-                  value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value)}
-                  placeholder="Buraya yazabilirsin..."
-                  style={{
-                    width: '100%',
-                    height: '140px',
-                    padding: '1rem',
-                    borderRadius: '16px',
-                    border: isLight ? '2px solid rgba(0,0,0,0.1)' : '2px solid rgba(255,255,255,0.1)',
-                    background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)',
-                    color: isLight ? '#0f172a' : 'white',
-                    fontSize: '1rem',
-                    resize: 'none',
-                    outline: 'none',
-                    marginBottom: '1.5rem',
-                    fontFamily: 'inherit'
-                  }}
-                />
+                    <textarea
+                      value={feedbackText}
+                      onChange={(e) => setFeedbackText(e.target.value)}
+                      placeholder="Fikirlerinizi detaylıca buraya yazabilirsiniz..."
+                      style={{
+                        width: '100%', height: '120px', padding: '1rem', borderRadius: '16px',
+                        border: isLight ? '2px solid rgba(0,0,0,0.1)' : '2px solid rgba(255,255,255,0.1)',
+                        background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)',
+                        color: isLight ? '#0f172a' : 'white', fontSize: '1rem',
+                        resize: 'none', outline: 'none', marginBottom: '1.5rem', fontFamily: 'inherit'
+                      }}
+                    />
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleSubmitFeedback}
-                  style={{
-                    width: '100%',
-                    padding: '1rem',
-                    borderRadius: '16px',
-                    background: 'var(--primary)',
-                    color: 'white',
-                    fontWeight: 800,
-                    fontSize: '1.1rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}
-                >
-                  <Send size={18} />
-                  Gönder
-                </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      onClick={handleSubmitFeedback}
+                      style={{
+                        width: '100%', padding: '1rem', borderRadius: '16px', background: 'var(--primary)',
+                        color: 'white', fontWeight: 800, fontSize: '1.1rem', border: 'none',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                        boxShadow: '0 10px 20px rgba(79, 70, 229, 0.3)'
+                      }}
+                    >
+                      <Send size={18} /> Gönder
+                    </motion.button>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 1rem', textAlign: 'center' }}
+                  >
+                    <motion.div 
+                      initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}
+                      style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}
+                    >
+                      <CheckCircle2 size={48} />
+                    </motion.div>
+                    <h3 style={{ fontSize: '1.8rem', color: isLight ? '#0f172a' : 'white', fontWeight: 800, marginBottom: '0.5rem' }}>Teşekkürler!</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>Geri bildiriminiz MedSim'in gelişimine çok değerli bir katkı sağladı. <br/>Desteğiniz için minnettarız.</p>
+                  </motion.div>
+                )}
               </motion.div>
             </motion.div>
           )}

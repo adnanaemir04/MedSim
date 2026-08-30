@@ -936,28 +936,26 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
                         </div>
                       </div>
 
-                      {(fb.teachingRating > 0 || fb.usabilityRating > 0) && (
-                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', padding: '0.8rem', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
-                          {fb.teachingRating > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Öğreticilik</span>
+                      {fb.ratings && Object.values(fb.ratings).some((r: any) => r > 0) && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1rem', padding: '1rem', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
+                          {[
+                            { key: 'teaching', label: 'Öğreticilik' },
+                            { key: 'usability', label: 'Kullanılabilirlik' },
+                            { key: 'easeOfUse', label: 'Kolaylık' },
+                            { key: 'realLife', label: 'Gerçekçilik' },
+                            { key: 'analysis', label: 'Analiz' },
+                            { key: 'speed', label: 'Hız' },
+                            { key: 'detail', label: 'Detaycılık' }
+                          ].map(metric => fb.ratings[metric.key] > 0 ? (
+                            <div key={metric.key} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{metric.label}</span>
                               <div style={{ display: 'flex', gap: '0.1rem' }}>
                                 {[1, 2, 3, 4, 5].map(s => (
-                                  <Star key={s} size={14} fill={s <= fb.teachingRating ? '#fbbf24' : 'transparent'} color={s <= fb.teachingRating ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569')} />
+                                  <Star key={s} size={12} fill={s <= fb.ratings[metric.key] ? '#fbbf24' : 'transparent'} color={s <= fb.ratings[metric.key] ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569')} />
                                 ))}
                               </div>
                             </div>
-                          )}
-                          {fb.usabilityRating > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Kullanılabilirlik</span>
-                              <div style={{ display: 'flex', gap: '0.1rem' }}>
-                                {[1, 2, 3, 4, 5].map(s => (
-                                  <Star key={s} size={14} fill={s <= fb.usabilityRating ? '#fbbf24' : 'transparent'} color={s <= fb.usabilityRating ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569')} />
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                          ) : null)}
                         </div>
                       )}
 
