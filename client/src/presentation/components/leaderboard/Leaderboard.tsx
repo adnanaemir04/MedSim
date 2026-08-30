@@ -372,10 +372,7 @@ export default function Leaderboard({ user }: { user?: any }) {
                         {getUserRank(u.points || 0).title}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span>E-posta:</span>
-                      <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{u.email}</span>
-                    </div>
+
                   </div>
                 </div>
 
