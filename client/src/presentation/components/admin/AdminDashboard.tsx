@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   ShieldAlert, Users, Activity, UserPlus, BarChart3, Clock, 
   ShieldCheck, Cpu, Server, Database, AlertTriangle, Fingerprint, 
-  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2, BookOpen, LineChart
+  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2, BookOpen, LineChart, MessageSquare, Trash2
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { soundManager } from '../../../utils/soundManager';
@@ -37,7 +37,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create' | 'tus' | 'analytics' | 'reports'>('analytics');
+  const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create' | 'tus' | 'analytics' | 'reports' | 'feedbacks'>('analytics');
   const [stats, setStats] = useState<UserStats[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -249,6 +249,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
           { id: 'create', label: 'Yeni Yönetici Ekle', icon: UserPlus },
           { id: 'tus', label: 'TUS Soru Yönetimi', icon: BookOpen },
           { id: 'reports', label: 'Bildirimler', icon: AlertTriangle },
+          { id: 'feedbacks', label: 'Geri Bildirimler', icon: MessageSquare },
         ].map(t => {
           const active = activeTab === t.id;
           return (
@@ -876,12 +877,82 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
           </div>
         )}
 
-        {/* TAB 5: REPORTS */}
+        {/* TAB: REPORTS */}
         {activeTab === 'reports' && (
           <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
-            <ReportManager />
+            <ReportManager userEmail={userEmail} isLight={isLight} />
           </div>
         )}
+
+        {/* TAB: FEEDBACKS */}
+        {activeTab === 'feedbacks' && (() => {
+          const rawFeedbacks = typeof window !== 'undefined' ? localStorage.getItem('medsim_user_feedbacks') : '[]';
+          const feedbacks = JSON.parse(rawFeedbacks || '[]');
+          
+          const handleDelete = (id: string) => {
+            if (confirm("Bu geri bildirimi silmek istediğinize emin misiniz?")) {
+              const updated = feedbacks.filter((f: any) => f.id !== id);
+              localStorage.setItem('medsim_user_feedbacks', JSON.stringify(updated));
+              // Force re-render trick by setting activeTab again
+              setActiveTab('stats');
+              setTimeout(() => setActiveTab('feedbacks'), 10);
+            }
+          };
+
+          return (
+            <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                    Kullanıcı Geri Bildirimleri
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                    Liderlik tablosu üzerinden gönderilen görüş, öneri ve hata bildirimleri.
+                  </p>
+                </div>
+              </div>
+
+              {feedbacks.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '16px' }}>
+                  <MessageSquare size={40} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+                  <p>Henüz bir geri bildirim bulunmuyor.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                  {feedbacks.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((fb: any) => (
+                    <div key={fb.id} style={{ 
+                      background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.4)', 
+                      border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)', 
+                      borderRadius: '16px', padding: '1.5rem', position: 'relative',
+                      boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.02)' : '0 10px 20px rgba(0,0,0,0.2)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div>
+                          <div style={{ fontWeight: 800, color: isLight ? '#0f172a' : 'white' }}>{fb.nickname}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{fb.userEmail}</div>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)', padding: '0.2rem 0.5rem', borderRadius: '8px' }}>
+                          {new Date(fb.createdAt).toLocaleDateString('tr-TR')}
+                        </div>
+                      </div>
+                      <p style={{ fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                        {fb.message}
+                      </p>
+                      <button 
+                        onClick={() => handleDelete(fb.id)}
+                        style={{ position: 'absolute', bottom: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', opacity: 0.6, transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
       </div>
     </div>

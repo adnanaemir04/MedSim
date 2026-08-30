@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import { User } from '../../../domain/entities/User';
-import { Trophy, Medal, Award, Info, X, Sparkles, TrendingUp, Target, Flame, Zap, Star, Activity } from 'lucide-react';
+import { Trophy, Medal, Award, Info, X, Sparkles, TrendingUp, Target, Flame, Zap, Star, Activity, MessageSquare, Send } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +15,8 @@ import { soundManager } from '../../../utils/soundManager';
 export default function Leaderboard({ user }: { user?: any }) {
   const [boardType, setBoardType] = useState<'general' | 'tus' | 'achievements'>('general');
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const { data: users = [], isLoading: loading } = useQuery({
@@ -94,6 +96,23 @@ export default function Leaderboard({ user }: { user?: any }) {
       cursor: 'pointer'
     };
   };
+
+  const handleSubmitFeedback = () => {
+    if (!feedbackText.trim()) return;
+    const existing = JSON.parse(localStorage.getItem('medsim_user_feedbacks') || '[]');
+    existing.push({
+      id: Date.now().toString(),
+      userEmail: user?.email || 'Anonim',
+      nickname: user?.nickname || 'Anonim',
+      message: feedbackText,
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('medsim_user_feedbacks', JSON.stringify(existing));
+    setFeedbackText('');
+    setShowFeedbackModal(false);
+    alert("Fikriniz başarıyla iletildi! Geri bildiriminiz bizim için çok değerli.");
+  };
+
 
   return (
     <motion.main 
@@ -395,6 +414,33 @@ export default function Leaderboard({ user }: { user?: any }) {
         </div>
       )}
 
+      {/* Feedback Button */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+        <motion.button
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => { soundManager.playClick(); setShowFeedbackModal(true); }}
+          onMouseEnter={() => soundManager.playHover()}
+          style={{
+            padding: '1rem 2rem',
+            borderRadius: '50px',
+            background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+            color: 'white',
+            fontWeight: 800,
+            fontSize: '1.1rem',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            boxShadow: isLight ? '0 15px 30px rgba(79, 70, 229, 0.3)' : '0 15px 30px rgba(79, 70, 229, 0.2)',
+          }}
+        >
+          <MessageSquare size={20} />
+          Bana Fikrini İlet
+        </motion.button>
+      </div>
+
       {/* Rütbe Sistemi Modalı (Aesthetic 500% Override) */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
@@ -531,6 +577,100 @@ export default function Leaderboard({ user }: { user?: any }) {
                   </motion.div>
                 </motion.div>
                 
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      , document.body)}
+
+      {/* Feedback Modalı */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showFeedbackModal && (
+            <motion.div 
+              initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} 
+              animate={{ opacity: 1, backdropFilter: 'blur(15px)' }} 
+              exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: isLight ? 'rgba(255, 255, 255, 0.6)' : 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }} 
+                animate={{ scale: 1, opacity: 1 }} 
+                exit={{ scale: 0.9, opacity: 0 }}
+                style={{
+                  background: isLight ? '#ffffff' : '#1e293b',
+                  padding: '2.5rem', borderRadius: '24px', width: '90vw', maxWidth: '600px',
+                  position: 'relative',
+                  boxShadow: isLight ? '0 25px 50px rgba(0,0,0,0.1)' : '0 25px 50px rgba(0,0,0,0.5)',
+                  border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)'
+                }}
+              >
+                <motion.button 
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowFeedbackModal(false)}
+                  style={{ 
+                    position: 'absolute', top: '1.5rem', right: '1.5rem', 
+                    background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)', 
+                    padding: '0.6rem', borderRadius: '50%', border: 'none', cursor: 'pointer', 
+                    color: isLight ? '#0f172a' : '#fff'
+                  }}
+                >
+                  <X size={20} />
+                </motion.button>
+
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.8rem', color: isLight ? '#0f172a' : 'white', fontWeight: 800 }}>Fikirlerini Paylaş</h3>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                  MedSim hakkındaki düşüncelerin, geliştirme önerilerin veya bulduğun hatalar bizim için çok değerli. Lütfen aşağıya detaylıca yaz!
+                </p>
+
+                <textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder="Buraya yazabilirsin..."
+                  style={{
+                    width: '100%',
+                    height: '200px',
+                    padding: '1rem',
+                    borderRadius: '16px',
+                    border: isLight ? '2px solid rgba(0,0,0,0.1)' : '2px solid rgba(255,255,255,0.1)',
+                    background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)',
+                    color: isLight ? '#0f172a' : 'white',
+                    fontSize: '1rem',
+                    resize: 'none',
+                    outline: 'none',
+                    marginBottom: '1.5rem',
+                    fontFamily: 'inherit'
+                  }}
+                />
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSubmitFeedback}
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    borderRadius: '16px',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    fontWeight: 800,
+                    fontSize: '1.1rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <Send size={18} />
+                  Gönder
+                </motion.button>
               </motion.div>
             </motion.div>
           )}
