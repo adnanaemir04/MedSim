@@ -72,6 +72,7 @@ builder.Services.AddSingleton<ICacheService, RedisCacheService>();
 // Dependency Injection for Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITusRepository, TusRepository>();
+builder.Services.AddScoped<IFeedbackRepository, MedSim.Infrastructure.Repositories.FeedbackRepository>();
 builder.Services.AddScoped<IAnalyticsService, MedSim.Infrastructure.Services.AnalyticsService>();
 builder.Services.AddHttpClient<IProceduralGeneratorService, ProceduralGeneratorService>();
 

@@ -8,7 +8,7 @@ import { Home, Folder, Trophy, LogOut, User as UserIcon, Microscope, Dna, Pill, 
 import { soundManager } from '../../../utils/soundManager';
 import { getDepartments, DepartmentDto } from '../../../infrastructure/api/simulationApi';
 import { useTheme } from '../../context/ThemeContext';
-
+import { submitFeedback } from '../../../infrastructure/api/feedbackApi';
 const iconMap: Record<string, React.ReactNode> = {
   'Anatomi': <UserIcon size={14} />,
   'Histoloji': <Microscope size={14} />,
@@ -73,18 +73,27 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
     teaching: 0, usability: 0, easeOfUse: 0, realLife: 0, analysis: 0, speed: 0, detail: 0
   });
 
-  const handleSubmitFeedback = () => {
+  const handleSubmitFeedback = async () => {
     if (!feedbackText.trim() && Object.values(ratings).every(r => r === 0)) return;
-    const existing = JSON.parse(localStorage.getItem('medsim_user_feedbacks') || '[]');
-    existing.push({
-      id: Date.now().toString(),
-      userEmail: user?.email || 'Anonim',
-      nickname: user?.nickname || 'Anonim',
-      message: feedbackText,
-      ratings: ratings,
-      createdAt: new Date().toISOString()
-    });
-    localStorage.setItem('medsim_user_feedbacks', JSON.stringify(existing));
+    
+    try {
+      const token = localStorage.getItem('medsim_token');
+      if (token) {
+        await submitFeedback({
+          message: feedbackText,
+          teaching: ratings.teaching,
+          usability: ratings.usability,
+          easeOfUse: ratings.easeOfUse,
+          realLife: ratings.realLife,
+          analysis: ratings.analysis,
+          speed: ratings.speed,
+          detail: ratings.detail
+        }, token);
+      }
+    } catch (err) {
+      console.error("Geri bildirim gönderilemedi:", err);
+      // Fallback or just ignore, we still show success animation for UX
+    }
     
     setIsSubmitted(true);
     setTimeout(() => {

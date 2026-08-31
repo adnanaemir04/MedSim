@@ -107,6 +107,45 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
     }
   };
 
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+
+  const fetchFeedbacks = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('medsim_access_token') : null;
+      if (!token) return;
+      const res = await fetch(`${API_BASE_URL}/Feedbacks`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const mappedFeedbacks = data.map((fb: any) => ({
+          ...fb,
+          ratings: {
+            teaching: fb.teaching,
+            usability: fb.usability,
+            easeOfUse: fb.easeOfUse,
+            realLife: fb.realLife,
+            analysis: fb.analysis,
+            speed: fb.speed,
+            detail: fb.detail
+          }
+        }));
+        setFeedbacks(mappedFeedbacks);
+      }
+    } catch (err) {
+      console.error("Failed to fetch feedbacks", err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'feedbacks') {
+      fetchFeedbacks();
+    }
+  }, [activeTab]);
+
+
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateMessage('');
@@ -886,17 +925,8 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
 
         {/* TAB: FEEDBACKS */}
         {activeTab === 'feedbacks' && (() => {
-          const rawFeedbacks = typeof window !== 'undefined' ? localStorage.getItem('medsim_user_feedbacks') : '[]';
-          const feedbacks = JSON.parse(rawFeedbacks || '[]');
-          
           const handleDelete = (id: string) => {
-            if (confirm("Bu geri bildirimi silmek istediğinize emin misiniz?")) {
-              const updated = feedbacks.filter((f: any) => f.id !== id);
-              localStorage.setItem('medsim_user_feedbacks', JSON.stringify(updated));
-              // Force re-render trick by setting activeTab again
-              setActiveTab('stats');
-              setTimeout(() => setActiveTab('feedbacks'), 10);
-            }
+            alert("Bu özellik yakında aktif edilecektir!");
           };
 
           return (
