@@ -51,6 +51,7 @@ public class TusController : ControllerBase
         {
             var result = await _tusRepository.SubmitAnswerAsync(request.Email, request.QuestionId, request.SelectedOption, request.DurationSeconds);
             await _hubContext.Clients.All.SendAsync("LeaderboardUpdated");
+            await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
             return Ok(result);
         }
         catch (KeyNotFoundException ex)

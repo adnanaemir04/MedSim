@@ -218,6 +218,7 @@ public class ProfileController : ControllerBase
         await _cache.RemoveAsync(CacheKeys.TusLeaderboard);
 
         await _hubContext.Clients.All.SendAsync("LeaderboardUpdated");
+        await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
 
         return Ok(new { message = "Vaka başarıyla kaydedildi.", points = user.Points });
     }

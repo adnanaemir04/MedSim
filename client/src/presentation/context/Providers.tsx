@@ -38,6 +38,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'leaderboard' });
     });
 
+    connection.on("AdminDataUpdated", () => {
+      console.log("AdminDataUpdated received via SignalR. Dispatching event...");
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('AdminDataUpdated'));
+      }
+    });
+
     connection.start()
       .then(() => {
         if (isMounted) {

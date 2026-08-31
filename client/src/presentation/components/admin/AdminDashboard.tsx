@@ -145,7 +145,25 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    const handleAdminDataUpdated = () => {
+      console.log("Admin Data Updated event received. Refreshing data...");
+      if (activeTab === 'analytics' || activeTab === 'stats' || activeTab === 'reports') {
+        fetchStats();
+      }
+      if (activeTab === 'logs') {
+        fetchLogs();
+      }
+      if (activeTab === 'feedbacks') {
+        fetchFeedbacks();
+      }
+    };
 
+    window.addEventListener('AdminDataUpdated', handleAdminDataUpdated);
+    return () => {
+      window.removeEventListener('AdminDataUpdated', handleAdminDataUpdated);
+    };
+  }, [activeTab]);
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateMessage('');

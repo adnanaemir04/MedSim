@@ -6,6 +6,8 @@ using MedSim.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using MedSim.Api.Hubs;
 
 namespace MedSim.Api.Controllers;
 
@@ -16,11 +18,13 @@ public class FeedbacksController : ControllerBase
 {
     private readonly IFeedbackRepository _feedbackRepository;
     private readonly MedSimDbContext _context;
+    private readonly IHubContext<MedSimHub> _hubContext;
 
-    public FeedbacksController(IFeedbackRepository feedbackRepository, MedSimDbContext context)
+    public FeedbacksController(IFeedbackRepository feedbackRepository, MedSimDbContext context, IHubContext<MedSimHub> hubContext)
     {
         _feedbackRepository = feedbackRepository;
         _context = context;
+        _hubContext = hubContext;
     }
 
     [HttpGet]
@@ -72,6 +76,8 @@ public class FeedbacksController : ControllerBase
         };
 
         await _feedbackRepository.AddFeedbackAsync(feedback);
+
+        await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
 
         return Ok(new { message = "Feedback submitted successfully." });
     }

@@ -10,6 +10,8 @@ using System.Security.Cryptography;
 using System.Text;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using MedSim.Api.Hubs;
 
 namespace MedSim.Api.Controllers;
 
@@ -19,11 +21,13 @@ public class AuthController : ControllerBase
 {
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
+    private readonly IHubContext<MedSimHub> _hubContext;
 
-    public AuthController(IUserRepository userRepository, IConfiguration configuration)
+    public AuthController(IUserRepository userRepository, IConfiguration configuration, IHubContext<MedSimHub> hubContext)
     {
         _userRepository = userRepository;
         _configuration = configuration;
+        _hubContext = hubContext;
     }
 
     [HttpPost("register")]
@@ -65,6 +69,8 @@ public class AuthController : ControllerBase
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
         await _userRepository.UpdateAsync(user);
         await _userRepository.SaveChangesAsync();
+
+        await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
 
         return Ok(new AuthResponseDto
         {
