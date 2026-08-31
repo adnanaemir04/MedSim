@@ -77,7 +77,7 @@ export default function Sidebar({ user, onLogout, onNavigate, currentView }: Sid
     if (!feedbackText.trim() && Object.values(ratings).every(r => r === 0)) return;
     
     try {
-      const token = localStorage.getItem('medsim_token');
+      const token = localStorage.getItem('medsim_access_token');
       if (token) {
         await submitFeedback({
           message: feedbackText,
