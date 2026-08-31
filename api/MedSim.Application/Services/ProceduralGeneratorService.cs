@@ -77,6 +77,9 @@ Seed: {randomVariationSeed}
 ZORUNLU HASTA PROFİLİ (Vaka Kurgusu Birebir Buna Uymalıdır):
 - Hastanın Yaşı: {randomAge}
 - Hastanın Cinsiyeti: {randomGender}
+- Şikayet (Chief Complaint): Klasik ve ezber şikayetlerin dışına çıkılarak daha spesifik, çeşitli ve gerçekçi hasta ifadeleri/şikayetleri oluşturulmalıdır (bunu patientInfo içindeki chiefComplaint alanına yaz).
+- Anamnez, Özgeçmiş ve Fiziksel Muayene: Çok daha detaylı, klinik olarak zengin ve kapsamlı yazılmalıdır. Kısa geçiştirilmemelidir. Bu uzun ve detaylı bilgileri KESİNLİKLE 'patientInfo' altındaki 'physicalExam' ve 'medicalHistory' alanlarına yazmalısın.
+- Sorunun kendisi (initialText ve stages.text kısımları) çok uzun olmak zorunda değildir, detayları patientInfo alanına yansıt.
 
 Kurallar:
 - 2-4 aşama (orderIndex 1'den başlar)
@@ -150,7 +153,13 @@ JSON formatı şöyle olmalıdır:
                 contentText = contentText[..^3];
             contentText = contentText.Trim();
 
-            var llmCase = JsonSerializer.Deserialize<LLMCaseResponse>(contentText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+            var llmCase = JsonSerializer.Deserialize<LLMCaseResponse>(contentText, options);
             if (llmCase == null) throw new Exception("LLM yanıtı parse edilemedi.");
 
             var patientInfo = BuildPatientInfo(llmCase, departmentName);

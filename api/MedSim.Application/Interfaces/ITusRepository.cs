@@ -11,4 +11,5 @@ public interface ITusRepository
     Task<object> GetSolvedQuestionsListAsync(string email, string? subject, int page, int pageSize, string? difficulty, string? sortOrder);
     Task<IEnumerable<object>> GetLeaderboardAsync();
     Task<TusQuestion?> GetQuestionByIdAsync(Guid id);
+    Task<object> GetDailyGoalAsync(string email);
 }

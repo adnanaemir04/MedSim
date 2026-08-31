@@ -10,6 +10,8 @@ using System.Security.Cryptography;
 using System.Text;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using MedSim.Api.Hubs;
 
 namespace MedSim.Api.Controllers;
 
@@ -19,11 +21,13 @@ public class AuthController : ControllerBase
 {
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
+    private readonly IHubContext<MedSimHub> _hubContext;
 
-    public AuthController(IUserRepository userRepository, IConfiguration configuration)
+    public AuthController(IUserRepository userRepository, IConfiguration configuration, IHubContext<MedSimHub> hubContext)
     {
         _userRepository = userRepository;
         _configuration = configuration;
+        _hubContext = hubContext;
     }
 
     [HttpPost("register")]
@@ -35,13 +39,25 @@ public class AuthController : ControllerBase
         var existingNickname = await _userRepository.GetByNicknameAsync(dto.Nickname);
         if (existingNickname != null) return BadRequest("Bu nickname zaten alınmış.");
 
+        string newFriendCode;
+        while (true)
+        {
+            newFriendCode = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+            var existingWithCode = await _userRepository.GetByFriendCodeAsync(newFriendCode);
+            if (existingWithCode == null)
+            {
+                break;
+            }
+        }
+
         var user = new User
         {
             Email = dto.Email,
             Nickname = dto.Nickname,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Points = 20,
-            Avatar = "👨‍⚕️"
+            Avatar = "👨‍⚕️",
+            FriendCode = newFriendCode
         };
 
         await _userRepository.AddAsync(user);
@@ -53,6 +69,8 @@ public class AuthController : ControllerBase
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
         await _userRepository.UpdateAsync(user);
         await _userRepository.SaveChangesAsync();
+
+        await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
 
         return Ok(new AuthResponseDto
         {
@@ -76,7 +94,27 @@ public class AuthController : ControllerBase
     {
         var user = await _userRepository.GetByEmailAsync(dto.Email);
         
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        bool isPasswordValid = false;
+        if (user != null)
+        {
+            if (user.PasswordHash.StartsWith("$2a$") || user.PasswordHash.StartsWith("$2b$") || user.PasswordHash.StartsWith("$2y$"))
+            {
+                try
+                {
+                    isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+                }
+                catch
+                {
+                    isPasswordValid = user.PasswordHash == dto.Password;
+                }
+            }
+            else
+            {
+                isPasswordValid = user.PasswordHash == dto.Password;
+            }
+        }
+
+        if (user == null || !isPasswordValid)
         {
             return Unauthorized("Hatalı e-posta veya şifre.");
         }
@@ -177,9 +215,17 @@ public class AuthController : ControllerBase
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
     {
-        var principal = GetPrincipalFromExpiredToken(dto.AccessToken);
-        if (principal == null)
+        ClaimsPrincipal? principal;
+        try
+        {
+            principal = GetPrincipalFromExpiredToken(dto.AccessToken);
+            if (principal == null)
+                return BadRequest("Geçersiz access token veya refresh token.");
+        }
+        catch
+        {
             return BadRequest("Geçersiz access token veya refresh token.");
+        }
 
         var userEmail = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
         if (string.IsNullOrEmpty(userEmail)) return BadRequest("Token içinden kullanıcı bilgisi okunamadı.");

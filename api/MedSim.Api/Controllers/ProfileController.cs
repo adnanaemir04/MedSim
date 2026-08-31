@@ -52,7 +52,7 @@ public class ProfileController : ControllerBase
             .AsNoTracking()
             .Include(sc => sc.MedicalCase)
             .ThenInclude(mc => mc.Department)
-            .Where(sc => sc.UserId == user.Id)
+            .Where(sc => sc.UserId == user.Id && sc.MedicalCase.IsProcedural)
             .AsQueryable();
 
         if (!string.IsNullOrEmpty(subject))
@@ -218,6 +218,7 @@ public class ProfileController : ControllerBase
         await _cache.RemoveAsync(CacheKeys.TusLeaderboard);
 
         await _hubContext.Clients.All.SendAsync("LeaderboardUpdated");
+        await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
 
         return Ok(new { message = "Vaka başarıyla kaydedildi.", points = user.Points });
     }

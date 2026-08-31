@@ -4,27 +4,49 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import { User } from '../../../domain/entities/User';
-import { Trophy, Medal, Award, Info, X, Sparkles, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Award, Info, X, Sparkles, TrendingUp, Target, Flame, Zap, Star, Activity, MessageSquare, Send } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserRank } from '../../../utils/rankSystem';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { getGeneralLeaderboard, getTusLeaderboard } from '../../../infrastructure/api/simulationApi';
+import { getGeneralLeaderboard, getTusLeaderboard, getSolvedCases, getSolvedTusQuestions, getTusUserStats } from '../../../infrastructure/api/simulationApi';
 import { soundManager } from '../../../utils/soundManager';
 
-export default function Leaderboard() {
-  const [boardType, setBoardType] = useState<'general' | 'tus'>('general');
+export default function Leaderboard({ user }: { user?: any }) {
+  const [boardType, setBoardType] = useState<'general' | 'tus' | 'achievements'>('general');
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const { data: users = [], isLoading: loading } = useQuery({
     queryKey: ['leaderboard', boardType],
     queryFn: async () => {
+      if (boardType === 'achievements') return [];
       const fetchLeaderboard = boardType === 'general' ? getGeneralLeaderboard : getTusLeaderboard;
       const data = await fetchLeaderboard();
       return data.slice(0, 10);
     },
     staleTime: 60 * 1000,
+  });
+
+  const { data: userStats = null } = useQuery({
+    queryKey: ['userAchievements', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const [casesData, questionsData, statsData] = await Promise.all([
+        getSolvedCases(user.email, 1, 100),
+        getSolvedTusQuestions(user.email),
+        getTusUserStats(user.email)
+      ]);
+      return {
+        solvedCasesCount: casesData?.items?.length || 0,
+        solvedCasesList: casesData?.items || [],
+        tusStats: statsData || { totalSolved: 0, correctCount: 0, wrongCount: 0 },
+        totalTusCount: questionsData?.totalCount || 0
+      };
+    },
+    enabled: !!user?.email
   });
 
   const containerStyle = {
@@ -75,6 +97,23 @@ export default function Leaderboard() {
     };
   };
 
+  const handleSubmitFeedback = () => {
+    if (!feedbackText.trim()) return;
+    const existing = JSON.parse(localStorage.getItem('medsim_user_feedbacks') || '[]');
+    existing.push({
+      id: Date.now().toString(),
+      userEmail: user?.email || 'Anonim',
+      nickname: user?.nickname || 'Anonim',
+      message: feedbackText,
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('medsim_user_feedbacks', JSON.stringify(existing));
+    setFeedbackText('');
+    setShowFeedbackModal(false);
+    alert("Fikriniz başarıyla iletildi! Geri bildiriminiz bizim için çok değerli.");
+  };
+
+
   return (
     <motion.main 
       style={containerStyle}
@@ -116,9 +155,9 @@ export default function Leaderboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            style={{ color: isLight ? '#64748b' : 'var(--text-muted)', fontSize: '1rem', marginTop: '0.4rem', fontWeight: 500 }}
+            style={{ color: isLight ? '#64748b' : 'var(--text-muted)', fontSize: '1.1rem', marginTop: '0.4rem', fontWeight: 500 }}
           >
-            {boardType === 'general' ? 'En çok vaka çözen ve yüksek puan toplayan hekimlerimiz.' : 'TUS sorularında en yüksek neti yapan başarılı hekimlerimiz.'}
+            {boardType === 'general' ? 'En çok vaka çözen ve yüksek puan toplayan hekimlerimiz.' : boardType === 'tus' ? 'TUS sorularında en yüksek neti yapan başarılı hekimlerimiz.' : 'Tıp simülasyonlarında ve sınavlarda kilidini açabileceğiniz özel başarımlar.'}
           </motion.p>
         </div>
       </div>
@@ -169,6 +208,26 @@ export default function Leaderboard() {
           <TrendingUp size={16} style={{ display: 'inline', marginRight: '0.4rem', verticalAlign: 'text-bottom' }} />
           TUS Sıralaması
         </motion.button>
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onMouseEnter={() => soundManager.playHover()}
+          onClick={() => { soundManager.playClick(); setBoardType('achievements'); }}
+          style={{
+            padding: '0.8rem 1.5rem',
+            borderRadius: '12px',
+            background: boardType === 'achievements' ? 'rgba(139, 92, 246, 0.8)' : 'transparent',
+            color: boardType === 'achievements' ? 'white' : 'var(--text-muted)',
+            fontWeight: 700, fontSize: '1rem',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: boardType === 'achievements' ? (isLight ? '0 10px 20px rgba(139, 92, 246, 0.3)' : '0 10px 20px rgba(139, 92, 246, 0.2)') : 'none',
+            transition: 'background 0.3s'
+          }}
+        >
+          <Award size={16} style={{ display: 'inline', marginRight: '0.4rem', verticalAlign: 'text-bottom' }} />
+          Başarımlar
+        </motion.button>
         
         <div style={{ width: '1px', background: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)', margin: '0 0.5rem' }}></div>
         
@@ -195,7 +254,77 @@ export default function Leaderboard() {
         </motion.button>
       </motion.div>
 
-      {loading ? (
+      {boardType === 'achievements' ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          {[
+            { id: 'first_blood', icon: <Flame color="#f97316" size={24}/>, title: "İlk Kan", desc: "İlk vakanı başarıyla çöz.", target: "1 Vaka Çözümü", current: userStats?.solvedCasesCount || 0, req: 1, isUnlocked: (userStats?.solvedCasesCount || 0) >= 1 },
+            { id: 'tus_monster', icon: <Target color="#ef4444" size={24}/>, title: "TUS Canavarı", desc: "En az 5 TUS sorusu çöz ve %80 başarı yakala.", target: "%80 Doğru Oranı", current: userStats?.tusStats ? `${userStats.tusStats.totalSolved > 0 ? Math.round((userStats.tusStats.correctCount / userStats.tusStats.totalSolved) * 100) : 0}% (${userStats.tusStats.correctCount}/${userStats.tusStats.totalSolved})` : '0%', req: 80, isUnlocked: userStats?.tusStats ? (userStats.tusStats.totalSolved >= 5 && (userStats.tusStats.correctCount / userStats.tusStats.totalSolved) >= 0.8) : false },
+            { id: 'serial_killer', icon: <Zap color="#eab308" size={24}/>, title: "Seri Katil", desc: "En az 5 vaka çözün.", target: "5 Vaka Çözümü", current: userStats?.solvedCasesCount || 0, req: 5, isUnlocked: (userStats?.solvedCasesCount || 0) >= 5 },
+            { id: 'perfection', icon: <Star color="#8b5cf6" size={24}/>, title: "Mükemmeliyet", desc: "Toplam 10 TUS sorusu çözün.", target: "10 Soru Çözümü", current: userStats?.totalTusCount || 0, req: 10, isUnlocked: (userStats?.totalTusCount || 0) >= 10 },
+            { id: 'expert', icon: <Award color="#10b981" size={24}/>, title: "Uzman Hekim", desc: "Klinik puanını 10.000 yap.", target: "10,000 Klinik Puan", current: user?.points || 0, req: 10000, isUnlocked: (user?.points || 0) >= 10000 },
+            { id: 'life_saver', icon: <Activity color="#0ea5e9" size={24}/>, title: "Hayat Kurtaran", desc: "Zor seviyedeki en az bir vakayı başarıyla tamamla.", target: "1 Zor Vaka", current: userStats?.solvedCasesList?.some((c: any) => c.difficulty === 'Zor' && c.isSolved) ? 1 : 0, req: 1, isUnlocked: userStats?.solvedCasesList?.some((c: any) => c.difficulty === 'Zor' && c.isSolved) || false },
+          ].map((ach, idx) => {
+            return (
+              <motion.div
+                key={ach.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover={{ y: -5 }}
+                style={{
+                  background: isLight 
+                    ? (ach.isUnlocked ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(255,255,255,0.7))' : 'rgba(255, 255, 255, 0.4)')
+                    : (ach.isUnlocked ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(30, 41, 59, 0.6))' : 'rgba(30, 41, 59, 0.4)'),
+                  border: ach.isUnlocked 
+                    ? '1.5px solid rgba(16, 185, 129, 0.4)' 
+                    : (isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)'),
+                  borderRadius: '24px',
+                  padding: '1.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: ach.isUnlocked ? '0 10px 25px rgba(16, 185, 129, 0.1)' : 'none'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{
+                    padding: '0.8rem',
+                    background: ach.isUnlocked ? 'rgba(16, 185, 129, 0.15)' : (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'),
+                    borderRadius: '16px',
+                    color: ach.isUnlocked ? '#10b981' : '#94a3b8'
+                  }}>
+                    {ach.icon}
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: isLight ? '#0f172a' : 'white' }}>{ach.title}</h4>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      padding: '0.2rem 0.6rem',
+                      borderRadius: '30px',
+                      background: ach.isUnlocked ? 'rgba(16, 185, 129, 0.15)' : 'rgba(148, 163, 184, 0.15)',
+                      color: ach.isUnlocked ? '#10b981' : '#94a3b8',
+                      display: 'inline-block',
+                      marginTop: '0.25rem'
+                    }}>
+                      {ach.isUnlocked ? 'Kazanıldı' : 'Kilitli'}
+                    </span>
+                  </div>
+                </div>
+
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4', flex: 1 }}>{ach.desc}</p>
+
+                <div style={{ background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Mevcut İlerleme:</span>
+                  <span style={{ color: ach.isUnlocked ? '#10b981' : 'var(--text-main)' }}>{ach.current}</span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      ) : loading ? (
         <div style={{ textAlign: 'center', padding: '5rem', color: 'var(--text-muted)' }}>
           <motion.div
             animate={{ rotate: 360 }}
@@ -206,9 +335,9 @@ export default function Leaderboard() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
           <AnimatePresence mode="popLayout">
-            {users.map((user, index) => (
+            {users.map((u, index) => (
               <motion.div 
-                key={`${boardType}-${user.id || index}`}
+                key={`${boardType}-${u.id || index}`}
                 layout
                 initial={{ opacity: 0, x: -50, scale: 0.95 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -234,53 +363,41 @@ export default function Leaderboard() {
                   <motion.div 
                     whileHover={{ rotate: 5, scale: 1.1 }}
                     style={{
-                      background: user.avatar?.startsWith('data:image') ? `url(${user.avatar}) center/cover` : (isLight ? '#ffffff' : 'rgba(255,255,255,0.05)'),
-                      fontSize: user.avatar?.startsWith('data:image') ? '0' : '1.4rem',
+                      background: u.avatar?.startsWith('data:image') ? `url(${u.avatar}) center/cover` : (isLight ? '#ffffff' : 'rgba(255,255,255,0.05)'),
+                      fontSize: u.avatar?.startsWith('data:image') ? '0' : '1.4rem',
                       width: '46px', height: '46px', 
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      borderRadius: '50%', 
-                      border: isLight ? '2px solid white' : '2px solid rgba(255,255,255,0.1)',
-                      boxShadow: isLight ? '0 5px 15px rgba(0,0,0,0.08)' : '0 5px 15px rgba(0,0,0,0.3)'
+                      borderRadius: '14px',
+                      border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.1)',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                      flexShrink: 0
                     }}
                   >
-                    {!user.avatar?.startsWith('data:image') && (user.avatar || '👨‍⚕️')}
+                    {!u.avatar?.startsWith('data:image') && (u.avatar || '👨‍⚕️')}
                   </motion.div>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ 
-                      fontWeight: 800, fontSize: '1.05rem', 
-                      color: isLight ? '#1e293b' : 'white',
-                      textShadow: !isLight && index === 0 ? '0 0 10px rgba(255,255,255,0.3)' : 'none',
-                      letterSpacing: '-0.3px'
-                    }}>
-                      {user.nickname}
-                    </span>
-                    
-                    {(() => {
-                      const rank = getUserRank(user.points || 0);
-                      return (
-                        <span style={{ 
-                          fontSize: '0.8rem', 
-                          color: rank.color, 
-                          fontWeight: 700,
-                          background: rank.bg,
-                          border: isLight ? 'none' : `1px solid ${rank.border}`,
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '8px',
-                          display: 'inline-block',
-                          marginTop: '0.3rem',
-                          boxShadow: !isLight ? `0 0 8px ${rank.bg}` : 'none'
-                        }}>
-                          {rank.icon} {rank.title}
-                        </span>
-                      );
-                    })()}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      <span style={{ fontWeight: 800, fontSize: '1.05rem', color: isLight ? '#0f172a' : 'white' }}>{u.nickname}</span>
+                      <span style={{ 
+                        fontSize: '0.7rem', 
+                        fontWeight: 700, 
+                        background: getUserRank(u.points || 0).bg, 
+                        color: getUserRank(u.points || 0).color, 
+                        padding: '0.15rem 0.5rem', 
+                        borderRadius: '30px',
+                        border: `1px solid ${getUserRank(u.points || 0).border}`
+                      }}>
+                        {getUserRank(u.points || 0).title}
+                      </span>
+                    </div>
+
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isLight ? 'rgba(225, 29, 72, 0.04)' : 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: '16px', boxShadow: isLight ? 'inset 0 2px 4px rgba(225,29,72,0.03)' : 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
                   <span style={{ fontSize: '1.2rem', fontWeight: 900, color: isLight ? (boardType === 'tus' ? 'var(--secondary)' : 'var(--primary)') : (boardType === 'tus' ? '#f87171' : '#38bdf8'), letterSpacing: '-1px' }}>
-                    {boardType === 'general' ? user.points?.toLocaleString() : user.tusCorrects}
+                    {boardType === 'general' ? u.points?.toLocaleString() : u.tusCorrects}
                   </span>
                   <span style={{ fontSize: '0.9rem', color: isLight ? '#9f1239' : '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8 }}>
                     {boardType === 'general' ? 'Puan' : 'Doğru'}
@@ -296,6 +413,33 @@ export default function Leaderboard() {
           )}
         </div>
       )}
+
+      {/* Feedback Button */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+        <motion.button
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => { soundManager.playClick(); setShowFeedbackModal(true); }}
+          onMouseEnter={() => soundManager.playHover()}
+          style={{
+            padding: '1rem 2rem',
+            borderRadius: '50px',
+            background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+            color: 'white',
+            fontWeight: 800,
+            fontSize: '1.1rem',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            boxShadow: isLight ? '0 15px 30px rgba(79, 70, 229, 0.3)' : '0 15px 30px rgba(79, 70, 229, 0.2)',
+          }}
+        >
+          <MessageSquare size={20} />
+          Bana Fikrini İlet
+        </motion.button>
+      </div>
 
       {/* Rütbe Sistemi Modalı (Aesthetic 500% Override) */}
       {typeof document !== 'undefined' && createPortal(
@@ -438,6 +582,7 @@ export default function Leaderboard() {
           )}
         </AnimatePresence>
       , document.body)}
+
     </motion.main>
   );
 }

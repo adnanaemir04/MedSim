@@ -18,6 +18,7 @@ public class MedSimDbContext : DbContext
     public DbSet<TusKnowledgeProgress> TusKnowledgeProgresses { get; set; } = null!;
     public DbSet<AuditLog> AuditLogs { get; set; } = null!;
     public DbSet<ContentReport> ContentReports { get; set; } = null!;
+    public DbSet<Feedback> Feedbacks { get; set; } = null!;
     
     // Simulation Engine Entities
     public DbSet<Department> Departments { get; set; } = null!;
@@ -36,6 +37,7 @@ public class MedSimDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Nickname).IsUnique();
+            entity.HasIndex(e => e.FriendCode).IsUnique();
         });
 
         modelBuilder.Entity<SolvedCase>(entity =>
@@ -106,6 +108,16 @@ public class MedSimDbContext : DbContext
             entity.HasOne(e => e.Reporter)
                   .WithMany()
                   .HasForeignKey(e => e.ReporterId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.Feedbacks)
+                  .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 

@@ -19,6 +19,7 @@ public class User
     public ICollection<UserFriend> Friends { get; set; } = new List<UserFriend>();
     public ICollection<TusSolvedQuestion> TusSolvedQuestions { get; set; } = new List<TusSolvedQuestion>();
     public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
+    public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 }
 
 public class SolvedCase

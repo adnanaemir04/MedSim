@@ -492,14 +492,21 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
             {stage.options.map((opt: any, index: number) => {
               const isSelected = selectedOption === index;
               const isCorrect = opt.isCorrect;
-              let bgColor = 'rgba(255, 255, 255, 0.06)';
-              let borderColor = 'rgba(255, 255, 255, 0.15)';
+              let bgColor = isLight ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.06)';
+              let borderColor = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.15)';
 
               if (hasAnswered) {
-                if (isCorrect) { bgColor = 'rgba(16, 185, 129, 0.15)'; borderColor = 'var(--success)'; }
-                else if (isSelected && !isCorrect) { bgColor = 'rgba(244, 63, 94, 0.15)'; borderColor = 'var(--danger)'; }
+                if (isCorrect) { 
+                  bgColor = isLight ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.15)'; 
+                  borderColor = 'var(--success)'; 
+                }
+                else if (isSelected && !isCorrect) { 
+                  bgColor = isLight ? 'rgba(244, 63, 94, 0.1)' : 'rgba(244, 63, 94, 0.15)'; 
+                  borderColor = 'var(--danger)'; 
+                }
               } else if (isSelected) {
                 borderColor = 'var(--primary)';
+                bgColor = isLight ? 'rgba(79, 70, 229, 0.05)' : 'rgba(79, 70, 229, 0.1)';
               }
 
               return (
@@ -516,7 +523,7 @@ export default function SimulationView({ subject, caseIndex, generatedData, init
                     cursor: hasAnswered ? 'default' : 'pointer',
                     transition: 'var(--transition)',
                     fontSize: '0.95rem', fontWeight: 600,
-                    boxShadow: 'var(--shadow-sm)'
+                    boxShadow: isSelected && !hasAnswered ? '0 4px 12px rgba(79, 70, 229, 0.15)' : 'var(--shadow-sm)'
                   }}
                 >
                   <span style={{ flex: 1, paddingRight: '0.5rem' }}>{opt.text}</span>

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5211/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || '/api';
 const API_URL = `${API_BASE_URL}/analytics`;
 
 export interface KpiData {

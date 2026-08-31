@@ -25,7 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5211";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${apiUrl}/hub/medsim`)
       .withAutomaticReconnect()
@@ -36,6 +36,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     connection.on("LeaderboardUpdated", () => {
       console.log("Leaderboard update received via SignalR. Invalidating cache...");
       queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'leaderboard' });
+    });
+
+    connection.on("AdminDataUpdated", () => {
+      console.log("AdminDataUpdated received via SignalR. Dispatching event...");
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('AdminDataUpdated'));
+      }
     });
 
     connection.start()

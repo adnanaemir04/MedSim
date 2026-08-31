@@ -51,6 +51,7 @@ public class TusController : ControllerBase
         {
             var result = await _tusRepository.SubmitAnswerAsync(request.Email, request.QuestionId, request.SelectedOption, request.DurationSeconds);
             await _hubContext.Clients.All.SendAsync("LeaderboardUpdated");
+            await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
             return Ok(result);
         }
         catch (KeyNotFoundException ex)
@@ -67,6 +68,21 @@ public class TusController : ControllerBase
         {
             var stats = await _tusRepository.GetStatsAsync(email, subject);
             return Ok(stats);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpGet("daily-goal")]
+    public async Task<IActionResult> GetDailyGoal([FromQuery] string email)
+    {
+        email = User.FindFirstValue(ClaimTypes.Email) ?? email;
+        try
+        {
+            var goal = await _tusRepository.GetDailyGoalAsync(email);
+            return Ok(goal);
         }
         catch (KeyNotFoundException)
         {

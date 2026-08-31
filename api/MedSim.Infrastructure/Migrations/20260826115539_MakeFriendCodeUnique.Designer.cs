@@ -3,6 +3,7 @@ using System;
 using MedSim.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedSim.Infrastructure.Migrations
 {
     [DbContext(typeof(MedSimDbContext))]
-    partial class MedSimDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826115539_MakeFriendCodeUnique")]
+    partial class MakeFriendCodeUnique
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,50 +169,6 @@ namespace MedSim.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Departments");
-                });
-
-            modelBuilder.Entity("MedSim.Domain.Entities.Feedback", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Analysis")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Detail")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("EaseOfUse")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("RealLife")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Speed")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Teaching")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Usability")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Feedbacks");
                 });
 
             modelBuilder.Entity("MedSim.Domain.Entities.MedicalCase", b =>
@@ -648,17 +607,6 @@ namespace MedSim.Infrastructure.Migrations
                     b.Navigation("Reporter");
                 });
 
-            modelBuilder.Entity("MedSim.Domain.Entities.Feedback", b =>
-                {
-                    b.HasOne("MedSim.Domain.Entities.User", "User")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("MedSim.Domain.Entities.MedicalCase", b =>
                 {
                     b.HasOne("MedSim.Domain.Entities.Department", "Department")
@@ -852,8 +800,6 @@ namespace MedSim.Infrastructure.Migrations
             modelBuilder.Entity("MedSim.Domain.Entities.User", b =>
                 {
                     b.Navigation("AuditLogs");
-
-                    b.Navigation("Feedbacks");
 
                     b.Navigation("Friends");
 

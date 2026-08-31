@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   ShieldAlert, Users, Activity, UserPlus, BarChart3, Clock, 
   ShieldCheck, Cpu, Server, Database, AlertTriangle, Fingerprint, 
-  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2, BookOpen, LineChart
+  TrendingUp, CheckCircle2, XCircle, Search, Sparkles, Loader2, BookOpen, LineChart, MessageSquare, Trash2, Star
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { soundManager } from '../../../utils/soundManager';
@@ -37,11 +37,27 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create' | 'tus' | 'analytics' | 'reports'>('analytics');
+  const [activeTab, setActiveTab] = useState<'stats' | 'logs' | 'create' | 'tus' | 'analytics' | 'reports' | 'feedbacks'>('analytics');
   const [stats, setStats] = useState<UserStats[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // User Stats Filters
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('tusDesc');
+  const [tusSuccessFilter, setTusSuccessFilter] = useState<number>(0);
+  const [caseSuccessFilter, setCaseSuccessFilter] = useState<number>(0);
+
+  // Log Filters
+  const [logSearchQuery, setLogSearchQuery] = useState('');
+  const [logActionFilter, setLogActionFilter] = useState<string>('all');
+  const [logDateFilter, setLogDateFilter] = useState<string>('all');
+  const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
+
+  const toggleLogExpand = (id: string) => {
+    setExpandedLogs(prev => ({ ...prev, [id]: !prev[id] }));
+  };
   
   // Create Admin Form
   const [newAdminEmail, setNewAdminEmail] = useState('');
@@ -50,7 +66,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const [createMessage, setCreateMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5211/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || '/api';
 
   useEffect(() => {
     fetchStats();
@@ -67,7 +83,10 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/Admin/users-stats`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_BASE_URL}/Admin/users-stats`, { 
+        headers: getAuthHeaders(),
+        cache: 'no-store'
+      });
       if (res.ok) {
         const data = await res.json();
         setStats(data);
@@ -81,7 +100,10 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
 
   const fetchLogs = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/Admin/audit-logs`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_BASE_URL}/Admin/audit-logs`, { 
+        headers: getAuthHeaders(),
+        cache: 'no-store'
+      });
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
@@ -91,6 +113,64 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
     }
   };
 
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+
+  const fetchFeedbacks = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('medsim_access_token') : null;
+      if (!token) return;
+      const res = await fetch(`${API_BASE_URL}/Feedbacks`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        cache: 'no-store'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const mappedFeedbacks = data.map((fb: any) => ({
+          ...fb,
+          ratings: {
+            teaching: fb.teaching,
+            usability: fb.usability,
+            easeOfUse: fb.easeOfUse,
+            realLife: fb.realLife,
+            analysis: fb.analysis,
+            speed: fb.speed,
+            detail: fb.detail
+          }
+        }));
+        setFeedbacks(mappedFeedbacks);
+      }
+    } catch (err) {
+      console.error("Failed to fetch feedbacks", err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'feedbacks') {
+      fetchFeedbacks();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    const handleAdminDataUpdated = () => {
+      console.log("Admin Data Updated event received. Refreshing data...");
+      if (activeTab === 'analytics' || activeTab === 'stats' || activeTab === 'reports') {
+        fetchStats();
+      }
+      if (activeTab === 'logs') {
+        fetchLogs();
+      }
+      if (activeTab === 'feedbacks') {
+        fetchFeedbacks();
+      }
+    };
+
+    window.addEventListener('AdminDataUpdated', handleAdminDataUpdated);
+    return () => {
+      window.removeEventListener('AdminDataUpdated', handleAdminDataUpdated);
+    };
+  }, [activeTab]);
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateMessage('');
@@ -134,10 +214,44 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   const totalTus = stats.reduce((acc, s) => acc + s.totalTusSolved, 0);
   const adminCount = stats.filter(s => s.role === 'Admin' || s.role === 'SuperAdmin').length;
 
-  const filteredStats = stats.filter(s => 
-    s.nickname.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  let filteredStats = stats.filter(s => {
+    const matchesSearch = s.nickname.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          s.email.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    let matchesRole = true;
+    if (roleFilter !== 'all') {
+      if (roleFilter === 'Admin') matchesRole = (s.role === 'Admin' || s.role === 'SuperAdmin');
+      else if (roleFilter === 'SuperAdmin') matchesRole = s.role === 'SuperAdmin';
+      else if (roleFilter === 'User') matchesRole = (s.role !== 'Admin' && s.role !== 'SuperAdmin');
+    }
+
+    const tusPercent = s.totalTusSolved > 0 ? Math.round((s.correctTus / s.totalTusSolved) * 100) : 0;
+    const casePercent = s.totalCasesSolved > 0 ? Math.round((s.successfulCases / s.totalCasesSolved) * 100) : 0;
+    
+    const matchesTusSuccess = tusPercent >= tusSuccessFilter;
+    const matchesCaseSuccess = casePercent >= caseSuccessFilter;
+
+    return matchesSearch && matchesRole && matchesTusSuccess && matchesCaseSuccess;
+  });
+
+  filteredStats.sort((a, b) => {
+    if (sortBy === 'nameAsc') return a.nickname.localeCompare(b.nickname);
+    if (sortBy === 'nameDesc') return b.nickname.localeCompare(a.nickname);
+    if (sortBy === 'tusDesc') return b.totalTusSolved - a.totalTusSolved;
+    if (sortBy === 'casesDesc') return b.totalCasesSolved - a.totalCasesSolved;
+    if (sortBy === 'tusSuccess') {
+      const aTus = a.totalTusSolved > 0 ? Math.round((a.correctTus / a.totalTusSolved) * 100) : 0;
+      const bTus = b.totalTusSolved > 0 ? Math.round((b.correctTus / b.totalTusSolved) * 100) : 0;
+      return bTus - aTus;
+    }
+    if (sortBy === 'caseSuccess') {
+      const aCase = a.totalCasesSolved > 0 ? Math.round((a.successfulCases / a.totalCasesSolved) * 100) : 0;
+      const bCase = b.totalCasesSolved > 0 ? Math.round((b.successfulCases / b.totalCasesSolved) * 100) : 0;
+      return bCase - aCase;
+    }
+    return 0;
+  });
+
 
   const metrics = [
     { title: "Toplam Kullanıcı", val: totalUsers, icon: Users, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)' },
@@ -184,50 +298,12 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', marginBottom: '2rem' }}>
-        {metrics.map((m, i) => (
-          <div 
-            key={i} 
-            style={{ 
-              background: 'var(--glass-bg)', 
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)', 
-              borderRadius: '20px', 
-              padding: '1.4rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '1.2rem',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.03)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-            }}
-          >
-            <div style={{ 
-              width: 52, height: 52, borderRadius: '15px', 
-              background: m.bg, color: m.color, 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1)' 
-            }}>
-              <m.icon size={26} />
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {m.title}
-              </p>
-              <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.85rem', fontWeight: 900, color: 'var(--text-main)' }}>
-                {m.val}
-              </h3>
-            </div>
-          </div>
-        ))}
-      </div>
-
+      {/* Metrics Grid removed as per user request - moved to AnalyticsOverview */}
       {/* Horizontal Tabs Navigation (Standard MedSim Tab Bar) */}
       <div style={{ 
-        display: 'flex', gap: '0.8rem', 
+        display: 'flex', gap: '0.6rem', 
         borderBottom: '1px solid var(--glass-border)', 
-        paddingBottom: '1rem', marginBottom: '2rem',
+        paddingBottom: '0.8rem', marginBottom: '1.5rem',
         overflowX: 'auto'
       }}>
         {[
@@ -237,6 +313,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
           { id: 'create', label: 'Yeni Yönetici Ekle', icon: UserPlus },
           { id: 'tus', label: 'TUS Soru Yönetimi', icon: BookOpen },
           { id: 'reports', label: 'Bildirimler', icon: AlertTriangle },
+          { id: 'feedbacks', label: 'Geri Bildirimler', icon: MessageSquare },
         ].map(t => {
           const active = activeTab === t.id;
           return (
@@ -244,18 +321,18 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
               key={t.id}
               onClick={() => { soundManager.playClick(); setActiveTab(t.id as any); }}
               style={{
-                display: 'flex', alignItems: 'center', gap: '0.6rem',
-                padding: '0.75rem 1.4rem', borderRadius: '14px',
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.5rem 1rem', borderRadius: '12px',
                 background: active ? 'var(--primary)' : 'rgba(255, 255, 255, 0.03)',
                 color: active ? '#ffffff' : 'var(--text-muted)',
                 border: active ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
-                cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
+                cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem',
                 transition: 'all 0.2s ease',
                 boxShadow: active ? '0 4px 15px var(--primary-glow)' : 'none',
                 whiteSpace: 'nowrap'
               }}
             >
-              <t.icon size={18} />
+              <t.icon size={16} />
               {t.label}
             </button>
           );
@@ -276,12 +353,23 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
         {/* TAB 0: ANALYTICS */}
         {activeTab === 'analytics' && (
           <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
-            <AnalyticsDashboard isLight={isLight} />
+            <AnalyticsDashboard 
+              isLight={isLight} 
+              totalUsers={totalUsers}
+              totalCases={totalCases}
+              totalTus={totalTus}
+              adminCount={adminCount}
+            />
           </div>
         )}
 
         {/* TAB 1: USERS STATS */}
-        {activeTab === 'stats' && (
+        {activeTab === 'stats' && (() => {
+          const inputBg = isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.05)';
+          const inputBorder = isLight ? 'rgba(0, 0, 0, 0.1)' : 'var(--glass-border)';
+          const optionBg = isLight ? '#ffffff' : 'var(--bg-main)';
+
+          return (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
@@ -294,24 +382,119 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
               </div>
 
               {/* Search input */}
-              <div style={{ 
-                display: 'flex', alignItems: 'center', gap: '0.6rem', 
-                background: 'rgba(255, 255, 255, 0.05)', 
-                border: '1px solid var(--glass-border)', 
-                borderRadius: '12px', padding: '0.5rem 1rem', width: '280px' 
-              }}>
-                <Search size={16} color="var(--text-muted)" />
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Kullanıcı veya e-posta ara..."
+              <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
+                <div style={{ 
+                  display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                  background: inputBg, 
+                  border: `1px solid ${inputBorder}`, 
+                  borderRadius: '12px', padding: '0.5rem 1rem', minWidth: '220px', flex: 1, maxWidth: '300px',
+                  transition: 'all 0.2s'
+                }}>
+                  <Search size={16} color="var(--text-muted)" />
+                  <input 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Kullanıcı veya e-posta ara..."
+                    style={{
+                      background: 'transparent', border: 'none', 
+                      color: 'var(--text-main)', fontSize: '0.85rem', 
+                      outline: 'none', width: '100%'
+                    }}
+                  />
+                </div>
+                <select 
+                  value={roleFilter} 
+                  onChange={e => setRoleFilter(e.target.value)}
                   style={{
-                    background: 'transparent', border: 'none', 
-                    color: 'var(--text-main)', fontSize: '0.85rem', 
-                    outline: 'none', width: '100%'
+                    background: inputBg, border: `1px solid ${inputBorder}`,
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
                   }}
-                />
+                >
+                  <option value="all" style={{background: optionBg}}>Tüm Roller</option>
+                  <option value="Admin" style={{background: optionBg}}>Yöneticiler</option>
+                  <option value="SuperAdmin" style={{background: optionBg}}>Süper Adminler</option>
+                  <option value="User" style={{background: optionBg}}>Hekimler</option>
+                </select>
+                <select 
+                  value={sortBy} 
+                  onChange={e => setSortBy(e.target.value)}
+                  style={{
+                    background: inputBg, border: `1px solid ${inputBorder}`,
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  <option value="tusDesc" style={{background: optionBg}}>TUS Çözüm (Çoktan Aza)</option>
+                  <option value="casesDesc" style={{background: optionBg}}>Vaka Çözüm (Çoktan Aza)</option>
+                  <option value="tusSuccess" style={{background: optionBg}}>TUS Başarı (%)</option>
+                  <option value="caseSuccess" style={{background: optionBg}}>Vaka Başarı (%)</option>
+                  <option value="nameAsc" style={{background: optionBg}}>İsim (A-Z)</option>
+                  <option value="nameDesc" style={{background: optionBg}}>İsim (Z-A)</option>
+                </select>
+                <select 
+                  value={tusSuccessFilter} 
+                  onChange={e => setTusSuccessFilter(Number(e.target.value))}
+                  style={{
+                    background: inputBg, border: `1px solid ${inputBorder}`,
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  <option value={0} style={{background: optionBg}}>TUS Başarısı Tümü</option>
+                  <option value={50} style={{background: optionBg}}>Min %50 TUS</option>
+                  <option value={80} style={{background: optionBg}}>Min %80 TUS</option>
+                </select>
+                <select 
+                  value={caseSuccessFilter} 
+                  onChange={e => setCaseSuccessFilter(Number(e.target.value))}
+                  style={{
+                    background: inputBg, border: `1px solid ${inputBorder}`,
+                    color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  <option value={0} style={{background: optionBg}}>Vaka Başarısı Tümü</option>
+                  <option value={50} style={{background: optionBg}}>Min %50 Vaka</option>
+                  <option value={80} style={{background: optionBg}}>Min %80 Vaka</option>
+                </select>
+                {(searchQuery !== '' || roleFilter !== 'all' || sortBy !== 'tusDesc' || tusSuccessFilter !== 0 || caseSuccessFilter !== 0) && (
+                  <button 
+                    onClick={() => {
+                      setSearchQuery('');
+                      setRoleFilter('all');
+                      setSortBy('tusDesc');
+                      setTusSuccessFilter(0);
+                      setCaseSuccessFilter(0);
+                      soundManager.playClick();
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.4rem',
+                      background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444',
+                      border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.5rem 1rem', 
+                      borderRadius: '12px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                  >
+                    <XCircle size={16} />
+                    Temizle
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Filtered Summary Panel */}
+            <div style={{
+              display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap',
+              background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)',
+              padding: '1rem', borderRadius: '16px', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                <Activity color="#10b981" size={20}/>
+                <span style={{color: 'var(--text-main)', fontWeight: 600}}>Filtrelenmiş Sonuçlar: <b style={{color: '#10b981'}}>{filteredStats.length} Kullanıcı</b></span>
+              </div>
+              <div style={{display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem'}}>
+                <span>Top. TUS Çözüm: <b style={{color: 'var(--text-main)'}}>{filteredStats.reduce((acc, s) => acc + s.totalTusSolved, 0)}</b></span>
+                <span>Top. Vaka Çözüm: <b style={{color: 'var(--text-main)'}}>{filteredStats.reduce((acc, s) => acc + s.totalCasesSolved, 0)}</b></span>
               </div>
             </div>
 
@@ -419,75 +602,225 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
               )}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* TAB 2: AUDIT LOGS */}
-        {activeTab === 'logs' && (
-          <div>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
-                Sistem ve Güvenlik Logları
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                Yönetici aktiviteleri, soru yükleme ve sistem olay kayıtları.
-              </p>
-            </div>
+        {activeTab === 'logs' && (() => {
+          const now = new Date();
+          const inputBg = isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.05)';
+          const inputBorder = isLight ? 'rgba(0, 0, 0, 0.1)' : 'var(--glass-border)';
+          const optionBg = isLight ? '#ffffff' : 'var(--bg-main)';
+          const cardBgHover = isLight ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)';
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              {logs.map((l) => (
-                <div 
-                  key={l.id} 
-                  style={{
-                    display: 'flex', gap: '1rem', alignItems: 'flex-start',
-                    padding: '1.1rem 1.3rem', borderRadius: '16px',
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid var(--glass-border)'
-                  }}
-                >
-                  <div style={{ 
-                    width: 38, height: 38, borderRadius: '10px', 
-                    background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    flexShrink: 0, marginTop: '0.1rem' 
-                  }}>
-                    <Activity size={18} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {l.userEmail}
-                      </span>
-                      <span style={{ 
-                        fontSize: '0.68rem', fontWeight: 800, 
-                        background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', 
-                        padding: '0.2rem 0.5rem', borderRadius: '6px', 
-                        textTransform: 'uppercase', letterSpacing: '0.05em' 
-                      }}>
-                        {l.action}
-                      </span>
-                    </div>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0', lineHeight: 1.5 }}>
-                      {l.details}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 600 }}>
-                      <Clock size={12} />
-                      {new Date(l.createdAt).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' })}
-                    </div>
-                  </div>
-                </div>
-              ))}
+          const filteredLogs = logs.filter(l => {
+            const matchesSearch = l.userEmail.toLowerCase().includes(logSearchQuery.toLowerCase()) || 
+                                  l.details.toLowerCase().includes(logSearchQuery.toLowerCase()) ||
+                                  l.action.toLowerCase().includes(logSearchQuery.toLowerCase());
+            
+            const matchesAction = logActionFilter === 'all' || l.action.includes(logActionFilter);
+            
+            let matchesDate = true;
+            if (logDateFilter !== 'all') {
+              const logDate = new Date(l.createdAt);
+              const diffMs = now.getTime() - logDate.getTime();
+              const diffHours = diffMs / (1000 * 60 * 60);
+              if (logDateFilter === '24h') matchesDate = diffHours <= 24;
+              else if (logDateFilter === '7d') matchesDate = diffHours <= (24 * 7);
+              else if (logDateFilter === '30d') matchesDate = diffHours <= (24 * 30);
+            }
+            return matchesSearch && matchesAction && matchesDate;
+          });
 
-              {logs.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-                  <Server size={40} color="var(--text-muted)" style={{ opacity: 0.3, marginBottom: '0.8rem' }} />
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, margin: 0 }}>
-                    Kayıtlı sistem logu bulunamadı.
+          return (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                    Sistem ve Güvenlik Logları
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                    Yönetici aktiviteleri, soru yükleme ve sistem olay kayıtları.
                   </p>
                 </div>
-              )}
+                
+                <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
+                  <div style={{ 
+                    display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                    background: inputBg, 
+                    border: `1px solid ${inputBorder}`, 
+                    borderRadius: '12px', padding: '0.5rem 1rem', minWidth: '220px', flex: 1, maxWidth: '300px',
+                    transition: 'all 0.2s'
+                  }}>
+                    <Search size={16} color="var(--text-muted)" />
+                    <input 
+                      type="text" 
+                      value={logSearchQuery}
+                      onChange={e => setLogSearchQuery(e.target.value)}
+                      placeholder="E-posta veya detay ara..."
+                      style={{
+                        background: 'transparent', border: 'none', 
+                        color: 'var(--text-main)', fontSize: '0.85rem', 
+                        outline: 'none', width: '100%'
+                      }}
+                    />
+                  </div>
+                  <select 
+                    value={logActionFilter} 
+                    onChange={e => setLogActionFilter(e.target.value)}
+                    style={{
+                      background: inputBg, border: `1px solid ${inputBorder}`,
+                      color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
+                    }}
+                  >
+                    <option value="all" style={{background: optionBg}}>Tüm İşlemler</option>
+                    <option value="LOGIN" style={{background: optionBg}}>Giriş İşlemleri</option>
+                    <option value="CREATE_ADMIN" style={{background: optionBg}}>Yönetici Ekleme</option>
+                    <option value="GENERATE_CASE" style={{background: optionBg}}>Vaka Oluşturma</option>
+                    <option value="CREATE_QUESTION" style={{background: optionBg}}>Soru Ekleme</option>
+                  </select>
+                  <select 
+                    value={logDateFilter} 
+                    onChange={e => setLogDateFilter(e.target.value)}
+                    style={{
+                      background: inputBg, border: `1px solid ${inputBorder}`,
+                      color: 'var(--text-main)', padding: '0.5rem 1rem', borderRadius: '12px', outline: 'none', cursor: 'pointer', transition: 'all 0.2s'
+                    }}
+                  >
+                    <option value="all" style={{background: optionBg}}>Tüm Zamanlar</option>
+                    <option value="24h" style={{background: optionBg}}>Son 24 Saat</option>
+                    <option value="7d" style={{background: optionBg}}>Son 7 Gün</option>
+                    <option value="30d" style={{background: optionBg}}>Son 30 Gün</option>
+                  </select>
+                  {(logSearchQuery !== '' || logActionFilter !== 'all' || logDateFilter !== 'all') && (
+                    <button 
+                      onClick={() => {
+                        setLogSearchQuery('');
+                        setLogActionFilter('all');
+                        setLogDateFilter('all');
+                        soundManager.playClick();
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                        background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444',
+                        border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.5rem 1rem', 
+                        borderRadius: '12px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                    >
+                      <XCircle size={16} />
+                      Temizle
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                {filteredLogs.map((l) => {
+                  let LogIcon = Activity;
+                  let color = '#3b82f6';
+                  let bg = 'rgba(59, 130, 246, 0.1)';
+                  
+                  if (l.action.includes('CREATE_ADMIN') || l.action.includes('DELETE')) {
+                    LogIcon = ShieldAlert;
+                    color = '#ef4444';
+                    bg = 'rgba(239, 68, 68, 0.1)';
+                  } else if (l.action.includes('LOGIN') || l.action.includes('AUTH')) {
+                    LogIcon = ShieldCheck;
+                    color = '#10b981';
+                    bg = 'rgba(16, 185, 129, 0.1)';
+                  } else if (l.action.includes('GENERATE_CASE') || l.action.includes('CREATE_QUESTION')) {
+                    LogIcon = BookOpen;
+                    color = '#8b5cf6';
+                    bg = 'rgba(139, 92, 246, 0.1)';
+                  } else if (l.action.includes('UPDATE')) {
+                    LogIcon = Server; // Replaced Settings with Server to fix TS error
+                    color = '#f59e0b';
+                    bg = 'rgba(245, 158, 11, 0.1)';
+                  }
+
+                  const isExpanded = !!expandedLogs[l.id];
+
+                  return (
+                    <div 
+                      key={l.id} 
+                      onClick={() => toggleLogExpand(l.id)}
+                      style={{
+                        display: 'flex', gap: '1rem', alignItems: 'flex-start',
+                        padding: '1.2rem', borderRadius: '16px',
+                        background: isExpanded ? cardBgHover : 'transparent',
+                        border: `1px solid ${inputBorder}`,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: isExpanded ? `0 0 0 1px ${color}` : 'none'
+                      }}
+                      onMouseEnter={e => { if(!isExpanded) e.currentTarget.style.background = cardBgHover; }}
+                      onMouseLeave={e => { if(!isExpanded) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <div style={{ 
+                        width: 42, height: 42, borderRadius: '12px', 
+                        background: bg, color: color, 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        flexShrink: 0 
+                      }}>
+                        <LogIcon size={20} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {l.userEmail}
+                          </span>
+                          <span style={{ 
+                            fontSize: '0.7rem', fontWeight: 800, 
+                            background: bg, color: color, 
+                            padding: '0.25rem 0.6rem', borderRadius: '8px', 
+                            textTransform: 'uppercase', letterSpacing: '0.05em' 
+                          }}>
+                            {l.action}
+                          </span>
+                        </div>
+                        <p style={{ 
+                          fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0', lineHeight: 1.5,
+                          display: '-webkit-box', WebkitLineClamp: isExpanded ? 'unset' : 1, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+                        }}>
+                          {l.details}
+                        </p>
+                        
+                        {isExpanded && (
+                          <div style={{ 
+                            marginTop: '1rem', padding: '1rem', 
+                            background: 'rgba(0,0,0,0.2)', borderRadius: '12px', 
+                            fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)',
+                            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                            borderLeft: `3px solid ${color}`
+                          }}>
+                            {l.details}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.8rem', fontWeight: 600 }}>
+                          <Clock size={14} />
+                          {new Date(l.createdAt).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {filteredLogs.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+                    <Server size={40} color="var(--text-muted)" style={{ opacity: 0.3, marginBottom: '0.8rem' }} />
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, margin: 0 }}>
+                      Kayıtlı sistem logu bulunamadı.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* TAB 3: CREATE ADMIN */}
         {activeTab === 'create' && (
@@ -608,12 +941,97 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
           </div>
         )}
 
-        {/* TAB 5: REPORTS */}
+        {/* TAB: REPORTS */}
         {activeTab === 'reports' && (
           <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <ReportManager />
           </div>
         )}
+
+        {/* TAB: FEEDBACKS */}
+        {activeTab === 'feedbacks' && (() => {
+          const handleDelete = (id: string) => {
+            alert("Bu özellik yakında aktif edilecektir!");
+          };
+
+          return (
+            <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                    Kullanıcı Geri Bildirimleri
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                    Liderlik tablosu üzerinden gönderilen görüş, öneri ve hata bildirimleri.
+                  </p>
+                </div>
+              </div>
+
+              {feedbacks.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '16px' }}>
+                  <MessageSquare size={40} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+                  <p>Henüz bir geri bildirim bulunmuyor.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                  {feedbacks.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((fb: any) => (
+                    <div key={fb.id} style={{ 
+                      background: isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.4)', 
+                      border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)', 
+                      borderRadius: '16px', padding: '1.5rem', position: 'relative',
+                      boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.02)' : '0 10px 20px rgba(0,0,0,0.2)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div>
+                          <div style={{ fontWeight: 800, color: isLight ? '#0f172a' : 'white' }}>{fb.nickname}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{fb.userEmail}</div>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)', padding: '0.2rem 0.5rem', borderRadius: '8px' }}>
+                          {new Date(fb.createdAt).toLocaleDateString('tr-TR')}
+                        </div>
+                      </div>
+
+                      {fb.ratings && Object.values(fb.ratings).some((r: any) => r > 0) && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1rem', padding: '1rem', background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
+                          {[
+                            { key: 'teaching', label: 'Öğreticilik' },
+                            { key: 'usability', label: 'Kullanılabilirlik' },
+                            { key: 'easeOfUse', label: 'Kolaylık' },
+                            { key: 'realLife', label: 'Gerçekçilik' },
+                            { key: 'analysis', label: 'Analiz' },
+                            { key: 'speed', label: 'Hız' },
+                            { key: 'detail', label: 'Detaycılık' }
+                          ].map(metric => fb.ratings[metric.key] > 0 ? (
+                            <div key={metric.key} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{metric.label}</span>
+                              <div style={{ display: 'flex', gap: '0.1rem' }}>
+                                {[1, 2, 3, 4, 5].map(s => (
+                                  <Star key={s} size={12} fill={s <= fb.ratings[metric.key] ? '#fbbf24' : 'transparent'} color={s <= fb.ratings[metric.key] ? '#fbbf24' : (isLight ? '#cbd5e1' : '#475569')} />
+                                ))}
+                              </div>
+                            </div>
+                          ) : null)}
+                        </div>
+                      )}
+
+                      <p style={{ fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                        {fb.message}
+                      </p>
+                      <button 
+                        onClick={() => handleDelete(fb.id)}
+                        style={{ position: 'absolute', bottom: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', opacity: 0.6, transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
       </div>
     </div>

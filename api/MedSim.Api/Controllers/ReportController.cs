@@ -4,6 +4,8 @@ using MedSim.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using MedSim.Api.Hubs;
 using System.Security.Claims;
 
 namespace MedSim.Api.Controllers;
@@ -14,10 +16,12 @@ namespace MedSim.Api.Controllers;
 public class ReportController : ControllerBase
 {
     private readonly MedSimDbContext _context;
+    private readonly IHubContext<MedSimHub> _hubContext;
 
-    public ReportController(MedSimDbContext context)
+    public ReportController(MedSimDbContext context, IHubContext<MedSimHub> hubContext)
     {
         _context = context;
+        _hubContext = hubContext;
     }
 
     [HttpPost]
@@ -54,6 +58,8 @@ public class ReportController : ControllerBase
 
         _context.ContentReports.Add(report);
         await _context.SaveChangesAsync();
+
+        await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
 
         return Ok(new { message = "Bildiriminiz başarıyla alındı. İçeriği inceleyeceğiz." });
     }

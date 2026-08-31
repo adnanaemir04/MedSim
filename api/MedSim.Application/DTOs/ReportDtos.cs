@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace MedSim.Application.DTOs;
 
 public class CreateReportRequest
