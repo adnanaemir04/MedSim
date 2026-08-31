@@ -390,19 +390,20 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {optionsList.map(opt => {
                 const isSelected = (reviewMode && sessionResults[activeIndex]) ? sessionResults[activeIndex].selectedOption === opt.key : selectedOption === opt.key;
-                let bgColor = 'rgba(255,255,255,0.03)';
-                let borderColor = 'rgba(255,255,255,0.1)';
+                let bgColor = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)';
+                let borderColor = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
                 
                 if (currentResult) {
                   if (opt.key === currentResult.correctOption) {
-                    bgColor = 'rgba(16, 185, 129, 0.1)';
+                    bgColor = isLight ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.15)';
                     borderColor = 'var(--success)';
                   } else if (isSelected) {
-                    bgColor = 'rgba(244, 63, 94, 0.1)';
+                    bgColor = isLight ? 'rgba(244, 63, 94, 0.1)' : 'rgba(244, 63, 94, 0.15)';
                     borderColor = 'var(--danger)';
                   }
                 } else if (isSelected) {
                   borderColor = 'var(--primary)';
+                  bgColor = isLight ? 'rgba(79, 70, 229, 0.05)' : 'rgba(79, 70, 229, 0.1)';
                 }
 
                 return (
@@ -412,25 +413,26 @@ export default function TusSolveView({ subject, userEmail, count, mode = 'classi
                     onMouseEnter={() => soundManager.playHover()}
                     disabled={!!currentResult || reviewMode}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: '0.8rem',
-                      padding: '0.8rem 1rem',
+                      display: 'flex', alignItems: 'center', gap: '1rem',
+                      padding: '1rem 1.2rem',
                       background: bgColor,
                       border: `2px solid ${borderColor}`,
-                      borderRadius: '12px',
+                      borderRadius: '16px',
                       color: 'var(--text-main)',
                       textAlign: 'left',
                       cursor: currentResult || reviewMode ? 'default' : 'pointer',
                       transition: 'all 0.2s ease',
-                      opacity: currentResult && opt.key !== currentResult.correctOption && !isSelected ? 0.6 : 1
+                      opacity: currentResult && opt.key !== currentResult.correctOption && !isSelected ? 0.5 : 1,
+                      boxShadow: isSelected && !currentResult ? '0 4px 12px rgba(79, 70, 229, 0.15)' : 'none'
                     }}
                   >
                     <div style={{ 
-                      width: '28px', height: '28px', 
-                      borderRadius: '6px', 
-                      background: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+                      width: '32px', height: '32px', 
+                      borderRadius: '8px', 
+                      background: isSelected ? 'var(--primary)' : (isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.1)'),
                       color: isSelected ? 'white' : 'var(--text-main)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 700, flexShrink: 0
+                      fontWeight: 800, flexShrink: 0, fontSize: '1.1rem'
                     }}>
                       {opt.key}
                     </div>
