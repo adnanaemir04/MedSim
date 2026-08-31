@@ -12,12 +12,10 @@ public static class AnatomyClassicSeeder
 {
     public static async Task SeedAsync(MedSimDbContext context)
     {
-        // Remove existing classic Anatomi questions to force re-seeding with updated data
-        var existing = await context.TusQuestions.Where(q => q.IsClassic && q.Subject == "Anatomi").ToListAsync();
-        if (existing.Any())
+        // Only seed initial 111 Anatomi questions if none exist
+        if (await context.TusQuestions.AnyAsync(q => q.IsClassic && q.Subject == "Anatomi"))
         {
-            context.TusQuestions.RemoveRange(existing);
-            await context.SaveChangesAsync();
+            return;
         }
 
         // Build a SubTopic name → ID dictionary from the existing DB
