@@ -5,6 +5,8 @@ using Moq;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using MedSim.Api.Controllers;
+using MedSim.Api.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using MedSim.Application.Interfaces;
 using MedSim.Application.DTOs;
 using MedSim.Domain.Entities;
@@ -32,7 +34,13 @@ public class AuthControllerTests
 
         _configMock.Setup(c => c.GetSection("JwtSettings")).Returns(configSectionMock.Object);
 
-        _controller = new AuthController(_userRepositoryMock.Object, _configMock.Object);
+        var hubContextMock = new Mock<IHubContext<MedSimHub>>();
+        var hubClientsMock = new Mock<IHubClients>();
+        var clientProxyMock = new Mock<IClientProxy>();
+        hubContextMock.Setup(x => x.Clients).Returns(hubClientsMock.Object);
+        hubClientsMock.Setup(x => x.All).Returns(clientProxyMock.Object);
+
+        _controller = new AuthController(_userRepositoryMock.Object, _configMock.Object, hubContextMock.Object);
     }
 
     [Fact]
@@ -74,5 +82,25 @@ public class AuthControllerTests
 
         _userRepositoryMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
         _userRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task RefreshToken_InvalidToken_ReturnsBadRequest()
+    {
+        // Arrange
+        var request = new RefreshTokenRequestDto
+        {
+            AccessToken = "invalid.token.here",
+            RefreshToken = "some-refresh-token"
+        };
+
+        // For this test, GetPrincipalFromExpiredToken will throw or return null because "invalid.token.here" is not a valid JWT format.
+        // We expect the controller to catch it or return BadRequest.
+
+        // Act
+        var result = await _controller.RefreshToken(request);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
     }
 }

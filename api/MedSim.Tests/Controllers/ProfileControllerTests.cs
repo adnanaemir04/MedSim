@@ -97,4 +97,49 @@ public class ProfileControllerTests
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
         notFoundResult.Value.Should().Be("Geçersiz Arkadaş ID'si.");
     }
+
+    [Fact]
+    public async Task SolveCase_WithValidData_SavesToDbAndTriggersSignalR()
+    {
+        // Arrange
+        var context = GetDbContext();
+        var user = new User { Id = Guid.NewGuid(), Email = "user@test.com", Nickname = "User1" };
+        var medicalCase = new MedicalCase { Id = Guid.NewGuid(), Title = "Test Case" };
+        
+        context.Users.Add(user);
+        context.MedicalCases.Add(medicalCase);
+        await context.SaveChangesAsync();
+
+        var hubClientsMock = new Mock<IHubClients>();
+        var clientProxyMock = new Mock<IClientProxy>();
+        _hubContextMock.Setup(x => x.Clients).Returns(hubClientsMock.Object);
+        hubClientsMock.Setup(x => x.All).Returns(clientProxyMock.Object);
+
+        var controller = CreateController(context, user.Email);
+        var request = new SolveCaseRequest 
+        { 
+            Email = user.Email,
+            MedicalCaseId = medicalCase.Id,
+            Points = 10,
+            GivenAnswers = new List<int> { 1, 2, 3 }
+        };
+
+        // Act
+        var result = await controller.SolveCase(request);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        
+        var solved = await context.SolvedCases.FirstOrDefaultAsync();
+        solved.Should().NotBeNull();
+        solved!.IsSolved.Should().BeTrue();
+
+        clientProxyMock.Verify(
+            c => c.SendCoreAsync("LeaderboardUpdated", It.IsAny<object[]>(), default),
+            Times.Once);
+            
+        clientProxyMock.Verify(
+            c => c.SendCoreAsync("AdminDataUpdated", It.IsAny<object[]>(), default),
+            Times.Once);
+    }
 }

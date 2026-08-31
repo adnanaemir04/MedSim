@@ -215,9 +215,17 @@ public class AuthController : ControllerBase
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
     {
-        var principal = GetPrincipalFromExpiredToken(dto.AccessToken);
-        if (principal == null)
+        ClaimsPrincipal? principal;
+        try
+        {
+            principal = GetPrincipalFromExpiredToken(dto.AccessToken);
+            if (principal == null)
+                return BadRequest("Geçersiz access token veya refresh token.");
+        }
+        catch
+        {
             return BadRequest("Geçersiz access token veya refresh token.");
+        }
 
         var userEmail = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
         if (string.IsNullOrEmpty(userEmail)) return BadRequest("Token içinden kullanıcı bilgisi okunamadı.");

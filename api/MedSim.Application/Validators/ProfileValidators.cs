@@ -12,12 +12,7 @@ public class UpdateProfileDtoValidator : AbstractValidator<UpdateProfileDto>
             .EmailAddress().WithMessage("Geçersiz e-posta formatı.");
 
         RuleFor(x => x.Nickname)
-            .NotEmpty().WithMessage("Kullanıcı adı zorunludur.")
-            .MinimumLength(3).WithMessage("Kullanıcı adı en az 3 karakter olmalıdır.")
-            .MaximumLength(50).WithMessage("Kullanıcı adı en fazla 50 karakter olmalıdır.");
-            
-        RuleFor(x => x.Points)
-            .GreaterThanOrEqualTo(0).WithMessage("Puan 0'dan küçük olamaz.")
-            .When(x => x.Points.HasValue);
+            .NotEmpty().WithMessage("Kullanıcı adı (nickname) zorunludur.")
+            .Length(3, 50).WithMessage("Kullanıcı adı en az 3, en fazla 50 karakter olmalıdır.");
     }
 }
