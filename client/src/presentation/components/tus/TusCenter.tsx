@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { Activity, Target, TrendingUp, Trophy, ArrowRight, BookOpen, Stethoscope, Loader2, Info, CheckCircle, ChevronRight, Sparkles, BrainCircuit, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getTusSubjects, TusSubjectDto, generateTusQuestions, getTusUserStats, TusStatsDto } from '../../../infrastructure/api/simulationApi';
+import { getTusSubjects, TusSubjectDto, generateTusQuestions, getTusUserStats, TusStatsDto, getTusDailyGoal, DailyGoalDto } from '../../../infrastructure/api/simulationApi';
 import { soundManager } from '../../../utils/soundManager';
 import TusSolveView from './TusSolveView';
 import TusSubjectStatsView from './TusSubjectStatsView';
@@ -31,6 +31,7 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
   const [solveDifficulty, setSolveDifficulty] = useState<string | undefined>();
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [genericStats, setGenericStats] = useState<TusStatsDto | null>(null);
+  const [dailyGoal, setDailyGoal] = useState<DailyGoalDto | null>(null);
   const [showPastActivityInfo, setShowPastActivityInfo] = useState(true);
   
   const { theme } = useTheme();
@@ -45,7 +46,10 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
     try {
       const data = await getTusSubjects();
       const statsData = await getTusUserStats(userEmail);
+      const goalData = await getTusDailyGoal(userEmail);
+      
       setGenericStats(statsData);
+      setDailyGoal(goalData);
       
       // Merge with standard TUS subjects so we always show all of them
       const mergedSubjects: TusSubjectDto[] = STANDARD_TUS_SUBJECTS.map(name => {
@@ -238,42 +242,77 @@ export default function TusCenter({ userEmail, onNavigateToAbout, onNavigateToSo
       </div>
 
       {/* Daily Goal Card */}
-      <div className="glass-panel" style={{ 
+      <div className="glass-panel hover-scale" style={{ 
         padding: '2rem', borderRadius: '24px', marginBottom: '2.5rem',
         background: isLight ? 'linear-gradient(135deg, #ffffff, #fffbeb)' : 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(245,158,11,0.03))',
-        border: '1px solid rgba(245,158,11,0.2)',
-        boxShadow: 'var(--shadow-float)'
+        border: '1px solid rgba(245,158,11,0.3)',
+        boxShadow: isLight ? '0 10px 30px rgba(245,158,11, 0.15)' : '0 10px 30px rgba(245,158,11, 0.05)',
+        position: 'relative', overflow: 'hidden',
+        transition: 'all 0.3s ease'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'radial-gradient(circle, rgba(245,158,11,0.15) 0%, rgba(245,158,11,0) 70%)', borderRadius: '50%' }} />
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2rem', position: 'relative', zIndex: 1 }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🎯 Klasikleşmiş Sorular – Bugünkü Hedef
+            <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              🎯 Bugünkü Hedef: Klasikleşmiş Sorular
             </h3>
-            <p style={{ margin: '0.2rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Klasik hap bilgileri çözerek günlük hedefinize ulaşın ve hafızanızı taze tutun.</p>
+            <p style={{ margin: '0.4rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.95rem', maxWidth: '600px' }}>
+              Her gün yenilenen 3 dersten toplam {dailyGoal?.targetCount || 30} soru çözerek günlük hedefinize ulaşın ve TUS bilgilerinizi canlı tutun.
+            </p>
           </div>
-          <div style={{ padding: '0.5rem 1.2rem', background: 'var(--warning)', color: isLight ? '#78350f' : '#fff', borderRadius: '20px', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }}>
-            {Math.min(30, genericStats?.totalSolved || 0)} / 30
+          
+          {/* Main Progress Indicator */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ padding: '0.6rem 1.5rem', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', borderRadius: '20px', fontWeight: 900, fontSize: '1.4rem', boxShadow: '0 8px 20px rgba(245,158,11,0.4)', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+              {Math.min(dailyGoal?.targetCount || 30, dailyGoal?.totalSolvedToday || 0)} / {dailyGoal?.targetCount || 30}
+            </div>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Toplam Çözülen</span>
           </div>
         </div>
-      </div>
 
-      {/* Progress bars for some key courses */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-        {[
-          { name: 'Farmakoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 8.2) % 40) + 60), color: '#ef4444' },
-          { name: 'Patoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 6.1) % 40) + 50), color: '#3b82f6' },
-          { name: 'Mikrobiyoloji', progress: Math.min(100, Math.round(((genericStats?.correctCount || 0) * 9.1) % 30) + 70), color: '#10b981' }
-        ].map(course => (
-          <div key={course.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
-              <span>{course.name}</span>
-              <span>%{course.progress}</span>
-            </div>
-            <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-              <div style={{ width: `${course.progress}%`, height: '100%', background: course.color, borderRadius: '4px' }} />
-            </div>
-          </div>
-        ))}
+        {/* Dynamic Courses Progress bars */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', position: 'relative', zIndex: 1 }}>
+          {dailyGoal?.courses?.map((course, idx) => {
+            const progressPercent = Math.min(100, Math.round((course.solvedToday / course.target) * 100));
+            const isCompleted = course.solvedToday >= course.target;
+            
+            return (
+              <motion.div 
+                key={course.name} 
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', padding: '1rem', background: isLight ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.2)', borderRadius: '16px', border: `1px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}` }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: course.colorCode, boxShadow: `0 0 10px ${course.colorCode}` }} />
+                    {course.name}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: course.colorCode }}>
+                      {course.solvedToday} <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>/ {course.target}</span>
+                    </span>
+                    {isCompleted && <Sparkles size={16} color="#f59e0b" />}
+                  </div>
+                </div>
+                
+                <div style={{ width: '100%', height: '10px', background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)', borderRadius: '5px', overflow: 'hidden', position: 'relative' }}>
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 1, ease: 'easeOut', delay: 0.2 + (idx * 0.1) }}
+                    style={{ 
+                      height: '100%', 
+                      background: isCompleted ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : course.colorCode, 
+                      borderRadius: '5px',
+                      boxShadow: `0 0 10px ${course.colorCode}`
+                    }} 
+                  />
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {isLoading ? (

@@ -75,6 +75,21 @@ public class TusController : ControllerBase
         }
     }
 
+    [HttpGet("daily-goal")]
+    public async Task<IActionResult> GetDailyGoal([FromQuery] string email)
+    {
+        email = User.FindFirstValue(ClaimTypes.Email) ?? email;
+        try
+        {
+            var goal = await _tusRepository.GetDailyGoalAsync(email);
+            return Ok(goal);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
     [HttpGet("solved-list")]
     public async Task<IActionResult> GetSolvedQuestionsList(
         [FromQuery] string email, 

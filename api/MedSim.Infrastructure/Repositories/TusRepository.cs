@@ -3,6 +3,7 @@ using MedSim.Application.Common;
 using MedSim.Domain.Entities;
 using MedSim.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using MedSim.Application.DTOs;
 
 namespace MedSim.Infrastructure.Repositories;
 
@@ -377,7 +378,67 @@ public class TusRepository : ITusRepository
             
             await _cache.SetAsync(CacheKeys.TusLeaderboard, leaderboard, TimeSpan.FromMinutes(5));
         }
-        return leaderboard ?? new List<object>();
+        return leaderboard;
+    }
+
+    public async Task<object> GetDailyGoalAsync(string email)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+
+        // Define a list of core subjects and their corresponding colors
+        var allSubjects = new[]
+        {
+            new { Name = "Anatomi", Color = "#ef4444" },
+            new { Name = "Fizyoloji", Color = "#f97316" },
+            new { Name = "Biyokimya", Color = "#f59e0b" },
+            new { Name = "Mikrobiyoloji", Color = "#10b981" },
+            new { Name = "Patoloji", Color = "#3b82f6" },
+            new { Name = "Farmakoloji", Color = "#8b5cf6" },
+            new { Name = "Dahiliye", Color = "#ec4899" },
+            new { Name = "Pediatri", Color = "#06b6d4" },
+            new { Name = "Genel Cerrahi", Color = "#14b8a6" },
+            new { Name = "Kadın Hastalıkları ve Doğum", Color = "#6366f1" }
+        };
+
+        int dayOfYear = DateTime.UtcNow.DayOfYear;
+        
+        // Pick 3 courses pseudo-randomly based on the day of the year
+        var selectedSubjects = new[]
+        {
+            allSubjects[dayOfYear % allSubjects.Length],
+            allSubjects[(dayOfYear + 1) % allSubjects.Length],
+            allSubjects[(dayOfYear + 2) % allSubjects.Length]
+        };
+
+        var today = DateTime.UtcNow.Date;
+
+        var dailyGoal = new DailyGoalDto
+        {
+            TargetCount = 30, // 10 per course
+            TotalSolvedToday = 0,
+            Courses = new List<DailyCourseTargetDto>()
+        };
+
+        foreach (var sub in selectedSubjects)
+        {
+            var solvedTodayForSubject = await _context.TusSolvedQuestions
+                .AsNoTracking()
+                .Where(t => t.UserId == user.Id && t.TusQuestion.Subject == sub.Name && t.SolvedAt >= today)
+                .CountAsync();
+
+            dailyGoal.Courses.Add(new DailyCourseTargetDto
+            {
+                Name = sub.Name,
+                ColorCode = sub.Color,
+                Target = 10,
+                SolvedToday = solvedTodayForSubject
+            });
+
+            dailyGoal.TotalSolvedToday += solvedTodayForSubject;
+        }
+
+        return dailyGoal;
     }
 
     public async Task<TusQuestion?> GetQuestionByIdAsync(Guid id)

@@ -413,3 +413,21 @@ export const updateAdminReportStatus = async (id: string, status: string, adminN
     const response = await apiClient.put(`/Report/admin/${id}/status`, { status, adminNote });
     return response.data;
 };
+
+export interface DailyCourseTargetDto {
+    name: string;
+    target: number;
+    solvedToday: number;
+    colorCode: string;
+}
+
+export interface DailyGoalDto {
+    targetCount: number;
+    totalSolvedToday: number;
+    courses: DailyCourseTargetDto[];
+}
+
+export const getTusDailyGoal = async (email: string): Promise<DailyGoalDto> => {
+    const response = await apiClient.get<DailyGoalDto>(`/tus/daily-goal?email=${encodeURIComponent(email)}`);
+    return response.data;
+};
