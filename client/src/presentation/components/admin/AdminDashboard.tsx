@@ -83,7 +83,10 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/Admin/users-stats`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_BASE_URL}/Admin/users-stats`, { 
+        headers: getAuthHeaders(),
+        cache: 'no-store'
+      });
       if (res.ok) {
         const data = await res.json();
         setStats(data);
@@ -97,7 +100,10 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
 
   const fetchLogs = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/Admin/audit-logs`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_BASE_URL}/Admin/audit-logs`, { 
+        headers: getAuthHeaders(),
+        cache: 'no-store'
+      });
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
@@ -116,7 +122,8 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
       const res = await fetch(`${API_BASE_URL}/Feedbacks`, {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        cache: 'no-store'
       });
       if (res.ok) {
         const data = await res.json();
