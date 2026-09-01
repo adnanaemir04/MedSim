@@ -25,10 +25,37 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    // Determine the optimal SignalR hub URL
+    const getHubUrl = () => {
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        return `${process.env.NEXT_PUBLIC_API_URL}/hub/medsim`;
+      }
+      if (typeof window !== 'undefined') {
+        // If frontend is accessed via port 3000 (Docker or local Next.js), backend is mapped directly to 5211
+        if (window.location.port === '3000') {
+          return `${window.location.protocol}//${window.location.hostname}:5211/hub/medsim`;
+        }
+        return `${window.location.origin}/hub/medsim`;
+      }
+      return '/hub/medsim';
+    };
+
+    const hubUrl = getHubUrl();
+    console.log("[SignalR] Connecting to:", hubUrl);
+
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${apiUrl}/hub/medsim`)
-      .withAutomaticReconnect()
+      .withUrl(hubUrl, {
+        accessTokenFactory: () => {
+          if (typeof window !== 'undefined') {
+            return localStorage.getItem('medsim_access_token') || "";
+          }
+          return "";
+        },
+        skipNegotiation: false,
+        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.ServerSentEvents | signalR.HttpTransportType.LongPolling
+      })
+      .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+      .configureLogging(signalR.LogLevel.Information)
       .build();
 
     connectionRef.current = connection;
@@ -45,15 +72,36 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       }
     });
 
+    connection.on("FeedbackReceived", (data) => {
+      console.log("FeedbackReceived via SignalR:", data);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('FeedbackReceived', { detail: data }));
+        window.dispatchEvent(new Event('AdminDataUpdated'));
+      }
+    });
+
     connection.start()
       .then(() => {
         if (isMounted) {
-          console.log("SignalR Connected.");
+          console.log("[SignalR] Successfully Connected!");
         }
       })
       .catch(err => {
         if (isMounted) {
-          console.error("SignalR Connection Error: ", err);
+          console.warn("[SignalR] Initial connection attempt with direct port failed, trying fallback /hub/medsim:", err);
+          // Fallback connection to relative endpoint
+          const fallbackConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/hub/medsim")
+            .withAutomaticReconnect()
+            .build();
+            
+          fallbackConnection.on("AdminDataUpdated", () => {
+            window.dispatchEvent(new Event('AdminDataUpdated'));
+          });
+          fallbackConnection.on("LeaderboardUpdated", () => {
+            queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'leaderboard' });
+          });
+          fallbackConnection.start().catch(e => console.error("[SignalR] Fallback error:", e));
         }
       });
 

@@ -78,6 +78,14 @@ public class FeedbacksController : ControllerBase
         await _feedbackRepository.AddFeedbackAsync(feedback);
 
         await _hubContext.Clients.All.SendAsync("AdminDataUpdated");
+        await _hubContext.Clients.All.SendAsync("FeedbackReceived", new
+        {
+            id = feedback.Id,
+            userEmail = user.Email,
+            nickname = user.Nickname,
+            message = feedback.Message,
+            createdAt = feedback.CreatedAt
+        });
 
         return Ok(new { message = "Feedback submitted successfully." });
     }

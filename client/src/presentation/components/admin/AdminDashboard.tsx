@@ -147,28 +147,53 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
   };
 
   useEffect(() => {
+    fetchFeedbacks();
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
     if (activeTab === 'feedbacks') {
       fetchFeedbacks();
+    } else if (activeTab === 'stats' || activeTab === 'analytics' || activeTab === 'reports') {
+      fetchStats();
+    } else if (activeTab === 'logs') {
+      fetchLogs();
     }
   }, [activeTab]);
 
   useEffect(() => {
     const handleAdminDataUpdated = () => {
-      console.log("Admin Data Updated event received. Refreshing data...");
-      if (activeTab === 'analytics' || activeTab === 'stats' || activeTab === 'reports') {
-        fetchStats();
-      }
+      console.log("[AdminDashboard] Live update received via SignalR! Refreshing view...");
+      fetchStats();
+      fetchFeedbacks();
       if (activeTab === 'logs') {
         fetchLogs();
       }
-      if (activeTab === 'feedbacks') {
-        fetchFeedbacks();
-      }
+    };
+
+    const handleFeedbackReceived = (e: any) => {
+      console.log("[AdminDashboard] New feedback received in real-time:", e.detail);
+      soundManager.playSuccess();
+      fetchFeedbacks();
+      fetchStats();
     };
 
     window.addEventListener('AdminDataUpdated', handleAdminDataUpdated);
+    window.addEventListener('FeedbackReceived', handleFeedbackReceived);
+
+    // Fallback polling every 20 seconds to guarantee fresh data
+    const pollingInterval = setInterval(() => {
+      if (activeTab === 'feedbacks') {
+        fetchFeedbacks();
+      } else if (activeTab === 'stats' || activeTab === 'analytics' || activeTab === 'reports') {
+        fetchStats();
+      }
+    }, 20000);
+
     return () => {
       window.removeEventListener('AdminDataUpdated', handleAdminDataUpdated);
+      window.removeEventListener('FeedbackReceived', handleFeedbackReceived);
+      clearInterval(pollingInterval);
     };
   }, [activeTab]);
   const handleCreateAdmin = async (e: React.FormEvent) => {
